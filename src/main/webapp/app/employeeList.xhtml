@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
+-->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>Employee List</title>
+        <h:outputStylesheet library="css" name="layout-blue.css" />
+    </h:head>
+    <h:body>
+        <h3>MANAGE EMPLOYEE DETAILS</h3>
+        <h:form id="employeeForm">
+
+            <!-- Add New Employee Button -->
+            <p:commandButton value="Add New Employee" icon="pi pi-plus" action="#{manageEmployeesBean.goToSignup}" ajax="false" 
+                 style="font-size: 1em; float: right; background-color: #FFF8E1; color: black" />
+
+            <!-- Search Bar -->
+            <p:inputText id="search" value="#{manageEmployeesBean.searchTerm}" 
+                         placeholder="Search by Ghana Card Number">
+                <p:ajax event="keyup" update="employeeTable" listener="#{manageEmployeesBean.searchEmployees}"/>
+            </p:inputText>
+
+            <!-- Employee List -->
+            <p:dataTable id="employeeTable" value="#{manageEmployeesBean.employees}" var="employee" 
+                         paginator="true" rows="10">
+
+                <p:column headerText="First Name">
+                    <h:outputText value="#{employee.firstname}" />
+                </p:column>
+
+                <p:column headerText="Last Name">
+                    <h:outputText value="#{employee.lastname}" />
+                </p:column>
+
+                <p:column headerText="Ghana Card Number">
+                    <h:outputText value="#{employee.ghanaCardNumber}" />
+                </p:column>
+
+                <p:column headerText="Email">
+                    <h:outputText value="#{employee.email}" />
+                </p:column>
+
+                <p:column headerText="Actions">
+                    <p:commandButton value="View" icon="pi pi-eye" 
+                                     action="#{manageEmployeesBean.viewEmployee(employee.ghanaCardNumber)}" 
+                                     update=":employeeForm" />
+
+                    <p:commandButton value="Edit" icon="pi pi-pencil" 
+                                     action="#{manageEmployeesBean.editEmployee(employee.ghanaCardNumber)}" />
+                </p:column>
+            </p:dataTable>
+        </h:form>
+    </h:body>
+</html>

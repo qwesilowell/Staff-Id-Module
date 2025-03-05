@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Staff Id Module-Login Page</title>
+        <h:outputStylesheet library="css" name="loginstyles.css"/>
+    </h:head>
+    <h:body>
+        <!-- Navigation Bar -->
+        <div class="navbar">
+            <h2 class="nav-title">STEEL</h2>
+            <!-- Use h:command Link for navigation -->
+            <h:outputLink value="newuser.xhtml" class="nav-button right">Sign Up</h:outputLink>
+        </div>
+
+        <div class="background"></div>
+        <div class="login-container">
+            <h2>Login</h2>
+            <h:form>
+                <h:outputLabel for="username" value="Admin GhanaCard Number:" />
+                <h:inputText id="username" value="#{loginBean.ghanaCardNumber}" required="true" requiredMessage="Ghana Card Number is required."
+                             onfocus="addBlur()" onblur="removeBlur()" />
+                <h:outputLabel for="password" value="Password:" />
+                <h:inputSecret id="password" value="#{loginBean.password}" required="true" requiredMessage="Password is required."
+                               onfocus="addBlur()" onblur="removeBlur()" />
+                <h:commandButton value="Login" action="#{loginBean.login}" />
+                <h:outputText value="#{loginBean.errorMessage}" class="error-message" rendered="#{not empty loginBean.errorMessage}" />
+            </h:form>
+        </div>
+    </h:body>
+</html>
+

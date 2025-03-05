@@ -1,0 +1,189 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : Feb 3, 2025, 5:20:29 PM
+    Author     : PhilipManteAsare
+*/
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    background: #003366;
+    color: white;
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Profile Section */
+.profile {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.profile img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid white;
+}
+
+.profile h3 {
+    margin: 10px 0 5px;
+    font-size: 16px;
+}
+
+/* Sidebar Buttons */
+.sidebar-buttons {
+    flex-grow: 1;
+}
+
+.sidebar-buttons button {
+    width: 100%;
+    background: none;
+    color: white;
+    border: none;
+    padding: 10px;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.sidebar-buttons button:hover {
+    background: #0056b3;
+}
+
+/* Logout Button */
+.logout-button {
+    width: 100%;
+    padding: 10px;
+    background: red;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.logout-button:hover {
+    background: darkred;
+}
+
+/* Main Content */
+.main-content {
+    margin-left: 270px;
+    padding: 20px;
+}
+
+/* Summary Cards */
+.dashboard-summary {
+    display: flex;
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    flex: 1;
+}
+
+.card h2 {
+    margin: 0;
+    font-size: 24px;
+    color: #003366;
+}
+/* Top Navigation Bar */
+.top-bar {
+    width: 100%;
+    height: 60px;
+    background: #003366;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+}
+
+/* Top Left - Navigation Buttons */
+.top-links {
+    display: flex;
+    gap: 10px;
+}
+
+.top-links button {
+    background: none;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.top-links button:hover {
+    background: #0056b3;
+}
+
+/* Top Right - Admin Profile */
+.profile-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile-section img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.logout-button {
+    background: red;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.logout-button:hover {
+    background: darkred;
+}
+
+/* Main Content (Push Below Navbar) */
+.main-content {
+    margin-top: 80px;
+    padding: 20px;
+}
+.user-role {
+    font-weight: bold;
+    font-size: 14px;
+    color: #ffffff;
+    background-color: #0056b3; 
+    padding: 5px 10px;
+    border-radius: 6px;
+    text-transform: uppercase;
+}
+
