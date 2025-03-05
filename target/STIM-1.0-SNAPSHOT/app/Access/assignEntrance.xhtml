@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
+-->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>Assign Entrances to Employees</title>
+        <style>
+            /* CSS for the slider animation */
+            #accessAnimation {
+                width: 200px;
+                height: 50px;
+                background-color: #ddd;
+                position: relative;
+                overflow: hidden;
+                border-radius: 25px;
+                margin-top: 10px;
+            }
+
+            #slider {
+                width: 100px;
+                height: 50px;
+                background-color: green;
+                position: absolute;
+                left: 0;
+                transition: all 0.5s ease;
+                border-radius: 25px;
+                text-align: center;
+                line-height: 50px;
+                color: white;
+                font-weight: bold;
+            }
+
+            #slider.deny {
+                left: 100px;
+                background-color: red;
+            }
+        </style>
+        
+    </h:head>
+
+    <h:body style="font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px;">
+        <h:form id="assignEntranceForm">
+            <p:panel header="Assign Entrances" style="background: white; padding: 20px; border-radius: 8px;">
+
+                <!-- Search Bar -->
+                <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                    <p:inputText id="searchQuery" value="#{assignEntranceBean.searchQuery}"
+                                 placeholder="Search by Name or Ghana Card" style="width: 300px; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                        <p:ajax event="keyup" listener="#{assignEntranceBean.searchEmployees}" update="employeeTable" />
+                    </p:inputText>
+                </div>
+
+                <!-- Employee Table -->
+                <p:dataTable id="employeeTable" value="#{assignEntranceBean.employees}" var="employee" paginator="true" rows="10">
+                    <p:column headerText="Name">
+                        <h:outputText value="#{employee.fullName}"/>
+                    </p:column>
+                    <p:column headerText="Role">
+                        <h:outputText value="#{employee.role.roleName}"/>
+                    </p:column>
+                    <p:column headerText="Ghana Card">
+                        <h:outputText value="#{employee.ghanaCardNumber}"/>
+                    </p:column>
+                    <p:column headerText="Actions">
+                        <p:column headerText="Actions">
+                            <p:commandButton value="#{assignEntranceBean.hasAssignedEntrances(employee) ? 'Edit Entrance' : 'Assign Entrance'}"
+                                             actionListener="#{assignEntranceBean.openAssignPopup(employee)}"
+                                             update=":assignEntranceForm:assignEntranceDialog"
+                                             oncomplete="PF('assignEntranceDialogWidget').show()"
+                                             style="background: #007bff; color: white; border-radius: 4px;"/>
+                        </p:column>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+            <!-- Assign Entrance Dialog -->
+            <p:dialog id="assignEntranceDialog" widgetVar="assignEntranceDialogWidget" header="Assign Entrance" modal="true" closable="false" width="80%">
+                <h:panelGrid columns="2">
+                    <h:outputLabel value="Employee Name:"/>
+                    <h:outputText value="#{assignEntranceBean.selectedEmployee.fullName}"/>
+
+                    <h:outputLabel value="Ghana Card Number:"/>
+                    <h:outputText value="#{assignEntranceBean.selectedEmployee.ghanaCardNumber}"/>
+                </h:panelGrid>
+
+                <!-- Entrances List -->
+                <p:dataTable id="entranceTable" value="#{assignEntranceBean.entrances}" var="entrance">
+                    <p:column headerText="Entrance Name">
+                        <h:outputText value="#{entrance.entrance_Name}"/>
+                    </p:column>
+                    <p:column headerText="Action">
+                        <p:commandButton icon="pi pi-plus" 
+                                         actionListener="#{assignEntranceBean.addEntranceToEmployee(entrance)}"
+                                         update=":assignEntranceForm:selectedEntrancesTable"
+                                         style="background: #28a745; color: white; border-radius: 4px; padding: 5px;"/>
+                    </p:column>
+                </p:dataTable>
+
+                <!-- Assigned Entrances -->
+                <p:panel header="Assigned Entrances">
+                    <p:dataTable id="selectedEntrancesTable" value="#{assignEntranceBean.assignedEntrances}" var="assignedEntrance">
+                        <p:column headerText="Entrance">
+                            <h:outputText value="#{assignedEntrance.entrance.entrance_Name}"/>
+                        </p:column>
+                        <p:column headerText="Access Level">
+                            <p:selectOneMenu value="#{assignedEntrance.accessLevel}" converter="accessLevelConverter" style="width: 100px;">
+                                <f:selectItems value="#{assignEntranceBean.accessLevels}" 
+                                               var="level"
+                                               itemLabel="#{level.level_name}"
+                                               itemValue="#{level}" />
+                            </p:selectOneMenu>
+                            <!-- Slider Animation -->
+                            <div id="accessAnimation_#{assignedEntrance.entrance.entrance_Device_ID}" class="accessAnimation">
+                                <div id="slider_#{assignedEntrance.entrance.entrance_Device_ID}" class="slider"></div>
+                            </div>
+                        </p:column>
+                        <p:column headerText="Remove">
+                            <p:commandButton icon="pi pi-trash" actionListener="#{assignEntranceBean.removeAssignedEntrance(assignedEntrance)}"
+                                             update=":assignEntranceForm:selectedEntrancesTable"
+                                             style="background: #dc3545; color: white; border-radius: 15px; padding: 5px;"/>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+
+                <!-- Save/Update Buttons -->
+                <div style="margin-top: 15px; text-align: right;">
+                    <p:commandButton value="#{assignEntranceBean.hasAssignedEntrances(selectedEmployee) ? 'Update' : 'Save'}" 
+                                     actionListener="#{assignEntranceBean.handleSaveOrUpdate}"
+                                     update="messages employeeTable"
+                                     oncomplete="PF('assignEntranceDialogWidget').hide()"
+                                     style="background: #007bff; color: white; border-radius: 4px;"/>
+                </div>
+            </p:dialog>
+
+            <p:messages id="messages" showDetail="true" closable="true"/>
+        </h:form>
+    </h:body>
+</html>

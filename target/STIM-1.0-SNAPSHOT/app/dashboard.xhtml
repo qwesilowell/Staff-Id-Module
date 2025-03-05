@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
+-->
+
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+    
+    <h:head>
+        <title>Staff ID Module (STIM) Dashboard</title>
+        <h:outputStylesheet library="css" name="dashboard.css"/>  
+    </h:head>
+
+    <h:body>
+        <!-- Top Navigation Bar -->
+        <div class="top-bar">
+            <span class="title">STAFF ID MODULE (STIM)</span>
+            <div class="profile-section">
+                <h:outputText value="#{dashboardBean.userRole}" styleClass="user-role"/>
+                <h:commandButton value="Logout" action="#{dashboardBean.logout}" styleClass="logout-button"/>
+            </div>
+        </div>
+
+        <div class="dashboard-container">
+            <!-- Sidebar Navigation -->
+            <div class="sidebar">
+                <h:commandButton value="Create Employee" action="#{dashboardBean.createEmployee}"/>
+                <h:commandButton value="Assign Role" action="#{dashboardBean.assignRole}"/>
+                <h:commandButton value="Create Entrance" action="#{dashboardBean.createEntrance}"/>
+                <h:commandButton value="Edit Employee" action="#{dashboardBean.editEmployee}"/>
+                <h:commandButton value="Assign Access" action="#{dashboardBean.assignAccess}"/>
+                <h:commandButton value="Edit Biometric" action="#{dashboardBean.editBiometrics}"/>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="main-content">
+                <div class="stats-container">
+                    <div class="stats-box">
+                        <span>📌 Employees Enrolled Today: </span>
+                        <h:outputText value="#{dashboardBean.totalEmployees}"/>
+                    </div>
+                    <div class="stats-box">
+                        <span>🚪 Total Entrances: </span>
+                        <h:outputText value="#{dashboardBean.totalEntrances}"/>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-container">
+<!--                    <p:barChart model="#dashboardBean.barChartModel}" title="Employee Statistics" styleClass="bar-chart"/>
+                    <p:pieChart model="#dashboardBean.pieChartModel}" title="Distribution" styleClass="pie-chart"/>-->
+                </div>
+            </div>
+        </div>
+    </h:body>
+</html>
+
+

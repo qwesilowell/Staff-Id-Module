@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
+-->
+
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>New Dashboard</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <h:outputStylesheet library="css" name="dashboard2.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+    </h:head>
+
+    <h:body>
+        <!--        FOR THE MENU Bar alone-->
+        <div class="card">
+            <h:form>
+                <p:growl id="messages"/>
+
+                <p:menubar hideDelay="1000" style="background-color: lightskyblue; color: black;">
+
+                    <f:facet name="start">
+                        <div class="menu-container">
+                            <!-- Sidebar Button -->
+                            <p:commandButton icon="pi pi-bars" type="button" onclick="PF('sidebar1').show()" styleClass="mr-2"/>
+                            <p:sidebar widgetVar="sidebar1" style="background-color: whitesmoke; color: black;">
+                                <h3>MENU</h3>
+                                <p:commandButton value="Dashboard" icon="pi pi-home" action="dashboard2.xhtml" ajax = "false" styleClass="ui-button-flat" />
+                                <h:form>
+                                    <p:growl>
+                                        <p:autoUpdate/>
+                                    </p:growl>
+
+                                    <p:panelMenu style="width:300px">
+                                        <p:submenu label="Employee">
+                                            <p:menuitem value="Onboard Employee" outcome="/signup?faces-redirect=true" ajax="false" icon="fa-solid fa-user-large fa-flip fa-2xs" style="color: #3bb5de;"/>
+                                            <p:menuitem value="Manage Employee Profile" outcome="/app/employeeList?faces-redirect=true" icon="pi pi-pencil"/>
+    <!--                                        <p:menuitem value="Delete" action="#{menuView.delete}" icon="pi pi-times"/>-->
+                                        </p:submenu>
+                                        <p:submenu label="Employee Roles">
+                                            <p:menuitem value="Assign Employee Role"  outcome="/app/EmployeeRoles/assignRole?faces-redirect=true" icon="pi pi-upload"/>
+                                            <p:menuitem value="Create Employee Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" icon="fa-regular fa-pen-to-square fa-flip-vertical" style="color: #20cf7e;"/>
+                                        </p:submenu>
+                                        <p:submenu label="Entrances">
+                                            <p:menuitem value="Manage Entrances" outcome="/app/Entrances/manageEntrances?faces-redirect=true" icon="fa-solid fa-door-open"/>
+                                            <!--                                        <p:menuitem value="Remove Entrance" url="" icon="pi pi-times "/>-->
+                                        </p:submenu>
+                                        <p:submenu label="Assign Access">
+                                            <p:menuitem value="Create Access Levels (Permissions)" outcome="/app/Access/manageAccessLevels?faces-redirect=true" icon="pi pi-plus "/>
+                                            <p:menuitem value="Assign Entrances" outcome="/app/Access/assignEntrance?faces-redirect=true" icon="fa-solid fa-building-user"/>
+                                        </p:submenu>
+                                        <p:submenu label="Users">
+                                            <p:menuitem value="Create new user" outcome="/newuser?faces-redirect=true" icon="pi pi-user-plus "/>
+                                        </p:submenu>
+                                        <p:submenu label="Biometric">
+                                            <p:menuitem value="Create new biometric data" url="http://localhost:8080/STIM/newuser.xhtml" icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat"/>
+                                            <p:menuitem value="Remove Biometric data" url="" icon="pi pi-times"/>
+                                        </p:submenu>
+                                    </p:panelMenu>
+                                </h:form>
+
+                            </p:sidebar>
+
+                            <!-- Staff ID Module Section -->
+                            <div class="staff-id-section">
+                                <h:outputText value="Staff ID Module" style="font-weight: bold;" />
+                                <p:graphicImage name="id-card-svgrepo-com.svg" library="images" style="height:30px; vertical-align: middle;"/>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <!-- Profile and Logout Button -->
+                    <f:facet name="end">
+                        <div class="profile-container">
+                            <p:avatar size="large" shape="circle">
+                                <p:graphicImage name="STIM_badge.jpeg" library="images"/>
+                            </p:avatar>
+                            <p:commandButton value="Logout" icon="pi pi-fw pi-sign-out" styleClass="ui-button-danger logout-button"
+                                             action="#{dashboardController.logout}" />
+                        </div>
+                    </f:facet>
+
+                </p:menubar>
+            </h:form>
+        </div>
+        
+    </h:body>
+</html>
+

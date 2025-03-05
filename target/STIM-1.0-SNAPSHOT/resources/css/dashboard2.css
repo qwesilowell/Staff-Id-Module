@@ -1,0 +1,39 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : Feb 5, 2025, 4:58:48 PM
+    Author     : PhilipManteAsare
+*/
+
+.menu-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.staff-id-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: -5px; /* Moves it up slightly */
+}
+.profile-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logout-button {
+    margin-left: 10px;
+}          
+
+body.custom-menubar {
+    background-color: teal; /* Change this to your desired color */
+    color: black; /* Text color */
+}
+
+.custom-menubar .ui-menubar-root-list {
+    background-color: teal; /* Set menu bar color */
+    color: green; /* Text color */
+}

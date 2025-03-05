@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
+-->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Create Role</title>
+    </h:head>
+    <h:body>
+        <h:form id="roleForm">
+            <p:growl id="growl" showDetail="true" life="3000"/>
+        <p:panel header="Create New Role" style="margin-bottom:20px;">
+            <h:panelGrid columns="2" cellpadding="5">
+                <h:outputLabel for="roleName" value="Role Name:" />
+                <p:inputText id="roleName" value="#{assignEmpRoleBean.newRole.roleName}" required="true"/>
+
+                <h:outputLabel for="roleDesc" value="Role Description:" />
+                <p:inputTextarea id="roleDesc" value="#{assignEmpRoleBean.newRole.roleDescription}" rows="3" cols="30"/>
+            </h:panelGrid>
+
+            <p:commandButton value="Add Role" action="#{assignEmpRoleBean.addNewRole}" update="roleTable growl" styleClass="ui-button-success"/>
+        </p:panel>
+
+       
+
+        <p:dataTable id="roleTable" value="#{assignEmpRoleBean.roles}" var="role" styleClass="ui-datatable">
+            <p:column headerText="Role Name">
+                <h:outputText value="#{role.roleName}"/>
+            </p:column>
+            <p:column headerText="Role Description">
+                <h:outputText value="#{role.roleDescription}"/>
+            </p:column>
+        </p:dataTable>
+    </h:form>
+    </h:body>
+</html>
+

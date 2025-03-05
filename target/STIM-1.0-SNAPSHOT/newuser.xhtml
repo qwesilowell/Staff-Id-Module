@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    
+<h:head>
+    <title>User Signup</title>
+    <h:outputStylesheet name="css/layout-blue.css" library="pandora-layout" />
+</h:head>
+
+<h:body>
+    <div class="card">
+        <h:form id="signupForm">
+            <p:panel header="Create a New Account">
+                <p:messages id="messages" showDetail="true" closable="true" />
+                
+                <h:panelGrid columns="3" cellpadding="5">
+                    <h:outputLabel for="ghanaCardNumber" value="Ghana Card Number:" />
+                    <p:inputText id="ghanaCardNumber" value="#{userBean.ghanaCardNumber}" required="true"
+                               requiredMessage="Ghana Card Number is required">
+                        <f:validateLength minimum="15" maximum="15" />
+                    </p:inputText>
+                    <p:message for="ghanaCardNumber" />
+
+                    <h:outputLabel for="username" value="Email (Username):" />
+                    <p:inputText id="username" value="#{userBean.username}" required="true"
+                               requiredMessage="Email is required">
+                        <f:validateRegex pattern="^[A-Za-z0-9+_.-]+@(.+)$" />
+                    </p:inputText>
+                    <p:message for="username" />
+                    
+                    <h:outputLabel for="password" value="Password:" />
+                    <p:password id="password" value="#{userBean.password}" required="true"
+                              requiredMessage="Password is required"
+                              feedback="true" inline="true">
+                        <f:validateLength minimum="6" />
+                    </p:password>
+                    <p:message for="password" />
+                    
+                    <h:outputLabel for="confirmPassword" value="Confirm Password:" />
+                    <p:password id="confirmPassword" value="#{userBean.confirmPassword}" required="true"
+                              requiredMessage="Please confirm your password" />
+                    <p:message for="confirmPassword" />
+                    
+                    <h:outputLabel for="userRole" value="Role:" />
+                    <p:selectOneMenu id="userRole" value="#{userBean.userRole}" required="true"
+                                   requiredMessage="A role must be selected to proceed">
+                        <f:selectItem itemLabel="Select Role" itemValue="" />
+                        <f:selectItem itemValue="Admin" itemLabel="Admin" />
+                        <f:selectItem itemValue="User" itemLabel="User" />
+                    </p:selectOneMenu>
+                    <p:message for="userRole" />
+                </h:panelGrid>
+                
+                <div class="card mt-3">
+                    <p:commandButton value="Sign Up" 
+                                   action="#{userBean.register}" 
+                                   update="messages,signupForm"
+                                   styleClass="ui-button-raised" />
+                    
+                    <p:commandButton value="users" 
+                                   action="#{userBean.getUserss()}" 
+                                   update="messages,signupForm" immediate="true"
+                                   styleClass="ui-button-raised" />
+                    
+                    <p:outputLabel value="#{userBean.users}"/>
+                    
+                    
+                </div>
+            </p:panel>
+        </h:form>
+    </div>
+</h:body>
+</html>
