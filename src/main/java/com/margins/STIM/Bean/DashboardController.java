@@ -11,6 +11,8 @@ package com.margins.STIM.Bean;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
 import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.context.ExternalContext;
+import java.io.IOException;
 import java.io.Serializable;
 
 @Named 
@@ -19,8 +21,9 @@ public class DashboardController implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public String logout() {
-        FacesContext.getCurrentInstance().getExternalContext().invalidateSession();
-        return "/login.xhtml?faces-redirect=true"; // Redirects to login page
+    public void logout() throws IOException {
+        ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
+        ec.invalidateSession(); // Ends user session
+        ec.redirect(ec.getRequestContextPath() + "/BiometricLogin.xhtml"); // Redirects to login page
     }
 }

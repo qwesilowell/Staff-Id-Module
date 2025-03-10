@@ -15,7 +15,7 @@ import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.service.BiometricDataService;
 import com.margins.STIM.service.User_Service;
 import com.margins.STIM.util.FingerprintProcessor;
-import com.margins.STIM.util.Functions;
+import com.margins.STIM.util.JSF;
 import com.margins.STIM.util.ValidationUtil;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -26,9 +26,20 @@ import java.io.Serializable;
 import java.util.List;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -68,6 +79,8 @@ public class BiometricLoginBean implements Serializable {
 
     @EJB
     private BiometricDataService bioService;
+    
+    String BASE_URL = JSF.getContextURL() + "/";
 
     // Regular Login with Password
     public String login() {
@@ -111,13 +124,12 @@ public class BiometricLoginBean implements Serializable {
             System.out.println("Finger Position: " + fingerPosition);
             System.out.println("Captured Fingerprint: " + (capturedFinger != null ? "Present" : "Missing"));
 
-            List<Users> foundUsers = userService.findAllUsersByGhanaCard(ghanaCardNumber);
-            if (foundUsers == null || foundUsers.isEmpty()) {
-
-                errorMessage = "User Not Registered";
-                return;
-            }
-
+//            List<Users> foundUsers = userService.findAllUsersByGhanaCard(ghanaCardNumber);
+//            if (foundUsers == null || foundUsers.isEmpty()) {
+//
+//                errorMessage = "User Not Registered";
+//                return;
+//            }
             System.out.println("GHANACARD2 >>>>>>>>>>>>>> " + ghanaCardNumber);
             if (!ValidationUtil.isValidGhanaCardNumber(ghanaCardNumber)) {
                 errorMessage = "Invalid Ghana Card Format";
@@ -128,7 +140,7 @@ public class BiometricLoginBean implements Serializable {
                 errorMessage = "No fingerprint captured. Please scan your fingerprint.";
                 return;
             }
-            
+
 //            BiometricData bioData = bioService.findBiometricDataById(socketData);
 //            fingerData = bioData.getFingerprintData().getBytes();
 //        
@@ -138,80 +150,87 @@ public class BiometricLoginBean implements Serializable {
 //        }
             System.out.println("GHANACARD3 >>>>>>>>>>>>>> " + ghanaCardNumber);
 
-
             VerificationRequest request = new VerificationRequest();
-            request.setDataType("PNG");
             request.setPosition(fingerPosition);
             request.setPinNumber(ghanaCardNumber);
-            
+
             String processedImage = FingerprintProcessor.imageDpi(capturedFinger);
-            
+
 //            System.out.println("processedFINGER >>>>>>>>>>>>>> " + processedImage);
-
-
 //            BufferedImage bi = Functions.createImageFromBytes(fingerData);
 //            request.setImage(org.apache.commons.codec.binary.Base64.encodeBase64String(Functions.processData(bi)));
             //request.setImage(capturedFinger);
-            
             request.setImage(processedImage);
-
-            request.setMerchantKey("69af98f5-39fb-44e6-81c7-5e496328cc59");
-            request.setMerchantCode("69af98f5-39fb-44e6-81c7-5e496328cc59");
-
-            HttpResponse<String> response = Unirest.post("https://selfie.imsgh.org:2035/skyface/api/v1/third-party/verification/base_64/verification/kyc/finger")
-                    .header("Content-Type", "application/json")
-                    .body(request)
-                    .asString();
-
-            System.out.println("Response Status: " + response.getStatus());
-            System.out.println("Response Body: " + response.getBody());
-
-//            String res = response.getBody();
-//            Gson g = new Gson();
-//            callBack = g.fromJson(res, VerificationResultData.class);
-//            System.out.println("Response from API: " + res);
-
-//            if (response.getStatus() == 200 && callBack != null) {
-//                if ("TRUE".equals(callBack.getData().getVerified())) {
-//                    FacesContext.getCurrentInstance().addMessage(null,
-//                            new FacesMessage(FacesMessage.SEVERITY_INFO, "Biometric Login Successful!", null));
 //
-//                    // Redirect to Dashboard
-//                    FacesContext.getCurrentInstance().getExternalContext().redirect("/app/dashboard2.xhtml");
-//                } else {
-//                    errorMessage = "Fingerprint Verification Failed!";
-//                }
-//            } else {
-//                errorMessage = "Verification Error: " + (callBack != null ? callBack.msg : "No response from server");
-//            }
-        } 
-//        catch (IOException e) {
-//            System.out.println("ERROR 1");
-//            errorMessage = "IO Exception occurred while processing your request!";
-//            e.printStackTrace(); // Log the error for debugging
-//        } 
-        catch (UnirestException e) {
-            System.out.println("ERROR 2");
-            errorMessage = "Error connecting to the verification API!";
-            e.printStackTrace(); // Log the error for debugging
-        } catch (Exception e) {  // Catch any other unexpected errors
+//            request.setMerchantKey("69af98f5-39fb-44e6-81c7-5e496328cc59");
+//            request.setMerchantCode("69af98f5-39fb-44e6-81c7-5e496328cc59");
+
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            X509TrustManager trustManager = new X509TrustManager() {
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[]{};
+                }
+
+                @Override
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                }
+            };
+            sslContext.init(null, new TrustManager[]{trustManager}, new SecureRandom());
+
+            String requestString = new Gson().toJson(request);
+            HttpClient client = HttpClient
+                    .newBuilder()
+                    .sslContext(sslContext)
+                    .build();
+            HttpRequest httpRequest = HttpRequest
+                    .newBuilder(new URI("https://selfie.imsgh.org:2035/skyface/api/v1/third-party/verification/base_64/verification/kyc/finger"))
+                    .POST(HttpRequest.BodyPublishers.ofString(requestString))
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .build();
+            HttpResponse<String> response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+//            HttpResponse<String> response = Unirest.post("https://cscdc.online/apis/test-api.php")
+//                    .header("Content-Type", "application/json")
+//                    .body(request)
+//                    .asString();
+            System.out.println("Response Status: " + response.statusCode());
+            System.out.println("Response Body: " + response.body());
+
+            String res  = response.body();
+            Gson g = new Gson();
+            callBack = g.fromJson(res, VerificationResultData.class);
+            System.out.println("Response from API: " + res);
+            if (response.statusCode() == 200 && callBack != null) {
+                if ("TRUE".equals(callBack.getData().getVerified())) {
+                    FacesContext.getCurrentInstance().addMessage(null,
+                            new FacesMessage(FacesMessage.SEVERITY_INFO, "Biometric Login Successful!", null));
+
+                    // Redirect to Dashboard
+                    FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "app/dashboard2.xhtml");
+                } else {
+                    errorMessage = "Fingerprint Verification Failed!";
+                }
+            } else {
+                errorMessage = "Verification Error: " + (callBack != null ? callBack.msg : "No response from server");
+            }
+        } //        catch (IOException e) {
+        //            System.out.println("ERROR 1");
+        //            errorMessage = "IO Exception occurred while processing your request!";
+        //            e.printStackTrace(); // Log the error for debugging
+        //        } 
+        catch (Exception e) {  // Catch any other unexpected errors
             errorMessage = "An unexpected error occurred. Please try again!";
             System.out.println("ERROR 3");
             e.printStackTrace(); // Log the error for debugging
         }
-        
-        
-        
-        
-        
-        
-        
+
     }
-    
-    
-    
-    
-    
 
     private void reload() {
         if (socketData != null) {
