@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <f:facet name="first">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+            <meta name="apple-mobile-web-app-capable" content="yes" />
+            <h:outputStylesheet library="css" name="dashboard2.css"/>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+        </f:facet>
+
+        <title>Verification Wizard</title>
+        <h:outputScript library="js" name="menuscript.js" target="body" />
+        <h:outputScript library="js" name="orbis.js" target="head"/>
+    </h:head>
+
+    <h:body>
+        <!-- Top Navigation Bar -->
+
+        <div class="topbar">
+            <button class="toggle-button" onclick="toggleSidebar()">&#9776;</button>
+
+            <div class="profile-dropdown" onclick="toggleDropdown()">
+                <div class="profile-initials">PA</div>
+                <span>Philip Asare - Admin</span>
+                <div class="dropdown-content" id="dropdownContent">
+                    <h:form>
+                        <p:commandButton value="Logout" icon="pi pi-fw pi-sign-out" 
+                                         styleClass="ui-button-danger logout-button" 
+                                         style ="color: whitesmoke; width: 150px"
+                                         action="#{dashboardController.logout}" 
+                                         ajax="false"/>
+                    </h:form>
+                </div>
+            </div>
+            <div class="staff-id-section">
+                <h:outputText value="Staff ID Module" style="font-weight: bold;" />
+                <p:graphicImage name="id-card-svgrepo-com.svg" library="images" style="height:30px; vertical-align: middle;"/>
+            </div>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <div id="sidebar" class="sidebar">
+            <h:form> 
+                <p:panelMenu>
+                    <p:submenu label="Home">
+                        <p:menuitem value="Dashboard" icon="pi pi-fw pi-chart-bar" outcome="/app/dashboard2?faces-redirect=true"/>
+                    </p:submenu>
+
+                    <!-- Verification Menu -->
+                    <p:submenu label="Verfication">
+                        <p:menuitem value="Single Finger Verification" outcome="/app/Verification/singleFinger?faces-redirect= true" ajax="false" icon="fa-regular fa-hand-point-up"/>
+                        <p:menuitem value="Multi Finger Verification" outcome="/app/Verification/multiFinger?faces-redirect=true" ajax="false" icon="fa-solid fa-hand"/>
+                    </p:submenu>
+
+                    <!-- Employee Menu -->
+                    <p:submenu label="Employee">
+                        <p:menuitem value="Onboard Employee" outcome="/app/OnboardEmployee/onboardEmployee.xhtml?faces-redirect=true" icon="fa-solid fa-user-large"/>
+                        <p:menuitem value="Manage Employee Profile" outcome="/app/employeeList?faces-redirect=true" icon="pi pi-pencil"/>
+                    </p:submenu>
+
+                    <p:submenu label="Employee Roles">
+                        <p:menuitem value="Assign Employee Role"  outcome="/app/EmployeeRoles/assignRole?faces-redirect=true" icon="pi pi-upload"/>
+                        <p:menuitem value="Create Employee Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" icon="fa-regular fa-pen-to-square fa-flip-vertical" style="color: black;"/>
+                    </p:submenu>
+
+                    <p:submenu label="Assign Access">
+                        <p:menuitem value="New Access Levels" outcome="/app/Access/manageAccessLevels?faces-redirect=true" icon="pi pi-plus" />
+                        <p:menuitem value="Assign Entrances" outcome="/app/Access/assignEntrance?faces-redirect=true" icon="fa-solid fa-door-closed"/>
+                    </p:submenu>
+
+                    <p:submenu label="Entrances">
+                        <p:menuitem value="Manage Entrances" outcome="/app/Entrances/manageEntrances?faces-redirect=true" icon="fa-solid fa-door-open"/>
+                        <p:menuitem value="Assign Roles to Entrances" outcome="/app/Access/assign-roles?facess-redirect=true" icon="fa-solid fa-building-user "/>
+                    </p:submenu>
+                    <p:submenu label="Users">
+                        <p:menuitem value="Create New User" outcome="/newuser?faces-redirect=true" icon="pi pi-user-plus"/>
+                    </p:submenu>
+                    <p:submenu label="Biometric">
+                        <p:menuitem value="Create new biometric data" url="http://localhost:8080/STIM/newuser.xhtml" icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat"/>
+                        <p:menuitem value="Remove Biometric data" url="" icon="pi pi-times"/>
+                    </p:submenu>
+                </p:panelMenu>
+            </h:form>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+        <h:form id="wizardForm" prependId="false">
+            <p:growl widgetVar="fgrowl" id="growl" showDetail="true" life="3000" />
+
+            <p:steps activeIndex="#{wizardBean.currentStep}">
+                <p:menuitem value="Select Verification Type"/>
+                <p:menuitem value="Perform Verification"/>
+                <p:menuitem value="Employee Details"/>
+            </p:steps>
+
+            <p:outputPanel id="stepContent">
+
+                <!-- Step 1: Select Verification Type -->
+                <p:panel rendered="#{wizardBean.currentStep == 0}">
+                    <h3>Select Verification Type</h3>
+
+                    <p:selectOneRadio id="verificationType" value="#{wizardBean.verificationType}" layout="pageDirection">
+                        <f:selectItem itemLabel="Face Recognition" itemValue="Face"/>
+                        <f:selectItem itemLabel="Single Finger" itemValue="Single Finger"/>
+                        <f:selectItem itemLabel="Multi Finger" itemValue="Multi Finger"/>
+                        <p:ajax update="wizardForm" />
+                    </p:selectOneRadio>
+
+                    <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+                        <p:commandButton value="Next" action="#{wizardBean.nextStep}" update="wizardForm"
+                                         disabled="#{empty wizardBean.verificationType}" 
+                                         style="background-color: green; color: white; padding: 10px 20px; font-weight: bold;"/>
+                    </div>
+                </p:panel>
+
+                <!-- Step 2: Perform Verification -->
+                <p:panel rendered="#{wizardBean.currentStep == 1}" style="display: flex; justify-content: center; align-items: center; height: 79vh; border: none;">
+
+                    <div style="width: 600px; padding: 20px; border: 2px solid black; border-radius: 10px; background-color: white;
+                         box-shadow: 3px 3px 10px rgba(0,0,0,0.2); text-align: center;">
+                        <h3 style="display:flex; text-align: left; ">#{wizardBean.verificationType} Verification</h3>
+
+                        <!-- ✅ Show Single Finger Verification UI only if selected -->
+                        <p:panel rendered="#{wizardBean.verificationType == 'Single Finger'}">
+                            <!-- Ghana Card Input -->
+                            <h:outputLabel for="ghanaCard" value="Enter Ghana Card here" style="font-size: large; font-weight: bolder;"/>
+                            <br/>
+                            <p:inputText id="ghanaCardPin" value="#{wizardBean.ghanaCardNumber}" 
+                                         placeholder="GHA-XXXXXXXXX-X"/>
+
+                            <br/><br/><br/>
+                            <!-- Finger Selection -->
+                            <h:outputLabel for="position" value="Select a Finger" style="font-size: large; font-weight: bolder;"/>
+                            <br/>
+                            <p:selectOneMenu id="position" value="#{wizardBean.fingerPosition}" widgetVar="position">
+                                <f:selectItem itemLabel="-- Select Finger --" itemValue="" noSelectionOption="true"/>
+                                <f:selectItem itemLabel="Left Thumb" itemValue="LT"/>
+                                <f:selectItem itemLabel="Left Index" itemValue="LI"/>
+                                <f:selectItem itemLabel="Left Middle" itemValue="LM"/>
+                                <f:selectItem itemLabel="Left Ring" itemValue="LR"/>
+                                <f:selectItem itemLabel="Left Little" itemValue="LL"/>
+                                <f:selectItem itemLabel="Right Thumb" itemValue="RT"/>
+                                <f:selectItem itemLabel="Right Index" itemValue="RI"/>
+                                <f:selectItem itemLabel="Right Middle" itemValue="RM"/>
+                                <f:selectItem itemLabel="Right Ring" itemValue="RR"/>
+                                <f:selectItem itemLabel="Right Little" itemValue="RL"/>
+                            </p:selectOneMenu>
+
+                            <br/><br/><br/>
+
+                            <!-- Fingerprint Image Preview -->
+                            <h:outputLabel value="Fingerprint Image" style="font-size: large; font-weight: bolder;"/>
+                            <br/>
+
+                            <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
+                                <h:graphicImage id="fingerImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
+                            </div>
+
+                            <h:inputHidden id="fingerData" value="#{wizardBean.capturedFinger}"/>
+                            <br/><br/><br/>
+
+                            <!-- Buttons -->
+                            <div style="display:flex; flex-direction: row; gap: 5px; justify-content: space-between;">
+                                <p:commandButton value="Reset" style="margin-right: 10px;" styleClass=" ui-button-warning ui-button-danger" onclick="doSendNoId('action:stop')" action="#{wizardBean.reset}" update="@form" icon="pi pi-refresh"/>
+                                <p:commandButton value="Capture Finger" style="margin-right: 0px;" styleClass=" ui-button-secondary ui-button-raised" onclick="doSend('action:start:single');" type="button" icon="fa fa-thin fa-fingerprint fa-beat"/>
+                                <p:commandButton value="Verify" action="#{wizardBean.submit()}"  update=":wizardForm growl"  process="@form" styleClass="ui-button-success" icon="pi pi-check" iconPos="right" />
+                                <h:inputText id="socketData" style="display: none;" value="#{wizardBean.socketData}" disabled="true"/>
+                                <h:inputHidden id="socketDataHidden"/>
+                            </div>
+                        </p:panel>
+
+                        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                            <p:commandButton value="Back" action="#{wizardBean.prevStep}" update="wizardForm"/>
+
+                        </div>
+                    </div>
+                </p:panel>
+
+                <!-- Step 3: Auto-Fill Employee Details -->
+                <p:panel rendered="#{wizardBean.currentStep == 2}">
+                    <h3>Employee Details</h3>
+
+                    <p:panelGrid columns="2">
+
+                        <h:outputLabel value="Face Image" />
+                        <img width="200px" src="#{wizardBean.empImage}"></img>
+
+                        <h:outputLabel value="Ghana Card Number:" />
+                        <h:outputText value="#{wizardBean.ghanaCardNumber}" />
+
+                        <h:outputLabel value="Full Name:" />
+                        <h:outputText value="#{wizardBean.employeeName}" />
+
+                        <h:outputLabel value="Fornames:" />
+                        <h:outputText value="#{wizardBean.forenames}" />
+
+                        <h:outputLabel value="Surname:" />
+                        <h:outputText value="#{wizardBean.surname}" />
+
+                        <h:outputLabel value="Date of Birth:" />
+                        <h:outputText value="#{wizardBean.employeeDOB}" />
+                        
+                        <h:outputLabel value="Gender:" />
+                        <h:outputText value="#{wizardBean.gender}" />
+
+                        <h:outputLabel value="Nationality:" />
+                        <h:outputText value="#{wizardBean.nationality}" />
+                        
+                        <h:outputLabel value="Address:" />
+                        <p:inputText id="employeeAddress" value="#{wizardBean.address}" placeholder="Enter Employee Address" />
+
+                    </p:panelGrid>
+
+                    <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                        <p:commandButton value="Back" action="#{wizardBean.prevStep}" update="wizardForm"/>
+                        <p:commandButton value="Save Employee" action="#{wizardBean.saveEmployeeToDatabase}" update="growl"/>
+                    </div>
+                    
+                    
+                </p:panel>
+
+
+            </p:outputPanel>
+        </h:form>
+        </div>
+    </h:body>
+</html>
