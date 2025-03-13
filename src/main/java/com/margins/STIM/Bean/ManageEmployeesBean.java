@@ -65,6 +65,6 @@ public class ManageEmployeesBean implements Serializable {
         this.searchTerm = searchTerm;
     }
     public String goToSignup() {
-        return "/signup.xhtml?faces-redirect=true";
+        return "/app/OnboardEmployee/onboardEmployee.xhtml?faces-redirect=true";
     }
 }

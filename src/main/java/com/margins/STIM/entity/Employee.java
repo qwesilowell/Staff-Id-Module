@@ -39,7 +39,7 @@ public class Employee implements Serializable {
     @Column(name = "ADDRESS", nullable = false)
     private String address;
     
-    @Column(name = "EMAIL", nullable = false)
+    @Column(name = "EMAIL" ) 
     private String email;
 
 //    @ManyToOne

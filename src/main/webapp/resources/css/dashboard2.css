@@ -1,39 +1,160 @@
-/*
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css to edit this template
-*/
-/* 
-    Created on : Feb 5, 2025, 4:58:48 PM
-    Author     : PhilipManteAsare
-*/
+ body {
+                margin: 0;
+                font-family: Roboto, sans-serif;
+                display: flex;
+            }
 
-.menu-container {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-.staff-id-section {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: -5px; /* Moves it up slightly */
-}
-.profile-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+            /* Top Navigation Bar */
+            .topbar {
+                background-color: lightskyblue;
+                color: black;
+                padding: 10px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                position: fixed;
+                width: 100%;
+                z-index: 1000;
+                height: 55px;
+                top: 0;
+                left: 0;
+            }
+            
+            .staff-id-section {
+                position: absolute;
+                left: 30%;
+                transform: translateX(-50%);
+                display: flex;
+                align-items: center;
+                gap: 10px; 
+            }
 
-.logout-button {
-    margin-left: 10px;
-}          
+            /* Sidebar Navigation */
+            .sidebar {
+                background-color: whitesmoke;
+                width: 280px;
+                height: 100vh;
+                position: fixed;
+                top: 55px;
+                left: 0;
+                transition: transform 0.3s;
+                overflow-y: auto;
+                padding: 10px;
+            }
 
-body.custom-menubar {
-    background-color: teal; /* Change this to your desired color */
-    color: black; /* Text color */
-}
+            /* Main Content Section */
+            .main-content {
+                margin-left: 280px;
+                padding: 70px 20px 20px;
+                transition: margin-left 0.3s;
+                width: 100%;
+            }
 
-.custom-menubar .ui-menubar-root-list {
-    background-color: teal; /* Set menu bar color */
-    color: green; /* Text color */
-}
+            /* Profile Dropdown */
+            .profile-dropdown {
+                position: relative;
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+            }
+
+            .profile-initials {
+                width: 40px;
+                height: 40px;
+                background-color: #007bff;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                font-size: 18px;
+                font-weight: bold;
+                margin-right: 10px;
+            }
+
+            .dropdown-content {
+                display: none;
+                position: absolute;
+                right: 0;
+                top: 50px;
+                background-color: white;
+                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+                border-radius: 5px;
+                width: 150px;
+            }
+
+            .dropdown-content a {
+                display: block;
+                padding: 10px;
+                text-decoration: none;
+                color: black;
+            }
+
+            .dropdown-content a:hover {
+                background-color: #f1f1f1;
+            }
+
+            /* Sidebar Toggle Button (Mobile) */
+            .toggle-button {
+                display: none;
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+            }
+            
+            .profile-dropdown {
+                position: relative;
+                cursor: pointer;
+                padding: 10px;
+            }
+
+            .dropdown-content {
+                display: none;
+                position: absolute;
+                top: 100%;
+                right: 0;
+                background: white;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                width: 150px;
+                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            }
+
+            .dropdown-content a {
+                display: block;
+                padding: 10px;
+                text-decoration: none;
+                color: black;
+            }
+
+            .dropdown-content a:hover {
+                background: red;
+                color: white;
+            }
+
+            .logout-button {
+                color: red;
+                font-weight: bold;
+                border-top: 1px solid #ccc;
+            }
+
+            @media (max-width: 900px) {
+                .toggle-button {
+                    display: block;
+                }
+
+                .sidebar {
+                    transform: translateX(-300px);
+                    position: fixed;
+                    z-index: 1000;
+                }
+
+                .sidebar.active {
+                    transform: translateX(0);
+                }
+
+                .main-content {
+                    margin-left: 0;
+                }
+            }

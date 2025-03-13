@@ -5,12 +5,22 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
 -->
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui">
 
     <h:head>
+        <f:facet name="first">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+            <meta name="apple-mobile-web-app-capable" content="yes" />
+            <h:outputStylesheet library="css" name="dashboard2.css"/>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+        </f:facet>
+
         <title>Assign Roles to Entrance</title>
+        <h:outputScript library="js" name="menuscript.js" target="body" />
         <style>
             .left-column {
                 width: 50%;
@@ -21,7 +31,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                 width: 50%;
                 text-align: right;
             }
-            
+
             .ui-button {
                 border-radius: 8px;
                 padding: 10px;
@@ -77,18 +87,105 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                 border: 2px solid bisque;
                 display: block !important;
             }
+            
+            .test-access-btn {
+                position: fixed;
+                top: 50%;
+                right: 20px;
+                z-index: 1000;
+                background-color: #4CAF50;
+                color: white;
+                padding: 10px 15px;
+                border-radius: 5px;
+                box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+                cursor: pointer;
+            }
+
+            .test-access-btn:hover {
+                background-color: #45a049;
+            
         </style>
     </h:head>
 
     <h:body>
-        <div>
-            <p:growl id="messages" showDetail="true" life="3000" />
+        <!-- Top Navigation Bar -->
 
-            <h:form>
-                <p:panel header="Assign Roles to Entrance">
-                    <p:panelGrid columns="2" style="width: 100%; align-items: center;" columnClasses="left-column,right-column">
-                        <h:panelGroup>
-                            <!-- Select Entrance -->
+        <div class="topbar">
+            <button class="toggle-button" onclick="toggleSidebar()">&#9776;</button>
+
+            <div class="profile-dropdown" onclick="toggleDropdown()">
+                <div class="profile-initials">PA</div>
+                <span>Philip Asare - Admin</span>
+                <div class="dropdown-content" id="dropdownContent">
+                    <h:form>
+                        <p:commandButton value="Logout" icon="pi pi-fw pi-sign-out" 
+                                         styleClass="ui-button-danger logout-button" 
+                                         style ="color: whitesmoke; width: 150px"
+                                         action="#{dashboardController.logout}" 
+                                         ajax="false"/>
+                    </h:form>
+                </div>
+            </div>
+            <div class="staff-id-section">
+                <h:outputText value="Staff ID Module" style="font-weight: bold;" />
+                <p:graphicImage name="id-card-svgrepo-com.svg" library="images" style="height:30px; vertical-align: middle;"/>
+            </div>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <div id="sidebar" class="sidebar">
+            <h:form> 
+                <p:panelMenu>
+                    <p:submenu label="Home">
+                        <p:menuitem value="Dashboard" icon="pi pi-fw pi-chart-bar" outcome="/app/dashboard2?faces-redirect=true"/>
+                    </p:submenu>
+
+                    <!-- Verification Menu -->
+                    <p:submenu label="Verfication">
+                        <p:menuitem value="Single Finger Verification" outcome="/app/Verification/singleFinger?faces-redirect= true" ajax="false" icon="fa-regular fa-hand-point-up"/>
+                        <p:menuitem value="Multi Finger Verification" outcome="/app/Verification/multiFinger?faces-redirect=true" ajax="false" icon="fa-solid fa-hand"/>
+                    </p:submenu>
+
+                    <!-- Employee Menu -->
+                    <p:submenu label="Employee">
+                        <p:menuitem value="Onboard Employee" outcome="/app/OnboardEmployee/onboardEmployee.xhtml?faces-redirect=true" icon="fa-solid fa-user-large"/>
+                        <p:menuitem value="Manage Employee Profile" outcome="/app/employeeList?faces-redirect=true" icon="pi pi-pencil"/>
+                    </p:submenu>
+
+                    <p:submenu label="Employee Roles">
+                        <p:menuitem value="Assign Employee Role"  outcome="/app/EmployeeRoles/assignRole?faces-redirect=true" icon="pi pi-upload"/>
+                        <p:menuitem value="Create Employee Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" icon="fa-regular fa-pen-to-square fa-flip-vertical" style="color: black;"/>
+                    </p:submenu>
+
+                    <p:submenu label="Assign Access">
+                        <p:menuitem value="New Access Levels" outcome="/app/Access/manageAccessLevels?faces-redirect=true" icon="pi pi-plus" />
+                        <p:menuitem value="Assign Entrances" outcome="/app/Access/assignEntrance?faces-redirect=true" icon="fa-solid fa-door-closed"/>
+                    </p:submenu>
+
+                    <p:submenu label="Entrances">
+                        <p:menuitem value="Manage Entrances" outcome="/app/Entrances/manageEntrances?faces-redirect=true" icon="fa-solid fa-door-open"/>
+                        <p:menuitem value="Assign Roles to Entrances" outcome="/app/Access/assign-roles?facess-redirect=true" icon="fa-solid fa-building-user "/>
+                    </p:submenu>
+                    <p:submenu label="Users">
+                        <p:menuitem value="Create New User" outcome="/newuser?faces-redirect=true" icon="pi pi-user-plus"/>
+                    </p:submenu>
+                    <p:submenu label="Biometric">
+                        <p:menuitem value="Create new biometric data" url="http://localhost:8080/STIM/newuser.xhtml" icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat"/>
+                        <p:menuitem value="Remove Biometric data" url="" icon="pi pi-times"/>
+                    </p:submenu>
+                </p:panelMenu>
+            </h:form>
+        </div>
+
+         <!--Main Content --> 
+         <div class="main-content">
+                <p:growl id="messages" showDetail="true" life="3000" />
+
+                <h:form>
+                    <p:panel header="Assign Roles to Entrance">
+                        <p:panelGrid columns="2" style="width: 100%; align-items: center;" columnClasses="left-column,right-column">
+                            <h:panelGroup>
+                                <!-- Select Entrance -->
                                 <p:outputLabel for="entrance" value="Select Entrance: " />
                                 <p:autoComplete id="entrance" value="#{assignRoleBean.selectedEntranceId}"
                                                 completeMethod="#{assignRoleBean.searchEntrances}" 
@@ -96,19 +193,22 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                                                 itemValue="#{entrance.entrance_Device_ID}"
                                                 forceSelection="true" dropdown="true"
                                                 placeholder="Search or Select Entrance" 
-                                                style="width: 100%;" />
+                                                style="width: 100%;">
+                                    <!-- Automatically load assigned roles when an entrance is selected -->
+                                    <p:ajax event="itemSelect" listener="#{assignRoleBean.loadAssignedRoles}" update="assignedRolesTable" />
+                                </p:autoComplete>
                             </h:panelGroup>
 
-                        <!-- Select Roles -->
-                        <h:panelGroup style="display: flex; flex-direction: column; align-items: flex-start;">
-                            <p:outputLabel for="roles" value="Select Roles: " />
-                            <p:selectCheckboxMenu id="roles" value="#{assignRoleBean.selectedRolesIds}" multiple="true"
-                                                  filter="true" panelStyle="width: 250px">
-                                <f:selectItems value="#{assignRoleBean.allRoles}" var="role"
-                                               itemLabel="#{role.roleName}" itemValue="#{role.id}" />
-                            </p:selectCheckboxMenu>
-                        </h:panelGroup>
-                    </p:panelGrid>
+                            <!-- Select Roles -->
+                            <h:panelGroup style="display: flex; flex-direction: column; align-items: flex-start;">
+                                <p:outputLabel for="roles" value="Select Roles: " />
+                                <p:selectCheckboxMenu id="roles" value="#{assignRoleBean.selectedRolesIds}" multiple="true"
+                                                      filter="true" panelStyle="width: 250px">
+                                    <f:selectItems value="#{assignRoleBean.allRoles}" var="role"
+                                                   itemLabel="#{role.roleName}" itemValue="#{role.id}" />
+                                </p:selectCheckboxMenu>
+                            </h:panelGroup>
+                        </p:panelGrid>
 
 
                         <!-- Submit Button -->
@@ -116,57 +216,74 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                             <p:commandButton value="Assign Roles" action="#{assignRoleBean.assignRolesToEntrance}" 
                                              update="messages assignedRolesTable" styleClass="assign-btn" />
                         </div>
-                </p:panel>
+                    </p:panel>
+                    
+                    
+                    <div style="margin-top: 50px;"></div>
 
-                <div style="display: flex; justify-content: flex-end; margin-bottom: 5px;">
-                    <p:commandButton value="ROLES" 
-                                     action="#{assignRoleBean.loadAssignedRoles}" 
-                                     update="assignedRolesTable" 
-                                     styleClass="load-btn" 
-                                     icon="pi pi-refresh"/>
-                </div>
+                    <p:dataTable id="assignedRolesTable" value="#{assignRoleBean.assignedRoles}" var="role" style="margin-top: 10px;">
 
-                <p:dataTable id="assignedRolesTable" value="#{assignRoleBean.assignedRoles}" var="role">
-                    <p:column headerText="Assigned Job Roles">
-                        <h:outputText value="#{role.roleName}" />
-                    </p:column>
-                    <p:column headerText="Remove">
-                        <p:commandButton icon="pi pi-trash" action="#{assignRoleBean.removeRoleFromEntrance(role.id)}"
-                                         update="assignedRolesTable messages" styleClass="remove-btn" />
-                    </p:column>
-                </p:dataTable>
+                        <p:column headerText="Assigned Job Roles">
+                            <h:outputText value="#{role.roleName}" />
+                        </p:column>
+                        <p:column headerText="Remove">
+                            <p:commandButton icon="pi pi-trash" action="#{assignRoleBean.removeRoleFromEntrance(role.id)}"
+                                             update="assignedRolesTable messages" style="width: 50px"   />
+                        </p:column>
+                      
+                    </p:dataTable>
+                </h:form>
+            </div>
+         <h:form id="accessControlForm">
+         <p:commandButton value="Test Role's Access" icon="pi pi-key" 
+                          onclick="PF('accessTestDialog').show();" 
+                          styleClass="test-access-btn" />
 
-            </h:form>
-        </div>
+         <!-- Pop-up Dialog for Access Testing -->
+         
+             <p:dialog id="accessTestDialog" widgetVar="accessTestDialog" modal="true" 
+                       header="Access Control Test" responsive="true" showEffect="fade"
+                       hideEffect="fade" width="400">
 
-        <div class="access-control-container">
-            <h:form id="accessControlForm">
-                <p:panel header="Access Control Testw" style="margin-top: 20px;">
-                    <!-- Select Role -->
-                    <p:outputLabel for="employeeRole" value="Select Role:" />
-                    <p:selectOneMenu id="employeeRole" value="#{assignRoleBean.selectedEmployeeRoleId}" style="width: 100%;">
-                        <f:selectItem itemLabel="-- Select Role --" itemValue="" noSelectionOption="true"/>
-                        <f:selectItems value="#{assignRoleBean.allRoles}" var="role"
-                                       itemLabel="#{role.roleName}" itemValue="#{role.id}" />
-                    </p:selectOneMenu>
+                 <!-- Select Role -->
+                 <p:outputLabel for="employeeRole" value="Select Role:" />
+                 <p:selectOneMenu id="employeeRole" value="#{assignRoleBean.selectedEmployeeRoleId}" style="width: 100%;">
+                     <f:selectItem itemLabel="-- Select Role --" itemValue="" noSelectionOption="true"/>
+                     <f:selectItems value="#{assignRoleBean.allRoles}" var="role"
+                                    itemLabel="#{role.roleName}" itemValue="#{role.id}" />
+                 </p:selectOneMenu>
+                 
+                 <div style="margin-top: 20px;"></div>
+                 
+                 <!-- Select Entrance -->
+                 <p:outputLabel for="employeeEntrance" value="Select Entrance:" />
+                 <p:selectOneMenu id="employeeEntrance" value="#{assignRoleBean.selectedEntranceId}" style="width: 100%;">
+                     <f:selectItem itemLabel="-- Select Entrance --" itemValue="" noSelectionOption="true"/>
+                     <f:selectItems value="#{assignRoleBean.allEntrances}" var="entrance"
+                                    itemLabel="#{entrance.entrance_Name}" itemValue="#{entrance.entrance_Device_ID}" />
+                 </p:selectOneMenu>
+                 
+                 <div style="margin-top: 20px;"></div>
+                 
+                 <!-- Check Access Button -->
+                 <p:commandButton value="Check Access" action="#{assignRoleBean.checkAccess}"
+                                  update="messages2" icon="pi pi-lock" styleClass="ui-button-success"  style="margin-top: 10px;" />
 
-                    <!-- Select Entrance -->
-                    <p:outputLabel for="employeeEntrance" value="Select Entrance:" />
-                    <p:selectOneMenu id="employeeEntrance" value="#{assignRoleBean.selectedEntranceId}" style="width: 100%;">
-                        <f:selectItem itemLabel="-- Select Entrance --" itemValue="" noSelectionOption="true"/>
-                        <f:selectItems value="#{assignRoleBean.allEntrances}" var="entrance"
-                                       itemLabel="#{entrance.entrance_Name}" itemValue="#{entrance.entrance_Device_ID}" />
-                    </p:selectOneMenu>
+                 <!-- Show Access Messages -->
+                 <p:growl id="messages2" showDetail="true" life="3000" />
 
-                    <!-- Check Access Button -->
-                    <p:commandButton value="Check Access" action="#{assignRoleBean.checkAccess}"
-                                     update="messages2" icon="pi pi-lock" style="margin-top: 10px;" />
-                </p:panel>
+                 <!-- Close Button -->
+                 <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                     <p:commandButton value="Back" icon="pi pi-arrow-left"
+                                      onclick="PF('accessTestDialog').hide();" styleClass="close-btn" />
+                 </div>
 
-                <!-- Show Access Messages -->
-                <p:growl id="messages2" showDetail="true" life="3000" />
-            </h:form>
-        </div>
+             </p:dialog>
+         </h:form>
+
+         
+
+
     </h:body>
 
 </html>

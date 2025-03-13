@@ -25,4 +25,5 @@ public class Person implements Serializable{
     public Date birthDate;
     public ArrayList<Address> addresses;
     public BiometricFeed biometricFeed; 
+    public String gender;
 }

@@ -5,10 +5,17 @@
  */
 package com.margins.STIM.entity.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  *
  * @author Darlington
  */
+@Getter
+@Setter
+
+
 public class VerificationRequest {
 
     private String pinNumber;
@@ -28,82 +35,13 @@ public class VerificationRequest {
     private String userUD;
     
     private String deviceOs;
-
-    public VerificationRequest() {
-    }
-
-    public String getPinNumber() {
-        return pinNumber;
-    }
-
-    public void setPinNumber(String pinNumber) {
-        this.pinNumber = pinNumber;
-    }
-
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
-
-    public String getDataType() {
-        return dataType;
-    }
-
-    public void setDataType(String dataType) {
-        this.dataType = dataType;
-    }
-
-    public String getCenter() {
-        return center;
-    }
-
-    public void setCenter(String center) {
-        this.center = center;
-    }
-
-    public String getMerchantKey() {
-        return merchantKey;
-    }
-
-    public void setMerchantKey(String merchantKey) {
-        this.merchantKey = merchantKey;
-    }
-
-    public String getUserUD() {
-        return userUD;
-    }
-
-    public void setUserUD(String userUD) {
-        this.userUD = userUD;
-    }
-
-    public String getDeviceOs() {
-        return deviceOs;
-    }
-
-    public void setDeviceOs(String deviceOs) {
-        this.deviceOs = deviceOs;
-    }
-
-    public String getPosition() {
-        return position;
-    }
-
-    public void setPosition(String position) {
-        this.position = position;
-    }
-
-    public String getMerchantCode() {
-        return merchantCode;
-    }
-
-    public void setMerchantCode(String merchantCode) {
-        this.merchantCode = merchantCode;
-    }
-
+    
+    
+   public VerificationRequest(){
+           merchantKey = ("69af98f5-39fb-44e6-81c7-5e496328cc59");
+           merchantCode =("69af98f5-39fb-44e6-81c7-5e496328cc59");
+           dataType = "PNG";}
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

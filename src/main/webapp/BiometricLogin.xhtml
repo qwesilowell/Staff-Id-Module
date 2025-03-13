@@ -23,8 +23,8 @@
 
         <!-- Navigation Bar -->
         <div class="navbar">
-            <h2 class="nav-title">STEEL</h2>
-            <h:outputLink value="newuser.xhtml" class="nav-button right">Sign Up</h:outputLink>
+            <h2 class="nav-title">THE STAFF ID MODULE</h2>
+<!--            <h:outputLink value="newuser.xhtml" class="nav-button right">Sign Up</h:outputLink>-->
         </div>
 
         <div class="background"></div>
@@ -33,9 +33,9 @@
             <h:form id="theForm" prependId="false">
                 <p:growl widgetVar="fgrowl" id="growl" showDetail="true" life="3000"/>
                 <div style="margin-bottom: 10px;">
-                    <h:outputLabel for="username" value="Admin GhanaCard Number:" />
-                    <h:inputText id="ghanaCardPin" value="#{biometricBean.ghanaCardNumber}" required="false" requiredMessage="Ghana Card Number is required."
-                                 onfocus="addBlur()" onblur="removeBlur()" />
+                    <h:outputLabel for="username" value="Enter GhanaCard Number:" />
+                    <h:inputText id="ghanaCardPin" value="#{biometricBean.ghanaCardNumber}" required="true" requiredMessage="Ghana Card Number is required."
+                                />
                 </div>
                 <div class="card" style="margin-bottom: 20px;">
                     <div style="display: flex; flex-direction: column; gap: 20px;">
@@ -56,7 +56,7 @@
                             </p:selectOneMenu>
                         </div>
                         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-                            <h:graphicImage id="fingerImage" width="99.9" height="100"/> 
+                            <h:graphicImage id="fingerImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/> 
                             <h:inputHidden id="fingerData" value="#{biometricBean.capturedFinger}"/>
                             <h3>Finger Print Image</h3>
                         </div>
@@ -64,15 +64,15 @@
                             <div style="display: flex; flex-direction: row; gap: 5px;">
                                 <p:commandButton value="Capture" style="padding: 5px 10px; font-size: 10px; height: 40px;" styleClass=" ui-button-secondary ui-button-raised" onclick="doSend('action:start:single');" type="button" icon="fa fa-thin fa-fingerprint fa-shake"/>
                                 <p:commandButton value="Reset" style="padding: 5px 6px; font-size: 10px; height: 40px;" styleClass=" ui-button-warning ui-button-danger" onclick="doSendNoId('action:stop')" action="#{biometricBean.reset}" update="@form" icon="pi pi-refresh"/>
-                                <p:commandButton value="Submit" style="padding: 5px 6px; font-size: 10px; height: 40px;" action="#{biometricBean.submit}" ajax="false"  styleClass="ui-button-success" icon="pi pi-check" iconPos="right"/>
-                                <h:inputText id="socketData" style="display: none;" value="#{biometricBean.socketData}" disabled="true"/>
-                                <h:inputHidden id="socketDataHidden"/>
+
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="card">
-                    <h:commandButton value="Login" action="#{biometricBean.submit}" />
+                    <h:commandButton value="Login" action="#{biometricBean.submit}"/>
+                    <h:inputText id="socketData" style="display: none;" value="#{biometricBean.socketData}" disabled="true"/>
+                    <h:inputHidden id="socketDataHidden"/>
                     <h:outputText value="#{biometricBean.errorMessage}" 
                                   class="error-message" 
                                   rendered="#{not empty biometricBean.errorMessage}" />

@@ -4,29 +4,30 @@
  */
 package com.margins.STIM.entity.websocket;
 
-import com.margins.STIM.entity.EntityModel;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import com.margins.STIM.util.FingerprintProcessor;
+import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
 
 /**
  *
- * @author MalickMoro-Samah
+ * @author Philip
  */
 @Getter
 @Setter
-@Entity
-@Table(name = "FINGER_CAPTURED")
-public class FingerCaptured extends EntityModel {
+public class FingerCaptured implements Serializable {
 
-    @Column(name = "CAPTURE_CODE")
-    private String captureCode;
+    private String dataType;
     
-    @Column(name = "POSITION")
     private String position;
     
-    @Column(name = "IMAGE")
-    private byte[] image;
+    private String image;
+
+    public FingerCaptured(String dataType, String position, String image) {
+        this.position = position;
+        this.image = FingerprintProcessor.imageDpi(image);
+        this.dataType = dataType;
+    }
+
+   
 }
