@@ -17,14 +17,16 @@ import java.io.Serializable;
 import java.util.List;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import java.io.IOException;
 
-@Named
+@Named("dashboard2")
 @SessionScoped
 public class DashboardBean implements Serializable {
 
@@ -47,6 +49,12 @@ public class DashboardBean implements Serializable {
         loadUserDetails();
         loadTotalEmployees();
 //        loadTotalEntrances();
+    }
+    
+    public void logout() throws IOException {
+        ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
+        ec.invalidateSession(); // Ends user session
+        ec.redirect(ec.getRequestContextPath() + "/login.xhtml"); // Redirects to login page
     }
 
     private void loadUserDetails() {
@@ -115,10 +123,7 @@ public class DashboardBean implements Serializable {
     public long getTotalEntrances() {
         return totalEntrances;
     }
-    public String logout() {
-        FacesContext.getCurrentInstance().getExternalContext().invalidateSession();
-        return "/login.xhtml?faces-redirect=true";
-    }
+
 //    public PieChartModel getPieChartModel() {
 //        return pieChartModel;
 //    }

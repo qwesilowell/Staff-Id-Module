@@ -15,7 +15,7 @@ import jakarta.faces.context.ExternalContext;
 import java.io.IOException;
 import java.io.Serializable;
 
-@Named 
+@Named("dashboard")
 @SessionScoped 
 public class DashboardController implements Serializable {
 
@@ -24,6 +24,6 @@ public class DashboardController implements Serializable {
     public void logout() throws IOException {
         ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
         ec.invalidateSession(); // Ends user session
-        ec.redirect(ec.getRequestContextPath() + "/BiometricLogin.xhtml"); // Redirects to login page
+        ec.redirect(ec.getRequestContextPath() + "/login.xhtml"); // Redirects to login page
     }
 }

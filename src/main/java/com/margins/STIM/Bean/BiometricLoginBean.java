@@ -82,20 +82,7 @@ public class BiometricLoginBean implements Serializable {
     
     String BASE_URL = JSF.getContextURL() + "/";
 
-    // Regular Login with Password
-    public String login() {
-        boolean isValid = userService.validateUser(ghanaCardNumber, password);
-
-        if (isValid) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Login successful!", null));
-            return "/app/dashboard2.xhtml?faces-redirect=true";
-        } else {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Wrong Credentials", null));
-            return null;
-        }
-    }
+   
 
     // Biometric Verification (Fingerprint)
     public void sendForVerification() {
@@ -208,16 +195,16 @@ public class BiometricLoginBean implements Serializable {
             System.out.println("Response from API: " + res);
             if (response.statusCode() == 200 && callBack != null) {
                 if ("TRUE".equals(callBack.getData().getVerified())) {
-                    FacesContext.getCurrentInstance().addMessage(null,
-                            new FacesMessage(FacesMessage.SEVERITY_INFO, "Biometric Login Successful!", null));
+                    JSF.addSuccessMessage("Login Successful!");
 
                     // Redirect to Dashboard
                     FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "app/dashboard2.xhtml");
                 } else {
-                    errorMessage = "Fingerprint Verification Failed!";
+                    JSF.addErrorMessage("Fingerprint Verification Failed!");
                 }
             } else {
-                errorMessage = "Verification Error: " + (callBack != null ? callBack.msg : "No response from server");
+                JSF.addErrorMessage("Fingerprint Verification Failed!" + (callBack != null ? callBack.msg : "No response from server"));
+    
             }
         } //        catch (IOException e) {
         //            System.out.println("ERROR 1");
@@ -225,7 +212,7 @@ public class BiometricLoginBean implements Serializable {
         //            e.printStackTrace(); // Log the error for debugging
         //        } 
         catch (Exception e) {  // Catch any other unexpected errors
-            errorMessage = "An unexpected error occurred. Please try again!";
+            JSF.addErrorMessage("An unexpected error occurred. Please try again!");
             System.out.println("ERROR 3");
             e.printStackTrace(); // Log the error for debugging
         }

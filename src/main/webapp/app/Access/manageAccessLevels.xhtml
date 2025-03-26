@@ -7,13 +7,19 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
 
     <h:head>
         <title>Manage Access Levels</title>
     </h:head>
 
     <h:body style="font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px;">
+        <ui:composition template="/WEB-INF/templates.xhtml">
+
+            <ui:define name ="content">
+                <!-- Main Content -->
+                <div class="main-content">
         <h:form id="accessLevelForm">
             <p:panel header="Access Levels Management" style="background: white; padding: 20px; border-radius: 8px;">
 
@@ -91,5 +97,8 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
 
             <p:messages id="messages" showDetail="true" closable="true"/>
         </h:form>
+                </div>
+            </ui:define>
+        </ui:composition>
     </h:body>
 </html>

@@ -7,182 +7,25 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
 
     <h:head>
-        <f:facet name="first">
-            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
-            <meta name="apple-mobile-web-app-capable" content="yes" />
-            <h:outputStylesheet library="css" name="dashboard2.css"/>
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-        </f:facet>
-
         <title>Assign Roles to Entrance</title>
-        <h:outputScript library="js" name="menuscript.js" target="body" />
-        <style>
-            .left-column {
-                width: 50%;
-                padding-right: 20px;
-            }
 
-            .right-column {
-                width: 50%;
-                text-align: right;
-            }
-
-            .ui-button {
-                border-radius: 8px;
-                padding: 10px;
-                font-weight: bold;
-            }
-
-            .ui-panel {
-                background-color: #f5f5f5;
-                border-radius: 10px;
-                padding: 20px;
-                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            }
-
-            .assign-btn {
-                background-color: #28a745 !important;
-                color: white !important;
-                border-radius: 8px;
-                font-weight: bold;
-                padding: 0px 5px;
-            }
-            .remove-btn {
-                background-color: red !important;
-                color: white !important;
-            }
-            .ui-selectCheckboxMenu {
-                padding: 10px;
-                border-radius: 8px;
-                background-color: white;
-            }
-            .ui-datatable {
-                background-color: white;
-                border-radius: 8px;
-            }
-
-            .load-btn {
-                background-color: whitesmoke !important; /* Blue color */
-                color: black !important;
-                border-radius: -5px;
-                padding: 0px 5px;
-                font-weight: bold;
-                transition: background 0.3s ease;
-            }
-
-            .load-btn:hover {
-                background-color: lightgreen !important; /* Darker blue on hover */
-            }
-
-            .pi-refresh {
-                margin-right: 5px; /* Adds spacing between icon and text */
-            }
-
-            .access-control-container {
-                border: 2px solid bisque;
-                display: block !important;
-            }
-            
-            .test-access-btn {
-                position: fixed;
-                top: 50%;
-                right: 20px;
-                z-index: 1000;
-                background-color: #4CAF50;
-                color: white;
-                padding: 10px 15px;
-                border-radius: 5px;
-                box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-                cursor: pointer;
-            }
-
-            .test-access-btn:hover {
-                background-color: #45a049;
-            
-        </style>
+        
     </h:head>
 
     <h:body>
-        <!-- Top Navigation Bar -->
+        <ui:composition template="/WEB-INF/templates.xhtml">
 
-        <div class="topbar">
-            <button class="toggle-button" onclick="toggleSidebar()">&#9776;</button>
-
-            <div class="profile-dropdown" onclick="toggleDropdown()">
-                <div class="profile-initials">PA</div>
-                <span>Philip Asare - Admin</span>
-                <div class="dropdown-content" id="dropdownContent">
-                    <h:form>
-                        <p:commandButton value="Logout" icon="pi pi-fw pi-sign-out" 
-                                         styleClass="ui-button-danger logout-button" 
-                                         style ="color: whitesmoke; width: 150px"
-                                         action="#{dashboardController.logout}" 
-                                         ajax="false"/>
-                    </h:form>
-                </div>
-            </div>
-            <div class="staff-id-section">
-                <h:outputText value="Staff ID Module" style="font-weight: bold;" />
-                <p:graphicImage name="id-card-svgrepo-com.svg" library="images" style="height:30px; vertical-align: middle;"/>
-            </div>
-        </div>
-
-        <!-- Sidebar Navigation -->
-        <div id="sidebar" class="sidebar">
-            <h:form> 
-                <p:panelMenu>
-                    <p:submenu label="Home">
-                        <p:menuitem value="Dashboard" icon="pi pi-fw pi-chart-bar" outcome="/app/dashboard2?faces-redirect=true"/>
-                    </p:submenu>
-
-                    <!-- Verification Menu -->
-                    <p:submenu label="Verfication">
-                        <p:menuitem value="Single Finger Verification" outcome="/app/Verification/singleFinger?faces-redirect= true" ajax="false" icon="fa-regular fa-hand-point-up"/>
-                        <p:menuitem value="Multi Finger Verification" outcome="/app/Verification/multiFinger?faces-redirect=true" ajax="false" icon="fa-solid fa-hand"/>
-                    </p:submenu>
-
-                    <!-- Employee Menu -->
-                    <p:submenu label="Employee">
-                        <p:menuitem value="Onboard Employee" outcome="/app/OnboardEmployee/onboardEmployee.xhtml?faces-redirect=true" icon="fa-solid fa-user-large"/>
-                        <p:menuitem value="Manage Employee Profile" outcome="/app/employeeList?faces-redirect=true" icon="pi pi-pencil"/>
-                    </p:submenu>
-
-                    <p:submenu label="Employee Roles">
-                        <p:menuitem value="Assign Employee Role"  outcome="/app/EmployeeRoles/assignRole?faces-redirect=true" icon="pi pi-upload"/>
-                        <p:menuitem value="Create Employee Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" icon="fa-regular fa-pen-to-square fa-flip-vertical" style="color: black;"/>
-                    </p:submenu>
-
-                    <p:submenu label="Assign Access">
-                        <p:menuitem value="New Access Levels" outcome="/app/Access/manageAccessLevels?faces-redirect=true" icon="pi pi-plus" />
-                        <p:menuitem value="Assign Entrances" outcome="/app/Access/assignEntrance?faces-redirect=true" icon="fa-solid fa-door-closed"/>
-                    </p:submenu>
-
-                    <p:submenu label="Entrances">
-                        <p:menuitem value="Manage Entrances" outcome="/app/Entrances/manageEntrances?faces-redirect=true" icon="fa-solid fa-door-open"/>
-                        <p:menuitem value="Assign Roles to Entrances" outcome="/app/Access/assign-roles?facess-redirect=true" icon="fa-solid fa-building-user "/>
-                    </p:submenu>
-                    <p:submenu label="Users">
-                        <p:menuitem value="Create New User" outcome="/newuser?faces-redirect=true" icon="pi pi-user-plus"/>
-                    </p:submenu>
-                    <p:submenu label="Biometric">
-                        <p:menuitem value="Create new biometric data" url="http://localhost:8080/STIM/newuser.xhtml" icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat"/>
-                        <p:menuitem value="Remove Biometric data" url="" icon="pi pi-times"/>
-                    </p:submenu>
-                </p:panelMenu>
-            </h:form>
-        </div>
-
+            <ui:define name ="content">
          <!--Main Content --> 
          <div class="main-content">
                 <p:growl id="messages" showDetail="true" life="3000" />
 
                 <h:form>
-                    <p:panel header="Assign Roles to Entrance">
+                    <p:panel header="Assign Roles to Entrance" style="margin-top:20px;">
                         <p:panelGrid columns="2" style="width: 100%; align-items: center;" columnClasses="left-column,right-column">
                             <h:panelGroup>
                                 <!-- Select Entrance -->
@@ -280,10 +123,96 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
 
              </p:dialog>
          </h:form>
+         <style>
+                     .left-column {
+                         width: 50%;
+                         padding-right: 20px;
+                     }
 
+                     .right-column {
+                         width: 50%;
+                         text-align: right;
+                     }
+
+                     .ui-button {
+                         border-radius: 8px;
+                         padding: 10px;
+                         font-weight: bold;
+                     }
+
+                     .ui-panel {
+                         background-color: #f5f5f5;
+                         border-radius: 10px;
+                         padding: 20px;
+                         box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+                     }
+
+                     .assign-btn {
+                         background-color: #008000 !important;
+                         color: white !important;
+                         border-radius: 8px;
+                         font-weight: bold;
+                         padding: 0px 5px;
+                     }
+                     .remove-btn {
+                         background-color: red !important;
+                         color: white !important;
+                     }
+                     .ui-selectCheckboxMenu {
+                         padding: 10px;
+                         border-radius: 8px;
+                         background-color: white;
+                     }
+                     .ui-datatable {
+                         background-color: white;
+                         border-radius: 8px;
+                     }
+
+                     .load-btn {
+                         background-color: whitesmoke !important; /* Blue color */
+                         color: black !important;
+                         border-radius: -5px;
+                         padding: 0px 5px;
+                         font-weight: bold;
+                         transition: background 0.3s ease;
+                     }
+
+                     .load-btn:hover {
+                         background-color: lightgreen !important; /* Darker blue on hover */
+                     }
+
+                     .pi-refresh {
+                         margin-right: 5px; /* Adds spacing between icon and text */
+                     }
+
+                     .access-control-container {
+                         border: 2px solid bisque;
+                         display: block !important;
+                     }
+
+                     .test-access-btn {
+                         position: absolute;
+                         top: 50%;
+                         right: 20px;
+                         transform: translateY(-50%);
+                         background-color: #4CAF50;
+                         color: white;
+                         padding: 10px 15px;
+                         border-radius: 5px;
+                         box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+                         cursor: pointer;
+                     }
+
+                     .test-access-btn:hover {
+                         background-color: black;}
+
+         </style>
          
 
-
+            </ui:define>
+        </ui:composition>
+        
+            
     </h:body>
 
 </html>

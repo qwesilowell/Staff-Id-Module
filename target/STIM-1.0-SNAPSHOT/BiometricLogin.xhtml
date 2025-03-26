@@ -30,12 +30,16 @@
         <div class="background"></div>
         <div class="login-container" style="width: auto">
             <h2>Login</h2>
+<!--            <div style="display: flex; flex-direction: row; gap:20px">
+                <p:button value="Face Login" style="background-color: whitesmoke; color:black;border: 2px solid black; padding: 5px 5px; border-radius: 100px; height: auto "/>
+                <p:button value="No Card Login" style="background-color: whitesmoke; color:black; border: 2px solid black; padding: 5px 5px; border-radius: 100px; height: auto "/>
+            </div>-->
+        <br/>
             <h:form id="theForm" prependId="false">
                 <p:growl widgetVar="fgrowl" id="growl" showDetail="true" life="3000"/>
                 <div style="margin-bottom: 10px;">
                     <h:outputLabel for="username" value="Enter GhanaCard Number:" />
-                    <h:inputText id="ghanaCardPin" value="#{biometricBean.ghanaCardNumber}" required="true" requiredMessage="Ghana Card Number is required."
-                                />
+                    <p:inputText id="ghanaCardPin" value="#{biometricBean.ghanaCardNumber}" required="true" requiredMessage="Ghana Card Number is required." placeholder="GHA-XXXXXXXXX-X"/>
                 </div>
                 <div class="card" style="margin-bottom: 20px;">
                     <div style="display: flex; flex-direction: column; gap: 20px;">
@@ -79,6 +83,7 @@
                 </div>
 
             </h:form>
+ 
         </div>
     </h:body>
 </html>

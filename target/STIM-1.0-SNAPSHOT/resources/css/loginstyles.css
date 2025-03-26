@@ -37,11 +37,11 @@ body {
 }
 
 .login-container {
-    background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
+    background-color: rgba(255, 255, 255, 0.9); 
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 300px;
+    width: auto;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -126,4 +126,6 @@ body {
 .nav-button:hover {
     background-color: #0056b3;
     color: white;
+    
+    
 }

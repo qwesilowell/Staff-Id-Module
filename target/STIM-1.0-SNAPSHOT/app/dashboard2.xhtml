@@ -8,114 +8,55 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
 
     <h:head>
-        <f:facet name="first">
-            <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-            <h:outputStylesheet library="css" name="dashboard2.css"/>
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-        </f:facet>
-
+        
         <title>New Dashboard</title>
+       
     </h:head>
 
     <h:body>
-        <!-- Top Navigation Bar -->
+      
+        <ui:composition template="/WEB-INF/templates.xhtml">
 
-        <div class="topbar">
-            <button class="toggle-button" onclick="toggleSidebar()">&#9776;</button>
+            <ui:define name ="content">
+                <!-- Main Content -->
+                <div class="main-content" >
+<!--                <h:outputText value="#{flash.successMessage}" rendered="#{not empty flash.successMessage}" style="color: green; font-weight: bold; display: block; margin: 10px 0;" />-->
+                <p:growl widgetVar="fgrowl" id="growl" showDetail="true" life="6000" globalOnly="true"/>
 
-            <div class="profile-dropdown" onclick="toggleDropdown()">
-                <div class="profile-initials">PA</div>
-                <span>Philip Asare - Admin</span>
-                <div class="dropdown-content" id="dropdownContent">
-                    <h:form>
-                        <p:commandButton value="Logout" icon="pi pi-fw pi-sign-out" 
-                                         styleClass="ui-button-danger logout-button" 
-                                         style ="color: whitesmoke; width: 150px"
-                                         action="#{dashboardController.logout}" 
-                                         ajax="false"/>
-                    </h:form>
-                </div>
-            </div>
-            <div class="staff-id-section">
-                <h:outputText value="Staff ID Module" style="font-weight: bold;" />
-                <p:graphicImage name="id-card-svgrepo-com.svg" library="images" style="height:30px; vertical-align: middle;"/>
-            </div>
-        </div>
-
-        <!-- Sidebar Navigation -->
-        <div id="sidebar" class="sidebar">
-            <p:panelMenu>
-                <p:submenu label="Home">
-                    <p:menuitem value="Dashboard" icon="pi pi-fw pi-chart-bar" outcome="/app/dashboard2?faces-redirect=true"/>
-                </p:submenu>
-
-                <!-- Verification Menu -->
-                <p:submenu label="Verfication">
-                    <p:menuitem value="Single Finger Verification" outcome="/app/Verification/singleFinger?faces-redirect= true" ajax="false" icon="fa-regular fa-hand-point-up"/>
-                    <p:menuitem value="Multi Finger Verification" outcome="/app/Verification/multiFinger?faces-redirect=true" ajax="false" icon="fa-solid fa-hand"/>
-                </p:submenu>
-
-                <!-- Employee Menu -->
-                <p:submenu label="Employee">
-                    <p:menuitem value="Onboard Employee" outcome="/app/OnboardEmployee/onboardEmployee.xhtml?faces-redirect=true" icon="fa-solid fa-user-large"/>
-                    <p:menuitem value="Manage Employee Profile" outcome="/app/employeeList?faces-redirect=true" icon="pi pi-pencil"/>
-                </p:submenu>
-
-                <p:submenu label="Employee Roles">
-                    <p:menuitem value="Assign Employee Role"  outcome="/app/EmployeeRoles/assignRole?faces-redirect=true" icon="pi pi-upload"/>
-                    <p:menuitem value="Create Employee Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" icon="fa-regular fa-pen-to-square fa-flip-vertical" style="color: black;"/>
-                </p:submenu>
-
-                <p:submenu label="Assign Access">
-                    <p:menuitem value="New Access Levels" outcome="/app/Access/manageAccessLevels?faces-redirect=true" icon="pi pi-plus" />
-                    <p:menuitem value="Assign Entrances" outcome="/app/Access/assignEntrance?faces-redirect=true" icon="fa-solid fa-door-closed"/>
-                </p:submenu>
-
-                <p:submenu label="Entrances">
-                    <p:menuitem value="Manage Entrances" outcome="/app/Entrances/manageEntrances?faces-redirect=true" icon="fa-solid fa-door-open"/>
-                    <p:menuitem value="Assign Roles to Entrances" outcome="/app/Access/assign-roles?facess-redirect=true" icon="fa-solid fa-building-user "/>
-                </p:submenu>
-                <p:submenu label="Users">
-                    <p:menuitem value="Create New User" outcome="/newuser?faces-redirect=true" icon="pi pi-user-plus"/>
-                </p:submenu>
-                <p:submenu label="Biometric">
-                    <p:menuitem value="Create new biometric data" url="http://localhost:8080/STIM/newuser.xhtml" icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat"/>
-                    <p:menuitem value="Remove Biometric data" url="" icon="pi pi-times"/>
-                </p:submenu>
-            </p:panelMenu>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
             <h1> Dashboard Content </h1>
             <p>This is the main content area.</p>
-        </div>
+                </div>
+<!--                <style>
+                    .ui-growl-message {
+                        font-weight: bold;
+                    }
 
-        <script>
-            function toggleSidebar() {
-                document.getElementById("sidebar").classList.toggle("active");
-            }
+                    /* Change INFO (Blue) to GREEN */
+                    .ui-growl-info {
+                        background-color: #28a745 !important; /* Green */
+                        color: white !important;
+                    }
 
-            function toggleDropdown() {
-                let dropdown = document.getElementById("dropdownContent");
-                dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
-            }
-            // Close the dropdown when clicking outside
-            document.addEventListener("click", function (event) {
-                var dropdown = document.getElementById("dropdownContent");
-                var profile = document.querySelector(".profile-dropdown");
+                    /* Change WARNING (Yellow) */
+                    .ui-growl-warn {
+                        background-color: #ffc107 !important; /* Yellow */
+                        color: black !important;
+                    }
 
-                if (!profile.contains(event.target)) {
-                    dropdown.style.display = "none";
-                }
-            });
-        </script>
+                    /* Change ERROR (Red) */
+                    .ui-growl-error {
+                        background-color: #dc3545 !important; /* Red */
+                        color: white !important;
+                    }
+                    
+                </style>-->
+            </ui:define>
+        </ui:composition>
+        
     </h:body>
 </html>
 

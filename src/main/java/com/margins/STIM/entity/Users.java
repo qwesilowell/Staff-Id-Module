@@ -29,8 +29,6 @@ public class Users /*extends EntityModel*/ implements Serializable {
     @Column(name = "USER_ROLE", nullable = false)
     private String userRole;
 
-    @Column(name = "PASSWORD", nullable = false)
-    private String password;
 
   
     
@@ -61,13 +59,7 @@ public class Users /*extends EntityModel*/ implements Serializable {
         this.userRole = userRole;
     }
 
-    public String getPassword() {
-        return password;
-    }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
 
 
     // Constructors
@@ -78,7 +70,6 @@ public class Users /*extends EntityModel*/ implements Serializable {
     public Users(String ghanaCardNumber,String username, String userRole, String password, LocalDateTime createdAt) {
         this.username = username;
         this.userRole = userRole;
-        this.password = password;
         this.ghanaCardNumber = ghanaCardNumber;
     }
 }

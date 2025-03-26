@@ -3,152 +3,80 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
 
     <h:head>
-        <f:facet name="first">
-            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
-            <meta name="apple-mobile-web-app-capable" content="yes" />
-            <h:outputStylesheet library="css" name="dashboard2.css"/>
-            
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-        </f:facet>
 
         <title>Ghana Card and Fingerprint Capture</title>
-        <h:outputScript library="js" name="orbis.js" target="head"/>
-        <h:outputScript library="js" name="menuscript.js" target="body" />
+
     </h:head>
 
     <h:body>
-        <!-- Top Navigation Bar -->
+        <ui:composition template="/WEB-INF/templates.xhtml">
 
-        <div class="topbar">
-            <button class="toggle-button" onclick="toggleSidebar()">&#9776;</button>
+            <ui:define name ="content">
 
-            <div class="profile-dropdown" onclick="toggleDropdown()">
-                <div class="profile-initials">PA</div>
-                <span>Philip Asare - Admin</span>
-                <div class="dropdown-content" id="dropdownContent">
-                    <h:form>
-                        <p:commandButton value="Logout" icon="pi pi-fw pi-sign-out" 
-                                         styleClass="ui-button-danger logout-button" 
-                                         style ="color: whitesmoke; width: 150px"
-                                         action="#{dashboardController.logout}" 
-                                         ajax="false"/>
-                    </h:form>
+
+<!--                Main Content-->
+                <div class="main-content">
+                    <h:form id= "theForm" prependId="false">
+                        <p:growl widgetVar="fgrowl" id="growl" showDetail="true" life="3000" />
+
+                        <p:panel header="Ghana Card and Single Finger Verification" style="width: 600px; margin: auto; margin-top:50px; height:auto; color: blue; text-align: center;">
+
+                            <!-- Ghana Card Input -->
+                            <h:outputLabel for="ghanaCard" value="Enter Ghana Card here" style="font-size: large; font-weight: bolder;"/>
+                            <br/>
+                            <p:inputText id="ghanaCardPin" value="#{singlefingerBean.ghanaCardNumber}" required="true" requiredMessage="Please Enter Ghana Card number"
+                                         placeholder="GHA-XXXXXXXXX-X"/>
+
+                            <br/><br/><br/>
+                            <!-- Finger Selection -->
+                            <h:outputLabel for="position" value="Select a Finger" style="font-size: large; font-weight: bolder;"/>
+                            <br/>
+                            <p:selectOneMenu id="position" value="#{singlefingerBean.fingerPosition}" widgetVar="position">
+                                <f:selectItem itemLabel="-- Select Finger --" itemValue="" noSelectionOption="true"/>
+                                <f:selectItem itemLabel="Left Thumb" itemValue="LT"/>
+                                <f:selectItem itemLabel="Left Index" itemValue="LI"/>
+                                <f:selectItem itemLabel="Left Middle" itemValue="LM"/>
+                                <f:selectItem itemLabel="Left Ring" itemValue="LR"/>
+                                <f:selectItem itemLabel="Left Little" itemValue="LL"/>
+                                <f:selectItem itemLabel="Right Thumb" itemValue="RT"/>
+                                <f:selectItem itemLabel="Right Index" itemValue="RI"/>
+                                <f:selectItem itemLabel="Right Middle" itemValue="RM"/>
+                                <f:selectItem itemLabel="Right Ring" itemValue="RR"/>
+                                <f:selectItem itemLabel="Right Little" itemValue="RL"/>
+                            </p:selectOneMenu>
+
+                            <br/><br/><br/>
+
+                            <!-- Fingerprint Image Preview -->
+                            <h:outputLabel value="Fingerprint Image" style="font-size: large; font-weight: bolder;"/>
+                            <br/>
+
+                            <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
+                                <h:graphicImage id="fingerImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
+                            </div>
+
+                            <h:inputHidden id="fingerData" value="#{singlefingerBean.capturedFinger}"/>
+                            <br/><br/><br/>
+
+                            <!-- Buttons -->
+                            <div style="display:flex; flex-direction: row; gap: 5px; justify-content: space-between;">
+                                <p:commandButton value="Reset" style="margin-right: 10px;" styleClass=" ui-button-warning ui-button-danger" onclick="doSendNoId('action:stop')" action="#{singlefingerBean.reset}" update="@form" icon="pi pi-refresh"/>
+                                <p:commandButton value="Capture Finger" style="margin-right: 0px;" styleClass=" ui-button-secondary ui-button-raised" onclick="doSend('action:start:single');" type="button" icon="fa fa-thin fa-fingerprint fa-beat"/>
+                                <p:commandButton value="Submit" action="#{singlefingerBean.submit}"  update="growl" ajax="false"  styleClass="ui-button-success" icon="pi pi-check" iconPos="right" />
+                                <h:inputText id="socketData" style="display: none;" value="#{singlefingerBean.socketData}" disabled="true"/>
+                                <h:inputHidden id="socketDataHidden"/>
+                            </div>
+
+
+                        </p:panel>
+                    </h:form>  
                 </div>
-            </div>
-            <div class="staff-id-section">
-                <h:outputText value="Staff ID Module" style="font-weight: bold;" />
-                <p:graphicImage name="id-card-svgrepo-com.svg" library="images" style="height:30px; vertical-align: middle;"/>
-            </div>
-        </div>
-
-        <!-- Sidebar Navigation -->
-        <div id="sidebar" class="sidebar">
-            <h:form> 
-            <p:panelMenu>
-                <p:submenu label="Home">
-                    <p:menuitem value="Dashboard" icon="pi pi-fw pi-chart-bar" outcome="/app/dashboard2?faces-redirect=true"/>
-                </p:submenu>
-
-                <!-- Verification Menu -->
-                <p:submenu label="Verfication">
-                    <p:menuitem value="Single Finger Verification" outcome="/app/Verification/singleFinger?faces-redirect= true" ajax="false" icon="fa-regular fa-hand-point-up"/>
-                    <p:menuitem value="Multi Finger Verification" outcome="/app/Verification/multiFinger?faces-redirect=true" ajax="false" icon="fa-solid fa-hand"/>
-                </p:submenu>
-
-                <!-- Employee Menu -->
-                <p:submenu label="Employee">
-                    <p:menuitem value="Onboard Employee" outcome="/app/OnboardEmployee/onboardEmployee.xhtml?faces-redirect=true" icon="fa-solid fa-user-large"/>
-                    <p:menuitem value="Manage Employee Profile" outcome="/app/employeeList?faces-redirect=true" icon="pi pi-pencil"/>
-                </p:submenu>
-
-                <p:submenu label="Employee Roles">
-                    <p:menuitem value="Assign Employee Role"  outcome="/app/EmployeeRoles/assignRole?faces-redirect=true" icon="pi pi-upload"/>
-                    <p:menuitem value="Create Employee Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" icon="fa-regular fa-pen-to-square fa-flip-vertical" style="color: black;"/>
-                </p:submenu>
-
-                <p:submenu label="Assign Access">
-                    <p:menuitem value="New Access Levels" outcome="/app/Access/manageAccessLevels?faces-redirect=true" icon="pi pi-plus" />
-                    <p:menuitem value="Assign Entrances" outcome="/app/Access/assignEntrance?faces-redirect=true" icon="fa-solid fa-door-closed"/>
-                </p:submenu>
-
-                <p:submenu label="Entrances">
-                    <p:menuitem value="Manage Entrances" outcome="/app/Entrances/manageEntrances?faces-redirect=true" icon="fa-solid fa-door-open"/>
-                    <p:menuitem value="Assign Roles to Entrances" outcome="/app/Access/assign-roles?facess-redirect=true" icon="fa-solid fa-building-user "/>
-                </p:submenu>
-                <p:submenu label="Users">
-                    <p:menuitem value="Create New User" outcome="/newuser?faces-redirect=true" icon="pi pi-user-plus"/>
-                </p:submenu>
-                <p:submenu label="Biometric">
-                    <p:menuitem value="Create new biometric data" url="http://localhost:8080/STIM/newuser.xhtml" icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat"/>
-                    <p:menuitem value="Remove Biometric data" url="" icon="pi pi-times"/>
-                </p:submenu>
-            </p:panelMenu>
-            </h:form>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <h:form id= "theForm" prependId="false">
-                <p:growl widgetVar="fgrowl" id="growl" showDetail="true" life="3000" />
-
-                <p:panel header="Ghana Card and Single Finger Verification" style="width: 600px; margin: auto; height:auto; color: blue; text-align: center;">
-
-                    <!-- Ghana Card Input -->
-                    <h:outputLabel for="ghanaCard" value="Enter Ghana Card here" style="font-size: large; font-weight: bolder;"/>
-                    <br/>
-                    <p:inputText id="ghanaCardPin" value="#{singlefingerBean.ghanaCardNumber}" required="true" requiredMessage="Please Enter Ghana Card number"
-                                 placeholder="GHA-XXXXXXXXX-X"/>
-
-                    <br/><br/><br/>
-                    <!-- Finger Selection -->
-                    <h:outputLabel for="position" value="Select a Finger" style="font-size: large; font-weight: bolder;"/>
-                    <br/>
-                    <p:selectOneMenu id="position" value="#{singlefingerBean.fingerPosition}" widgetVar="position">
-                        <f:selectItem itemLabel="-- Select Finger --" itemValue="" noSelectionOption="true"/>
-                        <f:selectItem itemLabel="Left Thumb" itemValue="LT"/>
-                        <f:selectItem itemLabel="Left Index" itemValue="LI"/>
-                        <f:selectItem itemLabel="Left Middle" itemValue="LM"/>
-                        <f:selectItem itemLabel="Left Ring" itemValue="LR"/>
-                        <f:selectItem itemLabel="Left Little" itemValue="LL"/>
-                        <f:selectItem itemLabel="Right Thumb" itemValue="RT"/>
-                        <f:selectItem itemLabel="Right Index" itemValue="RI"/>
-                        <f:selectItem itemLabel="Right Middle" itemValue="RM"/>
-                        <f:selectItem itemLabel="Right Ring" itemValue="RR"/>
-                        <f:selectItem itemLabel="Right Little" itemValue="RL"/>
-                    </p:selectOneMenu>
-
-                    <br/><br/><br/>
-
-                    <!-- Fingerprint Image Preview -->
-                    <h:outputLabel value="Fingerprint Image" style="font-size: large; font-weight: bolder;"/>
-                    <br/>
-
-                    <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
-                        <h:graphicImage id="fingerImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
-                    </div>
-
-                    <h:inputHidden id="fingerData" value="#{singlefingerBean.capturedFinger}"/>
-                    <br/><br/><br/>
-
-                    <!-- Buttons -->
-                    <div style="display:flex; flex-direction: row; gap: 5px; justify-content: space-between;">
-                        <p:commandButton value="Reset" style="margin-right: 10px;" styleClass=" ui-button-warning ui-button-danger" onclick="doSendNoId('action:stop')" action="#{singlefingerBean.reset}" update="@form" icon="pi pi-refresh"/>
-                        <p:commandButton value="Capture Finger" style="margin-right: 0px;" styleClass=" ui-button-secondary ui-button-raised" onclick="doSend('action:start:single');" type="button" icon="fa fa-thin fa-fingerprint fa-beat"/>
-                        <p:commandButton value="Submit" action="#{singlefingerBean.submit}"  update="growl" ajax="false"  styleClass="ui-button-success" icon="pi pi-check" iconPos="right" />
-                        <h:inputText id="socketData" style="display: none;" value="#{singlefingerBean.socketData}" disabled="true"/>
-                        <h:inputHidden id="socketDataHidden"/>
-                    </div>
-
-
-                </p:panel>
-            </h:form>  
-        </div>
-
-       
+                <h:outputScript library="js" name="orbis.js" target="head"/>
+            </ui:define>
+        </ui:composition>
     </h:body>
 </html>

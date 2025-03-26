@@ -9,10 +9,8 @@ import java.util.List;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
-import org.mindrot.jbcrypt.BCrypt;
 
 /**
  *
@@ -46,7 +44,6 @@ public class User_Service {
         if (existingUser != null) {
             existingUser.setUsername(updatedUser.getUsername());
             existingUser.setUserRole(updatedUser.getUserRole());
-            existingUser.setPassword(updatedUser.getPassword());
             entityManager.merge(existingUser);
             return existingUser;
         }
@@ -95,21 +92,22 @@ public class User_Service {
             throw new EntityNotFoundException("User with ID: " + ghanaCardNumber + " not found.");
         }
     }
-
-    // Validate user credentials
-    public boolean validateUser(String ghanaCardNumber, String password) {
-        try {
-            Users user = entityManager.createQuery(
-                    "SELECT u FROM Users u WHERE u.ghanaCardNumber = :ghanaCardNumber", Users.class)
-                    .setParameter("ghanaCardNumber", ghanaCardNumber)
-                    .getSingleResult();
-
-            if (user != null && BCrypt.checkpw(password, user.getPassword())) { // Hash check
-                return "Admin".equals(user.getUserRole()); // Return true only if role is Admin
-            }
-        } catch (NoResultException e) {
-            return false; // User not found
-        }
-        return false; // Password does not match or not an Admin
-    }
 }
+
+//    // Validate user credentials
+//    public boolean validateUser(String ghanaCardNumber, String password) {
+//        try {
+//            Users user = entityManager.createQuery(
+//                    "SELECT u FROM Users u WHERE u.ghanaCardNumber = :ghanaCardNumber", Users.class)
+//                    .setParameter("ghanaCardNumber", ghanaCardNumber)
+//                    .getSingleResult();
+//
+//            if (user != null && BCrypt.checkpw(password, user.getPassword())) { // Hash check
+//                return "Admin".equals(user.getUserRole()); // Return true only if role is Admin
+//            }
+//        } catch (NoResultException e) {
+//            return false; // User not found
+//        }
+//        return false; // Password does not match or not an Admin
+//    }
+//}

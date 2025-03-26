@@ -8,6 +8,8 @@ import com.google.gson.Gson;
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
+import com.margins.STIM.entity.websocket.FingerCaptured;
+import com.margins.STIM.model.CapturedFinger;
 import com.margins.STIM.service.BiometricDataService;
 import com.margins.STIM.service.Employee_Service;
 import com.margins.STIM.util.DateFormatter;
@@ -19,6 +21,7 @@ import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -27,13 +30,18 @@ import java.net.http.HttpResponse;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import lombok.Getter;
 import lombok.Setter;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.primefaces.PrimeFaces;
+import org.primefaces.model.StreamedContent;
 
 /**
  *
@@ -54,21 +62,32 @@ public class onboardEmployeeController implements Serializable {
     @Getter
     @Setter
     private String capturedFinger;
+    
+    @Getter
+    @Setter
+    private CapturedFinger capturedMultiFinger = new CapturedFinger();
+    
+    List<FingerCaptured> capturedFingers = new ArrayList<>();
 
     @Getter
     @Setter
     private String fingerPosition;
 
-    @Getter
-    @Setter
-    private String errorMessage;
+//    @Getter
+//    @Setter
+//    private String errorMessage;
 
     @Getter
     @Setter
     VerificationResultData callBack = new VerificationResultData();
-
+    
     private byte[] fingerData;
+    
+    @Setter
     private String socketData;
+    
+    @Getter
+    private StreamedContent fingerImage;
 
     @EJB
     private Employee_Service employeeService;
@@ -122,6 +141,12 @@ public class onboardEmployeeController implements Serializable {
     @Setter
     private String email= "try123@hotmail.com";
     
+    @Getter 
+    @Setter
+    private String faceImageData;
+    
+
+    
 
     // Step Navigation
     public int getCurrentStep() {
@@ -162,10 +187,10 @@ public class onboardEmployeeController implements Serializable {
         return verificationSuccess;
     }
 
-    public void sendForVerification() {
-        System.out.println("Selected Finger Position: " + fingerPosition);
-        System.out.println("Captured Fingerprint Data: " + capturedFinger);
-    }
+//    public void sendForVerification() {
+//        System.out.println("Selected Finger Position: " + fingerPosition);
+//        System.out.println("Captured Fingerprint Data: " + capturedFinger);
+//    }
 
     // Reset Fingerprint Selection
     public void reset() {
@@ -173,6 +198,8 @@ public class onboardEmployeeController implements Serializable {
         fingerPosition = null;
 
     }
+    
+    public void resetMulti(){}
 
     public String getSocketData() {
         reload();
@@ -241,7 +268,7 @@ public class onboardEmployeeController implements Serializable {
             if (response.statusCode() == 200 && callBack != null) {
                 if ("TRUE".equals(callBack.getData().getVerified())) {
                     JSF.addSuccessMessage("Single Finger Verification Successful!");
-                    // Redirect to Employee SignUp Page
+                    
 
                     verificationSuccess = true;
                     currentStep++;
@@ -263,7 +290,7 @@ public class onboardEmployeeController implements Serializable {
                     JSF.addErrorMessage("Fingerprint Verification Failed!");
                 }
             } else {
-                JSF.errorMessage("Verification Error:" + (callBack != null ? callBack.msg : "No response from server"));
+                JSF.addErrorMessage("Verification Error:" + (callBack != null ? callBack.msg : "No response from server"));
             }
         } catch (Exception e) {  // Catch any other unexpected errors
             JSF.addErrorMessage("An unexpected error occurred. Please try again!");
@@ -272,6 +299,127 @@ public class onboardEmployeeController implements Serializable {
         }
 
     }
+    
+//    <for multi finger>
+    public String requestData(List<FingerCaptured> fingersesList) throws IOException {
+        JSONObject data = new JSONObject();
+        data.put("fingers", new JSONArray(capturedFingers));
+        data.put("merchantCode", "69af98f5-39fb-44e6-81c7-5e496328cc59");
+        return data.toString();
+    }
+    public void sendForVerification() throws IOException {
+        try {
+
+            capturedFingers.add(new FingerCaptured("PNG", "LL", capturedMultiFinger.getLeftLittle()));
+            capturedFingers.add(new FingerCaptured("PNG", "LR", capturedMultiFinger.getLeftRing()));
+            capturedFingers.add(new FingerCaptured("PNG", "LM", capturedMultiFinger.getLeftMiddle()));
+            capturedFingers.add(new FingerCaptured("PNG", "LI", capturedMultiFinger.getLeftIndex()));
+            capturedFingers.add(new FingerCaptured("PNG", "LT", capturedMultiFinger.getLeftThumb()));
+            capturedFingers.add(new FingerCaptured("PNG", "RT", capturedMultiFinger.getRightThumb()));
+            capturedFingers.add(new FingerCaptured("PNG", "RI", capturedMultiFinger.getRightIndex()));
+            capturedFingers.add(new FingerCaptured("PNG", "RM", capturedMultiFinger.getRightMiddle()));
+            capturedFingers.add(new FingerCaptured("PNG", "RR", capturedMultiFinger.getRightRing()));
+            capturedFingers.add(new FingerCaptured("PNG", "RL", capturedMultiFinger.getRightLittle()));
+
+            System.out.println("capturedFingers length: " + capturedFingers.size());
+            capturedFingers.forEach((fc) -> {
+                System.out.println("capturedFinger: " + fc.getImage() + " type: " + fc.getDataType() + " pos: " + fc.getPosition());
+            });
+
+            if (capturedFingers.isEmpty()) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "No fingerprints captured. Please rescan fingers before submitting.", null));
+                return;
+            }
+
+            String request = requestData(capturedFingers);
+
+            if (request == null) {
+                JSF.addErrorMessage("Failed to generate request. No valid fingerprint data.");
+                return;
+            }
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            X509TrustManager trustManager = new X509TrustManager() {
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[]{};
+                }
+
+                @Override
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                }
+            };
+            sslContext.init(null, new TrustManager[]{trustManager}, new SecureRandom());
+
+            HttpClient client = HttpClient
+                    .newBuilder()
+                    .sslContext(sslContext)
+                    .build();
+            HttpRequest httpRequest = HttpRequest
+                    .newBuilder(new URI("https://selfie.imsgh.org:2035/skyface/api/v1/third-party/verification/base_64/search/kyc/no_card"))
+                    .POST(HttpRequest.BodyPublishers.ofString(request))
+                    .header("Content-Type", "application/json")
+                    .build();
+            HttpResponse<String> response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+            System.out.println("Response Status: " + response.statusCode());
+            System.out.println("Response Body: " + response.body());
+
+            if (response.statusCode() == 400) {
+                JSF.addErrorMessage("API Error: Bad Request. Please check fingerprint data.");
+                return;
+            }
+            String res = response.body();
+            Gson g = new Gson();
+            callBack = g.fromJson(res, VerificationResultData.class);
+
+            String message;
+            if (callBack.msg != null) {
+                message = callBack.msg.toString();
+            } else {
+                message = "Callback returned null";
+            }
+
+            System.out.println("Response Data: " + response.body());
+            if (response.statusCode() == 200 && callBack != null) {
+                if (callBack.isSuccess() && "TRUE".equals(callBack.getData().getVerified())) {
+                    verificationSuccess = true;
+                    JSF.addSuccessMessage("Multi Finger Verification Successful!");
+
+//                    verificationSuccess = true;
+                    currentStep++;
+
+                    empImage = "data:image/png;base64," + callBack.data.person.biometricFeed.face.data;
+                    forenames = callBack.data.person.forenames;
+                    surname = callBack.data.person.surname;
+                    employeeName = callBack.data.person.forenames + " " + callBack.data.person.surname;
+                    employeeDOB = DateFormatter.formatDate(callBack.data.person.birthDate);
+                    empDOB = callBack.data.person.birthDate;
+                    nationality = callBack.data.person.nationality;
+                    gender = callBack.data.person.gender;
+
+                    PrimeFaces.current().ajax().update("wizardForm");
+                    
+                } else {
+                    verificationSuccess = false;
+                    JSF.addErrorMessage("Verification Failed: " + message);
+                }
+            } else {
+                verificationSuccess = false;
+                JSF.addErrorMessage("Verification Failed Reason: " + message);
+            }
+        } catch (Exception e) {  // Catch any other unexpected errors
+            JSF.addErrorMessage("An unexpected error occurred. Please try again!");
+            System.out.println("ERROR 3");
+            e.printStackTrace(); // Log the error for debugging
+        }
+
+    }
+
     
     
 
@@ -306,6 +454,89 @@ public class onboardEmployeeController implements Serializable {
         }
     }
     
+    public void verifyFace(){
+     try {
+            VerificationRequest request = new VerificationRequest();
+            request.setImage(faceImageData);
+            request.setPinNumber(ghanaCardNumber);
+
+
+         
+
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            X509TrustManager trustManager = new X509TrustManager() {
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[]{};
+                }
+
+                @Override
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                }
+            };
+            sslContext.init(null, new TrustManager[]{trustManager}, new SecureRandom());
+
+            String requestString = new Gson().toJson(request);
+            HttpClient client = HttpClient
+                    .newBuilder()
+                    .sslContext(sslContext)
+                    .build();
+            HttpRequest httpRequest = HttpRequest
+                    .newBuilder(new URI("https://selfie.imsgh.org:2035/skyface/api/v1/third-party/verification/base_64"))
+                    .POST(HttpRequest.BodyPublishers.ofString(requestString))
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .build();
+            HttpResponse<String> response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+            System.out.println("Response Status: " + response.statusCode());
+            System.out.println("Response Body: " + response.body());
+
+            String res = response.body();
+            Gson g = new Gson();
+            callBack = g.fromJson(res, VerificationResultData.class);
+            System.out.println("Response from API: " + res);
+            if (response.statusCode() == 200 && callBack != null) {
+                if ("TRUE".equals(callBack.getData().getVerified())) {
+                    verificationSuccess = true;
+                    JSF.addSuccessMessage("Facial Verification Successful!");
+                
+ 
+
+//                    verificationSuccess = true;
+                    currentStep++;
+
+                    empImage = "data:image/png;base64," + callBack.data.person.biometricFeed.face.data;
+                    forenames = callBack.data.person.forenames;
+                    surname = callBack.data.person.surname;
+                    employeeName = callBack.data.person.forenames + " " + callBack.data.person.surname;
+                    employeeDOB = DateFormatter.formatDate(callBack.data.person.birthDate);
+                    empDOB = callBack.data.person.birthDate;
+                    nationality = callBack.data.person.nationality;
+                    gender = callBack.data.person.gender;
+
+                    PrimeFaces.current().ajax().update("wizardForm");
+
+                } else {
+                    verificationSuccess = false;
+                    JSF.addErrorMessage("Verification Failed: " + callBack.getMsg());
+                }
+            } else {
+                verificationSuccess = false;
+                JSF.addErrorMessage("Verification Failed Reason: " + callBack.getMsg());
+            }
+        } catch (Exception e) {  // Catch any other unexpected errors
+            JSF.addErrorMessage("An unexpected error occurred. Please try again!");
+            System.out.println("ERROR 3");
+            e.printStackTrace(); // Log the error for debugging
+        }
+                   
+    } 
+    
     private void reload() {
         if (socketData != null) {
             // Fetch data from database with socketData and populate captured fingers.
@@ -314,6 +545,6 @@ public class onboardEmployeeController implements Serializable {
 
     // Step 4: Submit
     public void submitE() {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Employee Registered Successfully!", null));
+       JSF.addSuccessMessage("Employee Registered Successfully!");
     }
 }
