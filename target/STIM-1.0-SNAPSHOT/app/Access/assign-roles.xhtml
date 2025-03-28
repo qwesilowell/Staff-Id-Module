@@ -1,218 +1,211 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
--->
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="jakarta.faces.html"
-      xmlns:f="jakarta.faces.core"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:ui="jakarta.faces.facelets">
 
-    <h:head>
-        <title>Assign Roles to Entrance</title>
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
+    <ui:define name="title">Assign Roles to Entrance</ui:define>
 
-        
-    </h:head>
+    <ui:define name="metadata">             
+        <f:metadata>
+            <f:viewAction action="#{loginBean.checkAccess('Admin')}" />
+        </f:metadata>
+    </ui:define>
 
-    <h:body>
-        <ui:composition template="/WEB-INF/templates.xhtml">
+   
+    <ui:define name ="content">
+        <!--Main Content --> 
+        <div class="main-content">
+            <p:growl id="messages" showSummary= "false" showDetail="true" life="3000" />
 
-            <ui:define name ="content">
-         <!--Main Content --> 
-         <div class="main-content">
-                <p:growl id="messages" showDetail="true" life="3000" />
+            <h:form>
+                <p:panel header="Assign Roles to Entrance" style="margin-top:20px;">
+                    <p:panelGrid columns="2" style="width: 100%; align-items: center;" columnClasses="left-column,right-column">
+                        <h:panelGroup>
+                            <!-- Select Entrance -->
+                            <p:outputLabel for="entrance" value="Select Entrance: " />
+                            <p:autoComplete id="entrance" value="#{assignRoleBean.selectedEntranceId}"
+                                            completeMethod="#{assignRoleBean.searchEntrances}" 
+                                            var="entrance" itemLabel="#{entrance.entrance_Name}" 
+                                            itemValue="#{entrance.entrance_Device_ID}"
+                                            forceSelection="true" dropdown="true"
+                                            placeholder="Search or Select Entrance" 
+                                            style="width: 100%;">
+                                <!-- Automatically load assigned roles when an entrance is selected -->
+                                <p:ajax event="itemSelect" listener="#{assignRoleBean.loadAssignedRoles}" update="assignedRolesTable" />
+                            </p:autoComplete>
+                        </h:panelGroup>
 
-                <h:form>
-                    <p:panel header="Assign Roles to Entrance" style="margin-top:20px;">
-                        <p:panelGrid columns="2" style="width: 100%; align-items: center;" columnClasses="left-column,right-column">
-                            <h:panelGroup>
-                                <!-- Select Entrance -->
-                                <p:outputLabel for="entrance" value="Select Entrance: " />
-                                <p:autoComplete id="entrance" value="#{assignRoleBean.selectedEntranceId}"
-                                                completeMethod="#{assignRoleBean.searchEntrances}" 
-                                                var="entrance" itemLabel="#{entrance.entrance_Name}" 
-                                                itemValue="#{entrance.entrance_Device_ID}"
-                                                forceSelection="true" dropdown="true"
-                                                placeholder="Search or Select Entrance" 
-                                                style="width: 100%;">
-                                    <!-- Automatically load assigned roles when an entrance is selected -->
-                                    <p:ajax event="itemSelect" listener="#{assignRoleBean.loadAssignedRoles}" update="assignedRolesTable" />
-                                </p:autoComplete>
-                            </h:panelGroup>
-
-                            <!-- Select Roles -->
-                            <h:panelGroup style="display: flex; flex-direction: column; align-items: flex-start;">
-                                <p:outputLabel for="roles" value="Select Roles: " />
-                                <p:selectCheckboxMenu id="roles" value="#{assignRoleBean.selectedRolesIds}" multiple="true"
-                                                      filter="true" panelStyle="width: 250px">
-                                    <f:selectItems value="#{assignRoleBean.allRoles}" var="role"
-                                                   itemLabel="#{role.roleName}" itemValue="#{role.id}" />
-                                </p:selectCheckboxMenu>
-                            </h:panelGroup>
-                        </p:panelGrid>
+                        <!-- Select Roles -->
+                        <h:panelGroup style="display: flex; flex-direction: column; align-items: flex-start;">
+                            <p:outputLabel for="roles" value="Select Roles: " />
+                            <p:selectCheckboxMenu id="roles" value="#{assignRoleBean.selectedRolesIds}" multiple="true"
+                                                  filter="true" panelStyle="width: 250px">
+                                <f:selectItems value="#{assignRoleBean.allRoles}" var="role"
+                                               itemLabel="#{role.roleName}" itemValue="#{role.id}" />
+                            </p:selectCheckboxMenu>
+                        </h:panelGroup>
+                    </p:panelGrid>
 
 
-                        <!-- Submit Button -->
-                        <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-                            <p:commandButton value="Assign Roles" action="#{assignRoleBean.assignRolesToEntrance}" 
-                                             update="messages assignedRolesTable" styleClass="assign-btn" />
-                        </div>
-                    </p:panel>
-                    
-                    
-                    <div style="margin-top: 50px;"></div>
+                    <!-- Submit Button -->
+                    <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                        <p:commandButton value="Assign Roles" action="#{assignRoleBean.assignRolesToEntrance}" 
+                                         update="messages assignedRolesTable" styleClass="assign-btn" />
+                    </div>
+                </p:panel>
 
-                    <p:dataTable id="assignedRolesTable" value="#{assignRoleBean.assignedRoles}" var="role" style="margin-top: 10px;">
 
-                        <p:column headerText="Assigned Job Roles">
-                            <h:outputText value="#{role.roleName}" />
-                        </p:column>
-                        <p:column headerText="Remove">
-                            <p:commandButton icon="pi pi-trash" action="#{assignRoleBean.removeRoleFromEntrance(role.id)}"
-                                             update="assignedRolesTable messages" style="width: 50px"   />
-                        </p:column>
-                      
-                    </p:dataTable>
-                </h:form>
-            </div>
-         <h:form id="accessControlForm">
-         <p:commandButton value="Test Role's Access" icon="pi pi-key" 
-                          onclick="PF('accessTestDialog').show();" 
-                          styleClass="test-access-btn" />
+                <div style="margin-top: 50px;"></div>
 
-         <!-- Pop-up Dialog for Access Testing -->
-         
-             <p:dialog id="accessTestDialog" widgetVar="accessTestDialog" modal="true" 
-                       header="Access Control Test" responsive="true" showEffect="fade"
-                       hideEffect="fade" width="400">
+                <p:dataTable id="assignedRolesTable" value="#{assignRoleBean.assignedRoles}" var="role" style="margin-top: 10px;">
 
-                 <!-- Select Role -->
-                 <p:outputLabel for="employeeRole" value="Select Role:" />
-                 <p:selectOneMenu id="employeeRole" value="#{assignRoleBean.selectedEmployeeRoleId}" style="width: 100%;">
-                     <f:selectItem itemLabel="-- Select Role --" itemValue="" noSelectionOption="true"/>
-                     <f:selectItems value="#{assignRoleBean.allRoles}" var="role"
-                                    itemLabel="#{role.roleName}" itemValue="#{role.id}" />
-                 </p:selectOneMenu>
-                 
-                 <div style="margin-top: 20px;"></div>
-                 
-                 <!-- Select Entrance -->
-                 <p:outputLabel for="employeeEntrance" value="Select Entrance:" />
-                 <p:selectOneMenu id="employeeEntrance" value="#{assignRoleBean.selectedEntranceId}" style="width: 100%;">
-                     <f:selectItem itemLabel="-- Select Entrance --" itemValue="" noSelectionOption="true"/>
-                     <f:selectItems value="#{assignRoleBean.allEntrances}" var="entrance"
-                                    itemLabel="#{entrance.entrance_Name}" itemValue="#{entrance.entrance_Device_ID}" />
-                 </p:selectOneMenu>
-                 
-                 <div style="margin-top: 20px;"></div>
-                 
-                 <!-- Check Access Button -->
-                 <p:commandButton value="Check Access" action="#{assignRoleBean.checkAccess}"
-                                  update="messages2" icon="pi pi-lock" styleClass="ui-button-success"  style="margin-top: 10px;" />
+                    <p:column headerText="Assigned Job Roles">
+                        <h:outputText value="#{role.roleName}" />
+                    </p:column>
+                    <p:column headerText="Remove">
+                        <p:commandButton icon="pi pi-trash" action="#{assignRoleBean.removeRoleFromEntrance(role.id)}"
+                                         update="assignedRolesTable messages" style="width: 50px"   />
+                    </p:column>
 
-                 <!-- Show Access Messages -->
-                 <p:growl id="messages2" showDetail="true" life="3000" />
+                </p:dataTable>
+            </h:form>
+        </div>
+        <h:form id="accessControlForm">
+            <p:commandButton value="Test Role's Access" icon="pi pi-key" 
+                             onclick="PF('accessTestDialog').show();" 
+                             styleClass="test-access-btn" />
 
-                 <!-- Close Button -->
-                 <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-                     <p:commandButton value="Back" icon="pi pi-arrow-left"
-                                      onclick="PF('accessTestDialog').hide();" styleClass="close-btn" />
-                 </div>
+            <!-- Pop-up Dialog for Access Testing -->
 
-             </p:dialog>
-         </h:form>
-         <style>
-                     .left-column {
-                         width: 50%;
-                         padding-right: 20px;
-                     }
+            <p:dialog id="accessTestDialog" widgetVar="accessTestDialog" modal="true" 
+                      header="Access Control Test" responsive="true" showEffect="fade"
+                      hideEffect="fade" width="400">
 
-                     .right-column {
-                         width: 50%;
-                         text-align: right;
-                     }
+                <!-- Select Role -->
+                <p:outputLabel for="employeeRole" value="Select Role:" />
+                <p:selectOneMenu id="employeeRole" value="#{assignRoleBean.selectedEmployeeRoleId}" style="width: 100%;">
+                    <f:selectItem itemLabel="-- Select Role --" itemValue="" noSelectionOption="true"/>
+                    <f:selectItems value="#{assignRoleBean.allRoles}" var="role"
+                                   itemLabel="#{role.roleName}" itemValue="#{role.id}" />
+                </p:selectOneMenu>
 
-                     .ui-button {
-                         border-radius: 8px;
-                         padding: 10px;
-                         font-weight: bold;
-                     }
+                <div style="margin-top: 20px;"></div>
 
-                     .ui-panel {
-                         background-color: #f5f5f5;
-                         border-radius: 10px;
-                         padding: 20px;
-                         box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-                     }
+                <!-- Select Entrance -->
+                <p:outputLabel for="employeeEntrance" value="Select Entrance:" />
+                <p:selectOneMenu id="employeeEntrance" value="#{assignRoleBean.selectedEntranceId}" style="width: 100%;">
+                    <f:selectItem itemLabel="-- Select Entrance --" itemValue="" noSelectionOption="true"/>
+                    <f:selectItems value="#{assignRoleBean.allEntrances}" var="entrance"
+                                   itemLabel="#{entrance.entrance_Name}" itemValue="#{entrance.entrance_Device_ID}" />
+                </p:selectOneMenu>
 
-                     .assign-btn {
-                         background-color: #008000 !important;
-                         color: white !important;
-                         border-radius: 8px;
-                         font-weight: bold;
-                         padding: 0px 5px;
-                     }
-                     .remove-btn {
-                         background-color: red !important;
-                         color: white !important;
-                     }
-                     .ui-selectCheckboxMenu {
-                         padding: 10px;
-                         border-radius: 8px;
-                         background-color: white;
-                     }
-                     .ui-datatable {
-                         background-color: white;
-                         border-radius: 8px;
-                     }
+                <div style="margin-top: 20px;"></div>
 
-                     .load-btn {
-                         background-color: whitesmoke !important; /* Blue color */
-                         color: black !important;
-                         border-radius: -5px;
-                         padding: 0px 5px;
-                         font-weight: bold;
-                         transition: background 0.3s ease;
-                     }
+                <!-- Check Access Button -->
+                <p:commandButton value="Check Access" action="#{assignRoleBean.checkAccess}"
+                                 update="messages2" icon="pi pi-lock" styleClass="ui-button-success"  style="margin-top: 10px;" />
 
-                     .load-btn:hover {
-                         background-color: lightgreen !important; /* Darker blue on hover */
-                     }
+                <!-- Show Access Messages -->
+                <p:growl id="messages2" showSummary= "false" showDetail="true" life="3000" />
 
-                     .pi-refresh {
-                         margin-right: 5px; /* Adds spacing between icon and text */
-                     }
+                <!-- Close Button -->
+                <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                    <p:commandButton value="Back" icon="pi pi-arrow-left"
+                                     onclick="PF('accessTestDialog').hide();" styleClass="close-btn" />
+                </div>
 
-                     .access-control-container {
-                         border: 2px solid bisque;
-                         display: block !important;
-                     }
+            </p:dialog>
+        </h:form>
+        <style>
+            .left-column {
+                width: 50%;
+                padding-right: 20px;
+            }
 
-                     .test-access-btn {
-                         position: absolute;
-                         top: 50%;
-                         right: 20px;
-                         transform: translateY(-50%);
-                         background-color: #4CAF50;
-                         color: white;
-                         padding: 10px 15px;
-                         border-radius: 5px;
-                         box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-                         cursor: pointer;
-                     }
+            .right-column {
+                width: 50%;
+                text-align: right;
+            }
 
-                     .test-access-btn:hover {
-                         background-color: black;}
+            .ui-button {
+                border-radius: 8px;
+                padding: 10px;
+                font-weight: bold;
+            }
 
-         </style>
-         
+            .ui-panel {
+                background-color: #f5f5f5;
+                border-radius: 10px;
+                padding: 20px;
+                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            }
 
-            </ui:define>
-        </ui:composition>
-        
-            
-    </h:body>
+            .assign-btn {
+                background-color: #008000 !important;
+                color: white !important;
+                border-radius: 8px;
+                font-weight: bold;
+                padding: 0px 5px;
+            }
+            .remove-btn {
+                background-color: red !important;
+                color: white !important;
+            }
+            .ui-selectCheckboxMenu {
+                padding: 10px;
+                border-radius: 8px;
+                background-color: white;
+            }
+            .ui-datatable {
+                background-color: white;
+                border-radius: 8px;
+            }
 
-</html>
+            .load-btn {
+                background-color: whitesmoke !important; /* Blue color */
+                color: black !important;
+                border-radius: -5px;
+                padding: 0px 5px;
+                font-weight: bold;
+                transition: background 0.3s ease;
+            }
+
+            .load-btn:hover {
+                background-color: lightgreen !important; /* Darker blue on hover */
+            }
+
+            .pi-refresh {
+                margin-right: 5px; /* Adds spacing between icon and text */
+            }
+
+            .access-control-container {
+                border: 2px solid bisque;
+                display: block !important;
+            }
+
+            .test-access-btn {
+                position: absolute;
+                top: 50%;
+                right: 20px;
+                transform: translateY(-50%);
+                background-color: #4CAF50;
+                color: white;
+                padding: 10px 15px;
+                border-radius: 5px;
+                box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+                cursor: pointer;
+            }
+
+            .test-access-btn:hover {
+                background-color: black;
+            }
+
+        </style>
+
+
+    </ui:define>
+</ui:composition>

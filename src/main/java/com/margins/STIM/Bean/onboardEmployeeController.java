@@ -6,20 +6,24 @@ package com.margins.STIM.Bean;
 
 import com.google.gson.Gson;
 import com.margins.STIM.entity.Employee;
+import com.margins.STIM.entity.EmployeeRole;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.entity.websocket.FingerCaptured;
 import com.margins.STIM.model.CapturedFinger;
 import com.margins.STIM.service.BiometricDataService;
+import com.margins.STIM.service.EmployeeRole_Service;
 import com.margins.STIM.service.Employee_Service;
 import com.margins.STIM.util.DateFormatter;
 import com.margins.STIM.util.FingerprintProcessor;
 import com.margins.STIM.util.JSF;
 import com.margins.STIM.util.ValidationUtil;
+import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.Serializable;
@@ -145,7 +149,35 @@ public class onboardEmployeeController implements Serializable {
     @Setter
     private String faceImageData;
     
+    @Inject
+    private EmployeeRole_Service roleService;
+    
+    @Getter
+    @Setter
+    private Employee newEmployee = new Employee();
+    @Getter
+    @Setter
+    private Integer selectedRoleId;
+    
+    @Getter
+    @Setter
+    private List<EmployeeRole> availableRoles; 
+    
+    @Getter
+    @Setter
+    private String assignedRoleName;
+    
+    @Getter
+    @Setter
+    private Employee selectedEmployee;
 
+    
+    @PostConstruct
+    public void init() {
+        // Load available roles from database
+        availableRoles = roleService.findAllEmployeeRoles();
+    }
+    
     
 
     // Step Navigation
@@ -419,8 +451,37 @@ public class onboardEmployeeController implements Serializable {
         }
 
     }
+    @Getter
+    @Setter
+    private EmployeeRole selectedRole;
+    @Getter
+    @Setter
+    private Integer assignedRoleId;
 
-    
+    public void assignRole() {
+        
+        System.out.println("SELECTED ROLE ID>>>>>>>>>>>" + selectedRoleId);
+        
+        if (selectedRoleId != null) {
+            
+             selectedRole = roleService.findEmployeeRoleById(selectedRoleId);
+             
+             System.out.println("ROLE NAME>>>>>>" + selectedRole.getRoleName());
+            
+            assignedRoleName = selectedRole.getRoleName(); // Store role name for display
+            newEmployee.setRole(selectedRole); // Set the role for the new employee
+
+            // Add a success message
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            "Role Assigned", "Role " + assignedRoleName + " has been selected"));
+        } else {
+            // Handle case where no role is selected
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN,
+                            "No Role Selected", "Please select a role"));
+        }
+    }
     
 
     public void saveEmployeeToDatabase() {
@@ -429,6 +490,12 @@ public class onboardEmployeeController implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Verification not completed!", null));
             return;
         }
+        if (selectedRole == null) {  // Ensure role is assigned
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Please assign a role", null));
+            return;
+        }
+
 
         try {
             Employee newEmployee = new Employee();
@@ -439,13 +506,19 @@ public class onboardEmployeeController implements Serializable {
             newEmployee.setGender(gender);
             newEmployee.setAddress(address); 
             newEmployee.setEmail(email);
+            newEmployee.setRole(selectedRole); 
+
+            
 
             employeeService.saveEmployee(newEmployee); //
-
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Employee saved successfully!", null));
             
-            FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "app/employeeList");
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Emmployee " + forenames + " created successfully!", null));
+
+           
+            
+            FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "app/employeeList.xhtml");
 
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
@@ -536,6 +609,9 @@ public class onboardEmployeeController implements Serializable {
         }
                    
     } 
+    
+    
+    
     
     private void reload() {
         if (socketData != null) {

@@ -4,67 +4,63 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to c
 Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
 -->
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:ui="jakarta.faces.facelets">
 
-    <h:head>
-
-        <title>Employee List</title>
-    </h:head>
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
     
-    <h:body>
-        <ui:composition template="/WEB-INF/templates.xhtml">
-
-            <ui:define name ="content">
+    <ui:define name ="title">Employee List</ui:define>
+    
+    <ui:define name ="content">
         <!-- Main Content -->
         <div class="main-content" >
-        <h3>MANAGE EMPLOYEE DETAILS</h3>
-        <h:form id="employeeForm">
-            <h:panelGroup layout="block" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <h3>EMPLOYEE PROFILES</h3>
+            <h:form id="employeeForm">
+                <h:panelGroup layout="block" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <p:growl widgetVar="fgrowl" id="growl" showSummary= "false" showDetail="true" life="6000" globalOnly="true"/>
+                    <!-- Search Bar on the Left --> 
+                    <p:inputText id="search" value="#{manageEmployeesBean.searchQuery}"
+                                 placeholder="Search by Name or Ghana Card"
+                                 styleClass="search-box"
+                                 style="flex: 1; max-width: 300px;">
+                        <p:ajax event="keyup" listener="#{manageEmployeesBean.findEmployee}" update="employeeTable"/>
+                    </p:inputText>
 
-                <!-- Search Bar on the Left -->
-                <p:inputText id="search" value="#{manageEmployeesBean.searchTerm}" 
-                             placeholder="Search by Ghana Card Number"
-                             style="flex: 1; max-width: 300px;">
-                    <p:ajax event="keyup" update="employeeTable" listener="#{manageEmployeesBean.searchEmployees}"/>
-                </p:inputText>
+                    <!-- Add New Employee Button on the Right -->
+                    <p:commandButton value="Add New Employee" icon="pi pi-plus" action="#{manageEmployeesBean.goToSignup}" 
+                                     ajax="false" style="font-size: 1em; background-color: #FFF8E1; color: black; margin-left: auto;" />
+                </h:panelGroup>
 
-                <!-- Add New Employee Button on the Right -->
-                <p:commandButton value="Add New Employee" icon="pi pi-plus" action="#{manageEmployeesBean.goToSignup}" 
-                                 ajax="false" style="font-size: 1em; background-color: #FFF8E1; color: black; margin-left: auto;" />
-            </h:panelGroup>
-            
-            <!-- Employee List -->
-            <p:dataTable id="employeeTable" value="#{manageEmployeesBean.employees}" var="employee" 
-                         paginator="true" rows="10">
+                <!-- Employee List -->
+                <p:dataTable id="employeeTable" value="#{manageEmployeesBean.employees}" var="employee" 
+                             paginator="true" rows="10">
 
-                <p:column headerText="First Name">
-                    <h:outputText value="#{employee.firstname}" />
-                </p:column>
+                    <p:column headerText="First Name">
+                        <h:outputText value="#{employee.firstname}" />
+                    </p:column>
 
-                <p:column headerText="Last Name">
-                    <h:outputText value="#{employee.lastname}" />
-                </p:column>
+                    <p:column headerText="Last Name">
+                        <h:outputText value="#{employee.lastname}" />
+                    </p:column>
 
-                <p:column headerText="Ghana Card Number">
-                    <h:outputText value="#{employee.ghanaCardNumber}" />
-                </p:column>
+                    <p:column headerText="Ghana Card Number">
+                        <h:outputText value="#{employee.ghanaCardNumber}" />
+                    </p:column>
 
-                <p:column headerText="Email">
-                    <h:outputText value="#{employee.email}" />
-                </p:column>
+                    <p:column headerText="Email">
+                        <h:outputText value="#{employee.email}" />
+                    </p:column>
 
-                <p:column headerText="Actions">
-                    <p:commandButton value="View" icon="pi pi-eye" 
-                                     action="#{manageEmployeesBean.viewEmployee(employee.ghanaCardNumber)}" 
-                                     update=":employeeForm" />
-                </p:column>
-            </p:dataTable>
-        </h:form>
+                    <p:column headerText="Actions">
+                        <p:commandButton value="View" icon="pi pi-eye" 
+                                         action="#{manageEmployeesBean.viewEmployee(employee.ghanaCardNumber)}" 
+                                         update=":employeeForm" />
+                    </p:column>
+                </p:dataTable>
+            </h:form>
         </div>
-            </ui:define>
-        </ui:composition>
-    </h:body>
-</html>
+    </ui:define>
+</ui:composition>

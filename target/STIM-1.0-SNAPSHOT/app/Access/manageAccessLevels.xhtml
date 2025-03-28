@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
--->
-
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:ui="jakarta.faces.facelets">
-
-    <h:head>
-        <title>Manage Access Levels</title>
-    </h:head>
-
-    <h:body style="font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px;">
-        <ui:composition template="/WEB-INF/templates.xhtml">
+<!DOCTYPE html>        
+        <ui:composition template="/WEB-INF/templates.xhtml"
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        xmlns:h="http://java.sun.com/jsf/html"
+                        xmlns:p="http://primefaces.org/ui"
+                        xmlns:ui="jakarta.faces.facelets"
+                        xmlns:f="jakarta.faces.core">
+            
+            <ui:define name ="title">Manage Access Levels</ui:define>
+            
+            <ui:define name="metadata">
+                <f:metadata>
+                    <f:viewAction action="#{loginBean.checkAccess('Admin')}" />
+                </f:metadata>
+            </ui:define>
 
             <ui:define name ="content">
                 <!-- Main Content -->
@@ -95,10 +93,8 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                 <p:commandButton value="No" onclick="PF('deleteConfirmDialogWidget').hide()" style="margin-left: 5px;"/>
             </p:confirmDialog>
 
-            <p:messages id="messages" showDetail="true" closable="true"/>
+            <p:messages id="messages"  showSummary= "false" showDetail="true" closable="true"/>
         </h:form>
                 </div>
             </ui:define>
         </ui:composition>
-    </h:body>
-</html>

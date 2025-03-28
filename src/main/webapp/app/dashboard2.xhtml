@@ -1,62 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
--->
-
-
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:ui="jakarta.faces.facelets">
 
-    <h:head>
-        
-        <title>New Dashboard</title>
-       
-    </h:head>
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
 
-    <h:body>
-      
-        <ui:composition template="/WEB-INF/templates.xhtml">
 
-            <ui:define name ="content">
-                <!-- Main Content -->
-                <div class="main-content" >
-<!--                <h:outputText value="#{flash.successMessage}" rendered="#{not empty flash.successMessage}" style="color: green; font-weight: bold; display: block; margin: 10px 0;" />-->
-                <p:growl widgetVar="fgrowl" id="growl" showDetail="true" life="6000" globalOnly="true"/>
+    <ui:define name ="title">Dashboard</ui:define>
+    <ui:define name ="content">
+        <!-- Main Content -->
+        <div class="main-content" >
+            <p:growl widgetVar="fgrowl" id="growl" showSummary= "false" showDetail="true" life="6000" globalOnly="true"/>
 
             <h1> Dashboard Content </h1>
             <p>This is the main content area.</p>
-                </div>
-<!--                <style>
-                    .ui-growl-message {
-                        font-weight: bold;
-                    }
+        </div>
 
-                    /* Change INFO (Blue) to GREEN */
-                    .ui-growl-info {
-                        background-color: #28a745 !important; /* Green */
-                        color: white !important;
-                    }
+    </ui:define>
+</ui:composition>
 
-                    /* Change WARNING (Yellow) */
-                    .ui-growl-warn {
-                        background-color: #ffc107 !important; /* Yellow */
-                        color: black !important;
-                    }
-
-                    /* Change ERROR (Red) */
-                    .ui-growl-error {
-                        background-color: #dc3545 !important; /* Red */
-                        color: white !important;
-                    }
-                    
-                </style>-->
-            </ui:define>
-        </ui:composition>
-        
-    </h:body>
-</html>
 

@@ -1,36 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="jakarta.faces.html"
-      xmlns:f="jakarta.faces.core"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:ui="jakarta.faces.facelets">
-
-    <h:head>
 
 
-        <title>Verification Wizard</title>
 
-  
-    </h:head>
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
+    <ui:define name="title">Onboard Employee</ui:define>
 
-    <h:body>
-        <ui:composition template="/WEB-INF/templates.xhtml">
 
-            <ui:define name ="content">
+    <ui:define name ="content">
         <!-- Main Content -->
         <div class="main-content">
             <h:form id="wizardForm" prependId="false">
-                <p:growl widgetVar="fgrowl" id="growl" showDetail="true" life="3000" />
+                <p:growl widgetVar="fgrowl" id="growl" showSummary= "false" showDetail="true" life="3000" />
 
                 <h3 style="font-family: Roboto,sans-serif;">ONBOARDING EMPLOYEE</h3>
-                
+
                 <p:steps activeIndex="#{wizardBean.currentStep}" >
                     <p:menuitem value="Select Verification Type"/>
                     <p:menuitem value="Perform Verification"/>
                     <p:menuitem value="Employee Details"/>
                 </p:steps>
-                
+
                 <br/>
                 <p:outputPanel id="stepContent">
 
@@ -58,7 +53,7 @@
 
                         <div style="width: 600px;   padding: 20px; border: 2px solid black; border-radius: 10px; background-color: white;
                              box-shadow: 3px 3px 10px rgba(0,0,0,0.2); text-align: center;">
-                            
+
                             <h:inputText id="socketData" style="display: none;" value="#{wizardBean.socketData}" disabled="true"/>
                             <h:inputHidden id="socketDataHidden"/>
                             <h3 style="display:flex; text-align: left; ">#{wizardBean.verificationType} Verification</h3>
@@ -66,17 +61,17 @@
 
                             <!--  Multi finger Verification-->
                             <p:panel rendered="#{wizardBean.verificationType == 'Multi Finger'}"  style="border: none; ">
-                              
+
 
                                 <div style="display: flex; flex-direction: row; gap: 20px;">
 
                                     <p:commandButton value="Reset" styleClass=" ui-button-warning ui-button-danger" onclick="doSendNoId('action:stop')" action="#{wizardBean.reset()}" update="@form" style="margin-right: 20px;"/>
                                 </div>
-                                
+
                                 <br/>
-                                
+
                                 <div style="display: flex; flex-direction: column; width: 100%; justify-content: center; align-content: center;">
-                                    
+
                                     <div class="card">
                                         <div style="display: flex; flex-direction: row; gap: 10px; justify-content: center; align-content: center; ">
                                             <div class="col-3 col-md-3 col-lg-3">
@@ -109,11 +104,11 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div style="display: flex; flex-direction: row; margin-bottom: 30px; margin-top: 10px; align-content: center; justify-content: center;">
                                         <p:commandButton value="Capture Left Fingers" styleClass=" ui-button-secondary ui-button-raised" onclick="doSendNoId('action:start:leftFour');" type="button" style="font-size: medium;"/>
                                     </div>
-                                    
+
                                     <div style="display: flex; flex-direction: row; gap: 10px; justify-content: center; align-content: center;">
                                         <div class="col-3 col-md-3 col-lg-3">
                                             <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
@@ -148,7 +143,7 @@
                                     <div style="display: flex; flex-direction: row; margin-bottom: 30px; margin-top: 10px; justify-content: center; align-content: center;">
                                         <p:commandButton value="Capture Right Fingers" styleClass=" ui-button-secondary ui-button-raised" onclick="doSendNoId('action:start:rightFour');" type="button"/>
                                     </div>
-                                    
+
                                     <div style="display: flex; flex-direction: row; gap: 10px; justify-content: center; align-content: center;">
                                         <div class="col-3 col-md-3 col-lg-3">
                                             <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
@@ -166,7 +161,7 @@
 
                                     <div style="display: flex; flex-direction: row; margin-bottom: 30px; margin-top: 10px;  ">
                                         <p:commandButton value="Capture Thumbs"  styleClass=" ui-button-secondary ui-button-raised" onclick="doSendNoId('action:start:twoThumbs');" type="button" style="font-size: medium;margin-left: 40%"/>
-                                        
+
                                         <p:commandButton value="Submit" action="#{wizardBean.sendForVerification()}" update="growl" styleClass="ui-button-success" icon="pi pi-check" iconPos="right" style="margin-left:auto;"/>
 
                                     </div>
@@ -298,7 +293,67 @@
                             <h:outputLabel value="Address:" />
                             <p:inputText id="employeeAddress" value="#{wizardBean.address}" placeholder="Enter Employee Address" />
 
+                            <h:outputLabel value="Assigned Role:" />
+                            <p:outputPanel style="display: flex; gap: 20px">
+                                <p:inputText id="selectedRole" 
+                                             value="#{wizardBean.assignedRoleName}" 
+                                             style="font-weight:bold; min-width: 150px; display: inline-block;" />
+
+                                <p:commandButton value="Assign Role" 
+                                                 type="button" 
+                                                 onclick="PF('roleSelectionDialog').show();" 
+                                                 styleClass="ui-button-secondary"/>
+                            </p:outputPanel>
+
+
+
+
                         </p:panelGrid>
+
+
+                        <!-- Role Selection Dialog -->
+                        <p:dialog id="roleSelectionDialog" 
+                                  widgetVar="roleSelectionDialog" 
+                                  header="Select Role" 
+                                  modal="true" 
+                                  showEffect="fade" 
+                                  hideEffect="fade" 
+                                  width="500"
+                                  style="border-radius: 15px; border: 2px solid #8A4FFF;">
+
+                            <!--<h:form id="roleSelectionForm">-->
+                            <p:panel style="border: none;">
+                                <div class="p-grid p-fluid">
+                                    <div class="p-col-12">
+                                        <p:outputLabel for="roleDropdown" value="Select Role" />
+
+                                        <p:spacer width="10px;" />
+
+                                        <p:selectOneMenu id="roleDropdown" 
+                                                         value="#{wizardBean.selectedRoleId}"
+                                                         filter="true" 
+                                                         filterMatchMode="contains">
+                                            <f:selectItems value="#{wizardBean.availableRoles}" 
+                                                           var="role" 
+                                                           itemLabel="#{role.roleName}" 
+                                                           itemValue="#{role.id}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <div class="p-grid p-fluid" style="margin-top: 20px;">
+                                    <div class="p-col-12">
+                                        <p:commandButton value="Assign Role" 
+                                                         actionListener="#{wizardBean.assignRole}"
+                                                         update="@form"
+                                                         oncomplete="PF('roleSelectionDialog').hide();"
+                                                         styleClass="ui-button-primary"/>
+                                    </div>
+                                </div>
+                            </p:panel>
+                            <!--</h:form>-->
+                        </p:dialog>
+
 
                         <div style="display: flex; justify-content: space-between; margin-top: 20px;">
                             <p:commandButton value="Back" action="#{wizardBean.prevStep}" update="wizardForm"/>
@@ -312,13 +367,13 @@
                 </p:outputPanel>
             </h:form>
         </div>
-        
+
         <h:outputScript library="js" name="orbis.js" target="head"/>
         <h:outputScript library="js" name="webcam.js"/>
         <h:outputScript library="js" name="cropper.min.js"/>
         <h:outputScript library="js" name="facial.js"/>
         <h:outputStylesheet library="css" name="cropper.min.css"/>
-        
+
         <style type='text/css'>
             .face-verification-panel {
                 border: none !important;
@@ -401,10 +456,11 @@
 
             .verify-button {
                 background-color: #28a745 !important;
-                color: white !important;}
+                color: white !important;
+            }
         </style>
-        
-            </ui:define>
-        </ui:composition>
-    </h:body>
-</html>
+
+    </ui:define>
+</ui:composition>
+
+

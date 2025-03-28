@@ -36,7 +36,7 @@
             </div>-->
         <br/>
             <h:form id="theForm" prependId="false">
-                <p:growl widgetVar="fgrowl" id="growl" showDetail="true" life="3000"/>
+                <p:growl widgetVar="fgrowl" id="growl" showSummary= "false" showDetail="true" life="3000"/>
                 <div style="margin-bottom: 10px;">
                     <h:outputLabel for="username" value="Enter GhanaCard Number:" />
                     <p:inputText id="ghanaCardPin" value="#{biometricBean.ghanaCardNumber}" required="true" requiredMessage="Ghana Card Number is required." placeholder="GHA-XXXXXXXXX-X"/>

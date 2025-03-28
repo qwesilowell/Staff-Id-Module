@@ -1,26 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
--->
-
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="jakarta.faces.html"
-      xmlns:f="jakarta.faces.core"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:ui="jakarta.faces.facelets">
 
-    <h:head>
-    
-        
-        <title>Assign Role to Employee</title>
- 
-    </h:head>
 
-    <h:body>
-        <ui:composition template="/WEB-INF/templates.xhtml">
-
+        <ui:composition template="/WEB-INF/templates.xhtml"
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        xmlns:h="jakarta.faces.html"
+                        xmlns:f="jakarta.faces.core"
+                        xmlns:p="http://primefaces.org/ui"
+                        xmlns:ui="jakarta.faces.facelets">
+            <ui:define name="title">Assign Role to Employee</ui:define>
+            
+            <ui:define name="metadata"></ui:define>
             <ui:define name ="content">
         
         <!-- Main Content -->
@@ -78,7 +68,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     </f:facet>
                 </p:dialog>
 
-                <p:messages id="messages" showDetail="true" closable="true"/>
+                <p:messages id="messages" showSummary= "false" showDetail="true" closable="true"/>
             </p:panel>
         </h:form>
         </div>
@@ -148,5 +138,3 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
         </style>
             </ui:define>
         </ui:composition>
-    </h:body>
-</html>

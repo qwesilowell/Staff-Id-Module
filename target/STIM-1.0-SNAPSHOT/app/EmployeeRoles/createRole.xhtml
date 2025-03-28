@@ -1,46 +1,109 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="jakarta.faces.html"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:ui="jakarta.faces.facelets">
-    <h:head>
-        <title>Create Role</title>
-    </h:head>
-    <h:body>
-        <ui:composition template="/WEB-INF/templates.xhtml">
 
-            <ui:define name ="content">
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:f="jakarta.faces.core">
+
+    <ui:define name="title">Create Role</ui:define>
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{loginBean.checkAccess('Admin')}" />
+        </f:metadata>
+    </ui:define>
+    <ui:define name ="content">
         <!-- Main Content -->
         <div class="main-content" style="margin-top: 20px">
             <h:form id="roleForm">
-                <p:growl id="growl" showDetail="true" life="3000"/>
+                <p:growl id="growl"  showSummary= "false" showDetail="true" life="3000"/>
                 <p:panel header="Create New Role" style="margin-bottom:20px;">
                     <h:panelGrid columns="2" cellpadding="5">
                         <h:outputLabel for="roleName" value="Enter Role Name:" />
-                        <p:inputText id="roleName" value="#{assignEmpRoleBean.newRole.roleName}" required="true"/>
+                        <p:inputText id="roleName" value="#{assignEmpRoleBean.newRole.roleName}" />
 
-                        <h:outputLabel for="roleDesc" value="Enter Role Description:" />
+                        <h:outputLabel for="roleDesc" value="Enter Role Description (optional):" />
                         <p:inputTextarea id="roleDesc" value="#{assignEmpRoleBean.newRole.roleDescription}" rows="3" cols="30"/>
                     </h:panelGrid>
 
                     <p:commandButton value="Add Role" action="#{assignEmpRoleBean.addNewRole}" update="roleTable growl" styleClass="ui-button-success"/>
                 </p:panel>
 
+                <p:spacer height="30px"/>
 
 
-                <p:dataTable id="roleTable" value="#{assignEmpRoleBean.roles}" var="role" styleClass="ui-datatable">
+
+                <p:dataTable id="roleTable" value="#{assignEmpRoleBean.roles}" var="role" styleClass="ui-datatable" 
+                             filteredValue="#{assignEmpRoleBean.filteredRoles}"
+                             globalFilter="#{assignEmpRoleBean.globalFilter}">
+                    <f:facet name="header">
+                        <div class="p-d-flex p-jc-between p-ai-center">
+                            <p:inputText id="searchQuery" 
+                                         value="#{assignEmpRoleBean.searchQuery}"
+                                         placeholder="Search Role...."
+                                         styleClass="search-box">
+                                <p:ajax event="keyup" 
+                                        listener="#{assignEmpRoleBean.findRole}" 
+                                        update="roleTable"/>
+                            </p:inputText>
+                        </div>
+                    </f:facet>
+
+
+
                     <p:column headerText="Role Name">
                         <h:outputText value="#{role.roleName}"/>
                     </p:column>
                     <p:column headerText="Role Description">
                         <h:outputText value="#{role.roleDescription}"/>
                     </p:column>
+                    <p:column headerText="Action">
+                        <p:outputPanel style="display: flex; gap: 20px">
+                            <p:commandButton icon="pi pi-pencil" styleClass="rounded-button ui-button-success ui-button-outlined"  actionListener="#{assignEmpRoleBean.prepareEditRole(role)}" 
+                                             oncomplete="PF('editRoleDialog').show();" update="@form" />
+
+
+                            <p:commandButton icon="pi pi-trash" styleClass="rounded-button ui-button-danger ui-button-outlined"  action="#{assignEmpRoleBean.deleteRole(role)}" onclick="PF('deleteConfirmDialogWidget').show()" update="@form"  oncomplete="PF('deleteConfirmDialogWidget').hide()">
+                                <p:confirm header="Confirm Deletion" message="Are you sure you want to delete this Role ?" icon="pi pi-trash"/>
+
+                            </p:commandButton>
+                        </p:outputPanel>
+                    </p:column>
                 </p:dataTable>
+
+                <p:dialog id="editRoleDialog" widgetVar="editRoleDialog" header="Edit Role" modal="true"  closable="true" width="50%" style="border:2px solid #7e57c2; border-radius:15px;">
+
+                    <p:panel style="border: none;">
+
+                        <h:outputLabel for="selectedRoleName" value="Role Name:"  style="margin-right: 10px; display: inline-block; width: 100px;"/>
+                        <p:inputText id="selectedRoleName" value="#{assignEmpRoleBean.selectedRole.roleName}"  style="border: none; outline: none;  width: 300px" />
+
+
+                        <p:spacer width="10px;" />
+
+                        <h:outputLabel for="roleDescription" value="Role Description:" style="margin-right: 10px; display: inline-block; width: 100px;" />
+                        <p:inputTextarea id="roleDescription" value="#{assignEmpRoleBean.selectedRole.roleDescription}" rows="3" cols="30" style="border: none; outline: none; width:300px; "/>
+
+                    </p:panel>
+                    <br/>
+                    <p:commandButton value="Update" action="#{assignEmpRoleBean.updateRole}" 
+                                     update="@form" 
+                                     oncomplete="PF('editRoleDialog').hide();" 
+                                     styleClass="ui-button-success"
+                                     style="display: flex; margin-left: auto"/>
+
+
+                </p:dialog>
+
+                <p:confirmDialog id="deleteConfirmDialog"  global="true" widgetVar="deleteConfirmDialogWidget">
+                    <p:commandButton type="button" value="Delete" styleClass="ui-confirmdialog-yes rounded-button ui-button-warning"/>
+                    <p:commandButton  type="button"  value="Cancel" styleClass="ui-confirmdialog-no rounded-button ui-button-secondary" onclick="PF('deleteConfirmDialogWidget').hide()" style="margin-left: 5px;"/>
+                </p:confirmDialog>
+
             </h:form>
         </div>
-            </ui:define>
-        </ui:composition>
-    </h:body>
-</html>
+    </ui:define>
+</ui:composition>
 

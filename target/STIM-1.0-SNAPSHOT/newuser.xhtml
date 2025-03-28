@@ -1,406 +1,406 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="jakarta.faces.html"
-      xmlns:f="jakarta.faces.core"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:ui="jakarta.faces.facelets">
 
-    <h:head>
-        <title>System User Signup</title>
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
+    <ui:define name="title">System User Signup</ui:define>
 
-    </h:head>
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{loginBean.checkAccess('Admin')}" />
+        </f:metadata>
+    </ui:define>
 
-    <h:body>
-        <ui:composition template="/WEB-INF/templates.xhtml">
 
-            <ui:define name ="content">
-                <!-- Main Content -->
-                <div class="main-content">
-                    <h:form id="wizardForm" prependId="false">
-                        <p:growl widgetVar="fgrowl" id="growl" showDetail="true" life="3000" />
-                        <h3>CREATE A NEW USER</h3>
-                        <p:steps activeIndex="#{userBean.currentStep}" >
-                            <p:menuitem value="Select Verification Type"/>
-                            <p:menuitem value="Perform Verification"/>
-                            <p:menuitem value="USER Details"/>
-                        </p:steps>
-                        <br/>
+    <ui:define name ="content">
+        <!-- Main Content -->
+        <div class="main-content">
+            <h:form id="wizardForm" prependId="false">
+                <p:growl widgetVar="fgrowl" id="growl" showSummary= "false" showDetail="true" life="3000" />
+                <h3>CREATE A NEW USER</h3>
+                <p:steps activeIndex="#{userBean.currentStep}" >
+                    <p:menuitem value="Select Verification Type"/>
+                    <p:menuitem value="Perform Verification"/>
+                    <p:menuitem value="USER Details"/>
+                </p:steps>
+                <br/>
 
-                        <p:outputPanel id="stepContent">
+                <p:outputPanel id="stepContent">
 
-                            <!-- Step 1: Select Verification Type -->
-                            <p:panel rendered="#{userBean.currentStep == 0}">
-                                <h3>Select Verification Type</h3>
+                    <!-- Step 1: Select Verification Type -->
+                    <p:panel rendered="#{userBean.currentStep == 0}">
+                        <h3>Select Verification Type</h3>
 
-                                <p:selectOneRadio id="verificationType" value="#{userBean.verificationType}" layout="pageDirection">
-                                    <f:selectItem itemLabel="Facial Verification" itemValue="Face"/>
-                                    <f:selectItem itemLabel="Single Finger" itemValue="Single Finger"/>
-                                    <f:selectItem itemLabel="Multi Finger" itemValue="Multi Finger"/>
-                                    <p:ajax update="wizardForm" />
-                                </p:selectOneRadio>
+                        <p:selectOneRadio id="verificationType" value="#{userBean.verificationType}" layout="pageDirection">
+                            <f:selectItem itemLabel="Facial Verification" itemValue="Face"/>
+                            <f:selectItem itemLabel="Single Finger" itemValue="Single Finger"/>
+                            <f:selectItem itemLabel="Multi Finger" itemValue="Multi Finger"/>
+                            <p:ajax update="wizardForm" />
+                        </p:selectOneRadio>
 
-                                <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
-                                    <p:commandButton value="Next" action="#{userBean.nextStep}" update="wizardForm"
-                                                     disabled="#{empty userBean.verificationType}" 
-                                                     style="background-color: green; color: white; padding: 10px 20px; font-weight: bold;"/>
+                        <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+                            <p:commandButton value="Next" action="#{userBean.nextStep}" update="wizardForm"
+                                             disabled="#{empty userBean.verificationType}" 
+                                             style="background-color: green; color: white; padding: 10px 20px; font-weight: bold;"/>
+                        </div>
+                    </p:panel>
+
+                    <!-- Step 2: Perform Verification -->
+
+                    <p:panel rendered="#{userBean.currentStep == 1}" style="display: flex; justify-content: center; align-items: center; height:auto; border: none; margin-top: 20px;">
+
+                        <div style="width: 600px;   padding: 20px; border: 2px solid black; border-radius: 10px; background-color: white;
+                             box-shadow: 3px 3px 10px rgba(0,0,0,0.2); text-align: center;">
+
+                            <h:inputText id="socketData" style="display: none;" value="#{userBean.socketData}" disabled="true"/>
+                            <h:inputHidden id="socketDataHidden"/>
+                            <h3 style="display:flex; text-align: left; ">#{userBean.verificationType} Verification</h3>
+
+
+                            <!--  Multi finger Verification-->
+                            <p:panel rendered="#{userBean.verificationType == 'Multi Finger'}"  style="border: none; ">
+
+
+                                <div style="display: flex; flex-direction: row; gap: 20px;">
+
+                                    <p:commandButton value="Reset" styleClass=" ui-button-warning ui-button-danger" onclick="doSendNoId('action:stop')" action="#{userBean.reset()}" update="@form" style="margin-right: 20px;"/>
                                 </div>
+
+                                <br/>
+
+                                <div style="display: flex; flex-direction: column; width: 100%; justify-content: center; align-content: center;">
+
+                                    <div class="card">
+                                        <div style="display: flex; flex-direction: row; gap: 10px; justify-content: center; align-content: center; ">
+                                            <div class="col-3 col-md-3 col-lg-3">
+                                                <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
+                                                    <h:graphicImage id="leftIndexImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/> 
+                                                </div>
+                                                <h:inputHidden id="leftIndex" value="#{userBean.capturedMultiFinger.leftIndex}"/>
+                                                <h6 style="text-align:center; font-size: medium; font-weight: bold;" >Left Index</h6>
+                                            </div>
+                                            <div class="col-10 col-md-10 col-lg-10">
+                                                <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
+                                                    <h:graphicImage id="leftMiddleImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
+                                                </div>
+                                                <h:inputHidden id="leftMiddle" value="#{userBean.capturedMultiFinger.leftMiddle}"/>
+                                                <h6 style="text-align:center; font-size: medium; font-weight: bold;">Left Middle</h6>
+                                            </div>
+                                            <div class="col-3 col-md-3 col-lg-3">
+                                                <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
+                                                    <h:graphicImage id="leftRingImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
+                                                </div>
+                                                <h:inputHidden id="leftRing" value="#{userBean.capturedMultiFinger.leftRing}"/>             
+                                                <h6 style="text-align:center; font-size: medium; font-weight: bold;">Left Ring</h6>
+                                            </div>
+                                            <div class="col-3 col-md-3 col-lg-3">
+                                                <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
+                                                    <h:graphicImage id="leftLittleImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
+                                                </div>
+                                                <h:inputHidden id="leftLittle" value="#{userBean.capturedMultiFinger.leftLittle}"/>        
+                                                <h6 style="text-align:center; font-size: medium; font-weight: bold;">Left Little</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div style="display: flex; flex-direction: row; margin-bottom: 30px; margin-top: 10px; align-content: center; justify-content: center;">
+                                        <p:commandButton value="Capture Left Fingers" styleClass=" ui-button-secondary ui-button-raised" onclick="doSendNoId('action:start:leftFour');" type="button" style="font-size: medium;"/>
+                                    </div>
+
+                                    <div style="display: flex; flex-direction: row; gap: 10px; justify-content: center; align-content: center;">
+                                        <div class="col-3 col-md-3 col-lg-3">
+                                            <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
+                                                <h:graphicImage id="rightIndexImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
+                                            </div>
+                                            <h:inputHidden id="rightIndex" value="#{userBean.capturedMultiFinger.rightIndex}"/>
+                                            <h6 style="text-align:center; font-size: medium; font-weight: bold;">Right Index</h6>
+                                        </div>
+                                        <div class="col-3 col-md-3 col-lg-3">
+                                            <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
+                                                <h:graphicImage id="rightMiddleImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
+                                            </div>
+                                            <h:inputHidden id="rightMiddle" value="#{userBean.capturedMultiFinger.rightMiddle}"/>
+                                            <h6 style="text-align:center; font-size: medium; font-weight: bold;">Right Middle</h6>
+                                        </div>
+                                        <div class="col-3 col-md-3 col-lg-3">
+                                            <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
+                                                <h:graphicImage id="rightRingImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
+                                            </div>
+                                            <h:inputHidden id="rightRing" value="#{userBean.capturedMultiFinger.rightRing}"/>
+                                            <h6 style="text-align:center; font-size: medium; font-weight: bold;">Right Ring</h6>
+                                        </div>
+                                        <div class="col-3 col-md-3 col-lg-3">
+                                            <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
+                                                <h:graphicImage id="rightLittleImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
+                                            </div>
+                                            <h:inputHidden id="rightLittle" value="#{userBean.capturedMultiFinger.rightLittle}"/>
+                                            <h6 style="text-align:center; font-size: medium; font-weight: bold;">Right Little</h6>
+                                        </div> 
+                                    </div>
+
+                                    <div style="display: flex; flex-direction: row; margin-bottom: 30px; margin-top: 10px; justify-content: center; align-content: center;">
+                                        <p:commandButton value="Capture Right Fingers" styleClass=" ui-button-secondary ui-button-raised" onclick="doSendNoId('action:start:rightFour');" type="button"/>
+                                    </div>
+
+                                    <div style="display: flex; flex-direction: row; gap: 10px; justify-content: center; align-content: center;">
+                                        <div class="col-3 col-md-3 col-lg-3">
+                                            <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
+                                                <h:graphicImage id="rightThumbImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
+                                            </div>
+                                            <h:inputHidden id="rightThumb" value="#{userBean.capturedMultiFinger.rightThumb}"/> <h6 style="text-align:center; font-size: medium; font-weight: bold;">Right Thumb</h6>
+                                        </div>  
+                                        <div class="col-3 col-md-3 col-lg-3">
+                                            <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
+                                                <h:graphicImage id="leftThumbImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
+                                            </div>
+                                            <h:inputHidden id="leftThumb" value="#{userBean.capturedMultiFinger.leftThumb}"/> <h6 style="text-align:center; font-size: medium; font-weight: bold;">Left Thumb</h6>
+                                        </div>
+                                    </div>
+
+                                    <div style="display: flex; flex-direction: row; margin-bottom: 30px; margin-top: 10px;  ">
+                                        <p:commandButton value="Capture Thumbs"  styleClass=" ui-button-secondary ui-button-raised" onclick="doSendNoId('action:start:twoThumbs');" type="button" style="font-size: medium;margin-left: 40%"/>
+
+                                        <p:commandButton value="Submit" action="#{userBean.sendForVerification()}" update="growl" styleClass="ui-button-success" icon="pi pi-check" iconPos="right" style="margin-left:auto;"/>
+
+                                    </div>
+
+                                </div>
+
                             </p:panel>
 
-                            <!-- Step 2: Perform Verification -->
+                            <!-- Facial Verification -->
+                            <p:panel rendered="#{userBean.verificationType == 'Face'}" styleClass="face-verification-panel">
+                                <h:inputHidden id="faceImage" value="#{userBean.faceImageData}" />
+                                <div class="face-content-container">
+                                    <h3 class="verification-heading">Facial Verification</h3>
 
-                            <p:panel rendered="#{userBean.currentStep == 1}" style="display: flex; justify-content: center; align-items: center; height:auto; border: none; margin-top: 20px;">
+                                    <div class="input-group">
+                                        <p:outputLabel for="faceNationalId" value="National ID:" styleClass="input-label"/>
+                                        <p:inputText id="faceNationalId" value="#{userBean.ghanaCardNumber}" 
+                                                     placeholder="GHA-XXXXXXXX-X" 
+                                                     styleClass="id-input"/>
+                                    </div>
 
-                                <div style="width: 600px;   padding: 20px; border: 2px solid black; border-radius: 10px; background-color: white;
-                                     box-shadow: 3px 3px 10px rgba(0,0,0,0.2); text-align: center;">
+                                    <div class="capture-container">
+                                        <p:outputLabel value="Face Capture: *" styleClass="capture-label"/>
+                                        <div id="faceImageContainer" class="face-capture-area"></div>
+                                    </div>
 
-                                    <h:inputText id="socketData" style="display: none;" value="#{userBean.socketData}" disabled="true"/>
-                                    <h:inputHidden id="socketDataHidden"/>
-                                    <h3 style="display:flex; text-align: left; ">#{userBean.verificationType} Verification</h3>
-
-
-                                    <!--  Multi finger Verification-->
-                                    <p:panel rendered="#{userBean.verificationType == 'Multi Finger'}"  style="border: none; ">
-
-
-                                        <div style="display: flex; flex-direction: row; gap: 20px;">
-
-                                            <p:commandButton value="Reset" styleClass=" ui-button-warning ui-button-danger" onclick="doSendNoId('action:stop')" action="#{userBean.reset()}" update="@form" style="margin-right: 20px;"/>
+                                    <div class="button-container">
+                                        <div class="capture-buttons">
+                                            <p:commandButton value="Open Camera" onclick="openCamera();" type="button" 
+                                                             styleClass="ui-button-secondary capture-button"/>
+                                            <p:commandButton value="Capture Face" onclick="capture();" type="button" 
+                                                             styleClass="ui-button-secondary capture-button"/>
                                         </div>
-
-                                        <br/>
-
-                                        <div style="display: flex; flex-direction: column; width: 100%; justify-content: center; align-content: center;">
-
-                                            <div class="card">
-                                                <div style="display: flex; flex-direction: row; gap: 10px; justify-content: center; align-content: center; ">
-                                                    <div class="col-3 col-md-3 col-lg-3">
-                                                        <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
-                                                            <h:graphicImage id="leftIndexImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/> 
-                                                        </div>
-                                                        <h:inputHidden id="leftIndex" value="#{userBean.capturedMultiFinger.leftIndex}"/>
-                                                        <h6 style="text-align:center; font-size: medium; font-weight: bold;" >Left Index</h6>
-                                                    </div>
-                                                    <div class="col-10 col-md-10 col-lg-10">
-                                                        <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
-                                                            <h:graphicImage id="leftMiddleImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
-                                                        </div>
-                                                        <h:inputHidden id="leftMiddle" value="#{userBean.capturedMultiFinger.leftMiddle}"/>
-                                                        <h6 style="text-align:center; font-size: medium; font-weight: bold;">Left Middle</h6>
-                                                    </div>
-                                                    <div class="col-3 col-md-3 col-lg-3">
-                                                        <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
-                                                            <h:graphicImage id="leftRingImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
-                                                        </div>
-                                                        <h:inputHidden id="leftRing" value="#{userBean.capturedMultiFinger.leftRing}"/>             
-                                                        <h6 style="text-align:center; font-size: medium; font-weight: bold;">Left Ring</h6>
-                                                    </div>
-                                                    <div class="col-3 col-md-3 col-lg-3">
-                                                        <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
-                                                            <h:graphicImage id="leftLittleImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
-                                                        </div>
-                                                        <h:inputHidden id="leftLittle" value="#{userBean.capturedMultiFinger.leftLittle}"/>        
-                                                        <h6 style="text-align:center; font-size: medium; font-weight: bold;">Left Little</h6>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div style="display: flex; flex-direction: row; margin-bottom: 30px; margin-top: 10px; align-content: center; justify-content: center;">
-                                                <p:commandButton value="Capture Left Fingers" styleClass=" ui-button-secondary ui-button-raised" onclick="doSendNoId('action:start:leftFour');" type="button" style="font-size: medium;"/>
-                                            </div>
-
-                                            <div style="display: flex; flex-direction: row; gap: 10px; justify-content: center; align-content: center;">
-                                                <div class="col-3 col-md-3 col-lg-3">
-                                                    <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
-                                                        <h:graphicImage id="rightIndexImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
-                                                    </div>
-                                                    <h:inputHidden id="rightIndex" value="#{userBean.capturedMultiFinger.rightIndex}"/>
-                                                    <h6 style="text-align:center; font-size: medium; font-weight: bold;">Right Index</h6>
-                                                </div>
-                                                <div class="col-3 col-md-3 col-lg-3">
-                                                    <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
-                                                        <h:graphicImage id="rightMiddleImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
-                                                    </div>
-                                                    <h:inputHidden id="rightMiddle" value="#{userBean.capturedMultiFinger.rightMiddle}"/>
-                                                    <h6 style="text-align:center; font-size: medium; font-weight: bold;">Right Middle</h6>
-                                                </div>
-                                                <div class="col-3 col-md-3 col-lg-3">
-                                                    <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
-                                                        <h:graphicImage id="rightRingImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
-                                                    </div>
-                                                    <h:inputHidden id="rightRing" value="#{userBean.capturedMultiFinger.rightRing}"/>
-                                                    <h6 style="text-align:center; font-size: medium; font-weight: bold;">Right Ring</h6>
-                                                </div>
-                                                <div class="col-3 col-md-3 col-lg-3">
-                                                    <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
-                                                        <h:graphicImage id="rightLittleImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
-                                                    </div>
-                                                    <h:inputHidden id="rightLittle" value="#{userBean.capturedMultiFinger.rightLittle}"/>
-                                                    <h6 style="text-align:center; font-size: medium; font-weight: bold;">Right Little</h6>
-                                                </div> 
-                                            </div>
-
-                                            <div style="display: flex; flex-direction: row; margin-bottom: 30px; margin-top: 10px; justify-content: center; align-content: center;">
-                                                <p:commandButton value="Capture Right Fingers" styleClass=" ui-button-secondary ui-button-raised" onclick="doSendNoId('action:start:rightFour');" type="button"/>
-                                            </div>
-
-                                            <div style="display: flex; flex-direction: row; gap: 10px; justify-content: center; align-content: center;">
-                                                <div class="col-3 col-md-3 col-lg-3">
-                                                    <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
-                                                        <h:graphicImage id="rightThumbImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
-                                                    </div>
-                                                    <h:inputHidden id="rightThumb" value="#{userBean.capturedMultiFinger.rightThumb}"/> <h6 style="text-align:center; font-size: medium; font-weight: bold;">Right Thumb</h6>
-                                                </div>  
-                                                <div class="col-3 col-md-3 col-lg-3">
-                                                    <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
-                                                        <h:graphicImage id="leftThumbImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
-                                                    </div>
-                                                    <h:inputHidden id="leftThumb" value="#{userBean.capturedMultiFinger.leftThumb}"/> <h6 style="text-align:center; font-size: medium; font-weight: bold;">Left Thumb</h6>
-                                                </div>
-                                            </div>
-
-                                            <div style="display: flex; flex-direction: row; margin-bottom: 30px; margin-top: 10px;  ">
-                                                <p:commandButton value="Capture Thumbs"  styleClass=" ui-button-secondary ui-button-raised" onclick="doSendNoId('action:start:twoThumbs');" type="button" style="font-size: medium;margin-left: 40%"/>
-
-                                                <p:commandButton value="Submit" action="#{userBean.sendForVerification()}" update="growl" styleClass="ui-button-success" icon="pi pi-check" iconPos="right" style="margin-left:auto;"/>
-
-                                            </div>
-
-                                        </div>
-
-                                    </p:panel>
-
-                                    <!-- Facial Verification -->
-                                    <p:panel rendered="#{userBean.verificationType == 'Face'}" styleClass="face-verification-panel">
-                                        <h:inputHidden id="faceImage" value="#{userBean.faceImageData}" />
-                                        <div class="face-content-container">
-                                            <h3 class="verification-heading">Facial Verification</h3>
-
-                                            <div class="input-group">
-                                                <p:outputLabel for="faceNationalId" value="National ID:" styleClass="input-label"/>
-                                                <p:inputText id="faceNationalId" value="#{userBean.ghanaCardNumber}" 
-                                                             placeholder="GHA-XXXXXXXX-X" 
-                                                             styleClass="id-input"/>
-                                            </div>
-
-                                            <div class="capture-container">
-                                                <p:outputLabel value="Face Capture: *" styleClass="capture-label"/>
-                                                <div id="faceImageContainer" class="face-capture-area"></div>
-                                            </div>
-
-                                            <div class="button-container">
-                                                <div class="capture-buttons">
-                                                    <p:commandButton value="Open Camera" onclick="openCamera();" type="button" 
-                                                                     styleClass="ui-button-secondary capture-button"/>
-                                                    <p:commandButton value="Capture Face" onclick="capture();" type="button" 
-                                                                     styleClass="ui-button-secondary capture-button"/>
-                                                </div>
-                                                <p:commandButton value="Submit Verification" onclick="saveCroppedImage()" 
-                                                                 action="#{userBean.verifyFace()}" update="growl" 
-                                                                 styleClass="ui-button-success verify-button"/>
-                                            </div>
-                                        </div>
-                                    </p:panel>
-
-
-                                    <!--  Show Single Finger Verification UI only if selected -->
-                                    <p:panel rendered="#{userBean.verificationType == 'Single Finger'}">
-                                        <!-- Ghana Card Input -->
-                                        <h:outputLabel for="ghanaCard" value="Enter Ghana Card here" style="font-size: large; font-weight: bolder;"/>
-                                        <br/>
-                                        <p:inputText id="ghanaCardPin" value="#{userBean.ghanaCardNumber}" 
-                                                     placeholder="GHA-XXXXXXXXX-X"/>
-
-                                        <br/><br/><br/>
-                                        <!-- Finger Selection -->
-                                        <h:outputLabel for="position" value="Select a Finger" style="font-size: large; font-weight: bolder;"/>
-                                        <br/>
-                                        <p:selectOneMenu id="position" value="#{userBean.fingerPosition}" widgetVar="position">
-                                            <f:selectItem itemLabel="-- Select Finger --" itemValue="" noSelectionOption="true"/>
-                                            <f:selectItem itemLabel="Left Thumb" itemValue="LT"/>
-                                            <f:selectItem itemLabel="Left Index" itemValue="LI"/>
-                                            <f:selectItem itemLabel="Left Middle" itemValue="LM"/>
-                                            <f:selectItem itemLabel="Left Ring" itemValue="LR"/>
-                                            <f:selectItem itemLabel="Left Little" itemValue="LL"/>
-                                            <f:selectItem itemLabel="Right Thumb" itemValue="RT"/>
-                                            <f:selectItem itemLabel="Right Index" itemValue="RI"/>
-                                            <f:selectItem itemLabel="Right Middle" itemValue="RM"/>
-                                            <f:selectItem itemLabel="Right Ring" itemValue="RR"/>
-                                            <f:selectItem itemLabel="Right Little" itemValue="RL"/>
-                                        </p:selectOneMenu>
-
-                                        <br/><br/><br/>
-
-                                        <!-- Fingerprint Image Preview -->
-                                        <h:outputLabel value="Fingerprint Image" style="font-size: large; font-weight: bolder;"/>
-                                        <br/>
-
-                                        <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
-                                            <h:graphicImage id="fingerImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
-                                        </div>
-
-                                        <h:inputHidden id="fingerData" value="#{userBean.capturedFinger}"/>
-                                        <br/><br/><br/>
-
-                                        <!-- Buttons -->
-                                        <div style="display:flex; flex-direction: row; gap: 5px; justify-content: space-between;">
-                                            <p:commandButton value="Reset" style="margin-right: 10px;" styleClass=" ui-button-warning ui-button-danger" onclick="doSendNoId('action:stop')" action="#{userBean.reset}" update="@form" icon="pi pi-refresh"/>
-                                            <p:commandButton value="Capture Finger" style="margin-right: 0px;" styleClass=" ui-button-secondary ui-button-raised" onclick="doSend('action:start:single');" type="button" icon="fa fa-thin fa-fingerprint fa-beat"/>
-                                            <p:commandButton value="Verify" action="#{userBean.submit()}"  update=":wizardForm growl"  process="@form" styleClass="ui-button-success" icon="pi pi-check" iconPos="right" />
-        <!--                                    <h:inputText id="socketData" style="display: none;" value="#{userBean.socketData}" disabled="true"/>
-                                            <h:inputHidden id="socketDataHidden"/>-->
-                                        </div>
-                                    </p:panel>
-
-                                    <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-                                        <p:commandButton value="Back" action="#{userBean.prevStep}" update="wizardForm"/>
-
+                                        <p:commandButton value="Submit Verification" onclick="saveCroppedImage()" 
+                                                         action="#{userBean.verifyFace()}" update="growl" 
+                                                         styleClass="ui-button-success verify-button"/>
                                     </div>
                                 </div>
                             </p:panel>
 
-                            <!-- Step 3: Auto-Fill Employee Details -->
-                            <p:panel rendered="#{userBean.currentStep == 2}">
-                                <h3>Employee Details</h3>
 
-                                <p:panelGrid columns="2">
+                            <!--  Show Single Finger Verification UI only if selected -->
+                            <p:panel rendered="#{userBean.verificationType == 'Single Finger'}">
+                                <!-- Ghana Card Input -->
+                                <h:outputLabel for="ghanaCard" value="Enter Ghana Card here" style="font-size: large; font-weight: bolder;"/>
+                                <br/>
+                                <p:inputText id="ghanaCardPin" value="#{userBean.ghanaCardNumber}" 
+                                             placeholder="GHA-XXXXXXXXX-X"/>
 
-                                    <h:outputLabel value="Face Image" />
-                                    <img width="200px" src="#{userBean.empImage}"></img>
+                                <br/><br/><br/>
+                                <!-- Finger Selection -->
+                                <h:outputLabel for="position" value="Select a Finger" style="font-size: large; font-weight: bolder;"/>
+                                <br/>
+                                <p:selectOneMenu id="position" value="#{userBean.fingerPosition}" widgetVar="position">
+                                    <f:selectItem itemLabel="-- Select Finger --" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItem itemLabel="Left Thumb" itemValue="LT"/>
+                                    <f:selectItem itemLabel="Left Index" itemValue="LI"/>
+                                    <f:selectItem itemLabel="Left Middle" itemValue="LM"/>
+                                    <f:selectItem itemLabel="Left Ring" itemValue="LR"/>
+                                    <f:selectItem itemLabel="Left Little" itemValue="LL"/>
+                                    <f:selectItem itemLabel="Right Thumb" itemValue="RT"/>
+                                    <f:selectItem itemLabel="Right Index" itemValue="RI"/>
+                                    <f:selectItem itemLabel="Right Middle" itemValue="RM"/>
+                                    <f:selectItem itemLabel="Right Ring" itemValue="RR"/>
+                                    <f:selectItem itemLabel="Right Little" itemValue="RL"/>
+                                </p:selectOneMenu>
 
-                                    <h:outputLabel value="Ghana Card Number:" />
-                                    <h:outputText value="#{userBean.ghanaCardNumber}" />
+                                <br/><br/><br/>
 
-                                    <h:outputLabel value="Full Name:" />
-                                    <h:outputText value="#{userBean.username}" />
-                          
-                                    <h:outputLabel value="Date of Birth:" />
-                                    <h:outputText value="#{userBean.employeeDOB}" />
-                                    
-                                    <h:outputLabel value="Gender:" />
-                                    <h:outputText value="#{userBean.gender}" />
+                                <!-- Fingerprint Image Preview -->
+                                <h:outputLabel value="Fingerprint Image" style="font-size: large; font-weight: bolder;"/>
+                                <br/>
 
-                                    <h:outputLabel value="Nationality:" />
-                                    <h:outputText value="#{userBean.nationality}" />
-
-                                    
-                                    <h:outputLabel for="userRole" value="Role:" />
-                                    <p:selectOneMenu id="userRole" value="#{userBean.userRole}" >
-                                        <f:selectItem itemLabel="Select Role" itemValue="" />
-                                        <f:selectItem itemValue="Admin" itemLabel="Admin" />
-                                        <f:selectItem itemValue="User" itemLabel="User" />
-                                    </p:selectOneMenu>
-                                    <p:message for="userRole" />
-
-
-                                </p:panelGrid>
-
-                                <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-                                    <p:commandButton value="Back" action="#{userBean.prevStep}" update="wizardForm"/>
-                                    <p:commandButton value="Save Employee" action="#{userBean.saveUserToDatabase}" update="growl"/>
+                                <div style="border: 2px solid black; padding: 5px; border-radius: 8px; display: inline-block;">
+                                    <h:graphicImage id="fingerImage" value="/resources/images/fing.jpeg" width="99.9" height="100"/>
                                 </div>
 
+                                <h:inputHidden id="fingerData" value="#{userBean.capturedFinger}"/>
+                                <br/><br/><br/>
 
+                                <!-- Buttons -->
+                                <div style="display:flex; flex-direction: row; gap: 5px; justify-content: space-between;">
+                                    <p:commandButton value="Reset" style="margin-right: 10px;" styleClass=" ui-button-warning ui-button-danger" onclick="doSendNoId('action:stop')" action="#{userBean.reset}" update="@form" icon="pi pi-refresh"/>
+                                    <p:commandButton value="Capture Finger" style="margin-right: 0px;" styleClass=" ui-button-secondary ui-button-raised" onclick="doSend('action:start:single');" type="button" icon="fa fa-thin fa-fingerprint fa-beat"/>
+                                    <p:commandButton value="Verify" action="#{userBean.submit()}"  update=":wizardForm growl"  process="@form" styleClass="ui-button-success" icon="pi pi-check" iconPos="right" />
+<!--                                    <h:inputText id="socketData" style="display: none;" value="#{userBean.socketData}" disabled="true"/>
+                                    <h:inputHidden id="socketDataHidden"/>-->
+                                </div>
                             </p:panel>
 
+                            <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                                <p:commandButton value="Back" action="#{userBean.prevStep}" update="wizardForm"/>
 
-                        </p:outputPanel>
-                    </h:form>
-                </div>
+                            </div>
+                        </div>
+                    </p:panel>
 
-                <h:outputScript library="js" name="orbis.js" target="head"/>
-                <h:outputScript library="js" name="webcam.js"/>
-                <h:outputScript library="js" name="cropper.min.js"/>
-                <h:outputScript library="js" name="facial.js"/>
-                <h:outputStylesheet library="css" name="cropper.min.css"/>
+                    <!-- Step 3: Auto-Fill Employee Details -->
+                    <p:panel rendered="#{userBean.currentStep == 2}">
+                        <h3>Employee Details</h3>
 
-                <style type='text/css'>
-                    .face-verification-panel {
-                        border: none !important;
-                        background: transparent !important;
-                    }
+                        <p:panelGrid columns="2">
 
-                    .face-content-container {
-                        display: flex;
-                        flex-direction: column;
-                        width: 100%;
-                        max-width: 560px;
-                        margin: 0 auto;
-                    }
+                            <h:outputLabel value="Face Image" />
+                            <img width="200px" src="#{userBean.empImage}"></img>
 
-                    .verification-heading {
-                        text-align: left;
-                        margin-bottom: 20px;
-                        font-weight: bold;
-                    }
+                            <h:outputLabel value="Ghana Card Number:" />
+                            <h:outputText value="#{userBean.ghanaCardNumber}" />
 
-                    .input-group {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: flex-start;
-                        margin-bottom: 20px;
-                    }
+                            <h:outputLabel value="Full Name:" />
+                            <h:outputText value="#{userBean.username}" />
 
-                    .input-label {
-                        font-weight: bold;
-                        margin-bottom: 5px;
-                    }
+                            <h:outputLabel value="Date of Birth:" />
+                            <h:outputText value="#{userBean.employeeDOB}" />
 
-                    .id-input {
-                        width: 100%;
-                        padding: 8px;
-                        border-radius: 5px;
-                    }
+                            <h:outputLabel value="Gender:" />
+                            <h:outputText value="#{userBean.gender}" />
 
-                    .capture-container {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: flex-start;
-                        margin-bottom: 20px;
-                    }
-
-                    .capture-label {
-                        font-weight: bold;
-                        margin-bottom: 10px;
-                    }
-
-                    .face-capture-area {
-                        border: 2px dashed #ccc;
-                        padding: 15px;
-                        text-align: center;
-                        border-radius: 5px;
-                        min-height: 200px;
-                        width: 100%;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        background-color: #f8f9fa;
-                    }
-
-                    .button-container {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        margin-top: 20px;
-                    }
-
-                    .capture-buttons {
-                        display: flex;
-                        gap: 10px;
-                    }
-
-                    .capture-button {
-                        background-color: #4682B4 !important;
-                        color: white !important;
-                    }
-
-                    .verify-button {
-                        background-color: #28a745 !important;
-                        color: white !important;
-                    }
-                </style>
+                            <h:outputLabel value="Nationality:" />
+                            <h:outputText value="#{userBean.nationality}" />
 
 
-            </ui:define>
-        </ui:composition>
-    </h:body>
-</html>
+                            <h:outputLabel for="userRole" value="Role:" />
+                            <p:selectOneMenu id="userRole" value="#{userBean.userRole}" >
+                                <f:selectItem itemLabel="Select Role" itemValue="" />
+                                <f:selectItem itemValue="Admin" itemLabel="Admin" />
+                                <f:selectItem itemValue="User" itemLabel="User" />
+                            </p:selectOneMenu>
+                            <p:message for="userRole" />
+
+
+                        </p:panelGrid>
+
+                        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                            <p:commandButton value="Back" action="#{userBean.prevStep}" update="wizardForm"/>
+                            <p:commandButton value="Create User" action="#{userBean.saveUserToDatabase}" update="growl"/>
+                        </div>
+
+
+                    </p:panel>
+
+
+                </p:outputPanel>
+            </h:form>
+        </div>
+
+        <h:outputScript library="js" name="orbis.js" target="head"/>
+        <h:outputScript library="js" name="webcam.js"/>
+        <h:outputScript library="js" name="cropper.min.js"/>
+        <h:outputScript library="js" name="facial.js"/>
+        <h:outputStylesheet library="css" name="cropper.min.css"/>
+
+        <style type='text/css'>
+            .face-verification-panel {
+                border: none !important;
+                background: transparent !important;
+            }
+
+            .face-content-container {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                max-width: 560px;
+                margin: 0 auto;
+            }
+
+            .verification-heading {
+                text-align: left;
+                margin-bottom: 20px;
+                font-weight: bold;
+            }
+
+            .input-group {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                margin-bottom: 20px;
+            }
+
+            .input-label {
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+
+            .id-input {
+                width: 100%;
+                padding: 8px;
+                border-radius: 5px;
+            }
+
+            .capture-container {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                margin-bottom: 20px;
+            }
+
+            .capture-label {
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+
+            .face-capture-area {
+                border: 2px dashed #ccc;
+                padding: 15px;
+                text-align: center;
+                border-radius: 5px;
+                min-height: 200px;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background-color: #f8f9fa;
+            }
+
+            .button-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 20px;
+            }
+
+            .capture-buttons {
+                display: flex;
+                gap: 10px;
+            }
+
+            .capture-button {
+                background-color: #4682B4 !important;
+                color: white !important;
+            }
+
+            .verify-button {
+                background-color: #28a745 !important;
+                color: white !important;
+            }
+        </style>
+
+
+    </ui:define>
+</ui:composition>

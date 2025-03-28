@@ -12,6 +12,9 @@ import jakarta.annotation.PostConstruct;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  *
@@ -24,12 +27,27 @@ public class ManageEmployeesBean implements Serializable {
     private List<Employee> employees;
     private String searchTerm;
 
+    @Getter
+    @Setter
+    private String searchQuery;
+    
     @Inject
     private Employee_Service employeeService;
 
     @PostConstruct
     public void init() {
         employees = employeeService.findAllEmployees();
+    }
+    
+    public void findEmployee() {
+        if (searchQuery == null || searchQuery.trim().isEmpty()) {
+            employees = employeeService.findAllEmployees();
+        } else {
+            employees = employeeService.findAllEmployees().stream()
+                    .filter(emp -> emp.getGhanaCardNumber().contains(searchQuery)
+                    || (emp.getFirstname() + " " + emp.getLastname()).toLowerCase().contains(searchQuery.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
     }
 
     public void searchEmployees() {

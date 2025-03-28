@@ -78,7 +78,14 @@ public class EmployeeRole_Service {
     public List<EmployeeRole> findAllEmployeeRoles() {
         return entityManager.createQuery("SELECT r FROM EmployeeRole r", EmployeeRole.class).getResultList();
     }
-
+    
+    public List<EmployeeRole> findEmployeeRoleByName(String searchQuery) {
+        return entityManager.createQuery(
+                "SELECT r FROM EmployeeRole r WHERE LOWER(r.roleName) LIKE LOWER(:searchQuery)", EmployeeRole.class)
+                .setParameter("searchQuery", "%" + searchQuery + "%")
+                .getResultList();
+    }
+    
     /**
      * Delete an EmployeeRole by ID.
      *

@@ -12,11 +12,13 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
       xmlns:p="http://primefaces.org/ui"
       xmlns:ui="jakarta.faces.facelets">
 
-    <h:head>
-        <f:metadata>
-            <f:event type="preRenderView" listener="#{loginBean.redirectIfNotLoggedIn()}" />
-        </f:metadata>
+    <f:metadata>
+        <f:event type="preRenderView" listener="#{loginBean.redirectIfNotLoggedIn()}" />
+    </f:metadata>
 
+    <ui:insert name="metadata" />
+
+    <h:head>
         <f:facet name="first">
             <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -26,7 +28,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
         </f:facet>
 
         <ui:insert name="head"/>
-        <title>The Staff-Id MODULE</title>
+        <title><ui:insert name="title"/></title>
         <h:outputScript library="js" name="menuscript.js" target="body" />
     </h:head>
 
@@ -35,11 +37,11 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
 
         <div class="topbar">
             <button class="toggle-button" onclick="toggleSidebar()">&#9776;</button>
-            
+
             <span style="display: block; text-align: center; font-size: larger"><strong>#{sessionScope.userRole}</strong></span>
 
-            
-            
+
+
             <h:form>
                 <div class="header-right">
                     <p:menu overlay="true" trigger="userMenu" my="left top" at="left bottom">
@@ -53,12 +55,12 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     <p:commandButton id="userMenu" type="button" value="#{loginBean.userInitials}" class="initials-button" />
                 </div>
             </h:form>
-            
-            
-<!--            <div class="staff-id-section">
-                <h:outputText value="Staff ID Module" style="font-weight: bold;" />
-                <p:graphicImage name="id-card-svgrepo-com.svg" library="images" style="height:30px; vertical-align: middle;"/>
-            </div>-->
+
+
+            <!--            <div class="staff-id-section">
+                            <h:outputText value="Staff ID Module" style="font-weight: bold;" />
+                            <p:graphicImage name="id-card-svgrepo-com.svg" library="images" style="height:30px; vertical-align: middle;"/>
+                        </div>-->
         </div>
 
         <!-- Sidebar Navigation -->
@@ -78,27 +80,27 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     <!-- Employee Menu -->
                     <p:submenu label="Employee" expanded="true">
                         <p:menuitem value="Onboard Employee" outcome="/app/OnboardEmployee/onboardEmployee.xhtml?faces-redirect=true" icon="fa-solid fa-user-large"/>
-                        <p:menuitem value="Manage Employee Profile" outcome="/app/employeeList?faces-redirect=true" icon="pi pi-pencil"/>
+                        <p:menuitem value="Employee Profiles" outcome="/app/employeeList?faces-redirect=true" icon="pi pi-pencil"/>
                     </p:submenu>
 
                     <p:submenu label="Employee Roles" expanded="true">
                         <p:menuitem value="Assign Employee Role"  outcome="/app/EmployeeRoles/assignRole?faces-redirect=true" icon="pi pi-upload"/>
-                        <p:menuitem value="Create Employee Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" icon="fa-regular fa-pen-to-square fa-flip-vertical" style="color: black;"/>
+                        <p:menuitem value="Create Employee Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" icon="fa-regular fa-pen-to-square fa-flip-vertical" style="color: black;" rendered="#{sessionScope.userRole eq 'Admin'}"/>
                     </p:submenu>
 
-                    <p:submenu label="Assign Access" expanded="true">
+                    <p:submenu label="Assign Access" expanded="true" rendered="#{sessionScope.userRole eq 'Admin'}">
                         <p:menuitem value="New Access Levels" outcome="/app/Access/manageAccessLevels?faces-redirect=true" icon="pi pi-plus" />
                         <p:menuitem value="Assign Entrances" outcome="/app/Access/assignEntrance?faces-redirect=true" icon="fa-solid fa-door-closed"/>
                     </p:submenu>
 
-                    <p:submenu label="Entrances" expanded="true">
+                    <p:submenu label="Entrances" expanded="true" rendered="#{sessionScope.userRole eq 'Admin'}">
                         <p:menuitem value="Manage Entrances" outcome="/app/Entrances/manageEntrances?faces-redirect=true" icon="fa-solid fa-door-open"/>
-                        <p:menuitem value="Assign Roles to Entrances" outcome="/app/Access/assign-roles?facess-redirect=true" icon="fa-solid fa-building-user "/>
+                        <p:menuitem value="Assign Roles to Entrances" outcome="/app/Access/assign-roles?facess-redirect=true" icon="fa-solid fa-building-user " />
                     </p:submenu>
-                    <p:submenu label="Users" expanded="true">
+                    <p:submenu label="Users" expanded="true" rendered="#{sessionScope.userRole eq 'Admin'}">
                         <p:menuitem value="Create New User" outcome="/newuser?faces-redirect=true" icon="pi pi-user-plus"/>
                     </p:submenu>
-                    <p:submenu label="Biometric" expanded="true">
+                    <p:submenu label="Biometric" expanded="true" rendered="#{sessionScope.userRole eq 'Admin'}">
                         <p:menuitem value="Create new biometric data" url="http://localhost:8080/STIM/newuser.xhtml" icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat"/>
                         <p:menuitem value="Remove Biometric data" url="" icon="pi pi-times"/>
                     </p:submenu>
