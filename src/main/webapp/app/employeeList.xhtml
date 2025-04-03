@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
--->
 <!DOCTYPE html>
 
 <ui:composition template="/WEB-INF/templates.xhtml"
@@ -13,7 +9,9 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                 xmlns:ui="jakarta.faces.facelets">
     
     <ui:define name ="title">Employee List</ui:define>
-    
+    <ui:define name="head">
+        <h:outputStylesheet library="css" name="manageEmployee.css"/>
+    </ui:define>
     <ui:define name ="content">
         <!-- Main Content -->
         <div class="main-content" >
@@ -55,12 +53,79 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     </p:column>
 
                     <p:column headerText="Actions">
-                        <p:commandButton value="View" icon="pi pi-eye" 
+                        <p:commandButton value="View" icon="pi pi-eye" id="profileBtn"
                                          action="#{manageEmployeesBean.viewEmployee(employee.ghanaCardNumber)}" 
-                                         update=":employeeForm" />
+                                         update=":employeeForm:profileModal"
+                                         oncomplete="PF('profileDialog').show();" />
                     </p:column>
                 </p:dataTable>
+                <!-- Profile Modal -->
+                <p:dialog id="profileModal" 
+                          widgetVar="profileDialog" >
+<!--                          header="Profile" 
+                          modal="true" 
+                          showEffect="fade" 
+                          hideEffect="fade"
+                          resizable="false"
+                          styleClass="profile-modal"
+                                                    style="width: 90%; max-width: 420px; max-height: 90vh;">-->
+
+                    <div class="modal-overlay">
+                        <div class="profile-modal">
+                            <div class="modal-header">
+                                <h2 class="modal-title">Profile</h2>
+                                <button class="close-button" id="closeModal">×</button>
+                            </div>
+
+                            <div class="profile-content">
+                                <div class="user-profile">
+                                    <div class="profile-avatar"><strong>#{manageEmployeesBean.selectedEmployeeInitials}</strong></div>
+                                    <h1 class="user-name">#{manageEmployeesBean.selectedEmployee.fullName}</h1>
+                                    <div class="user-email">#{manageEmployeesBean.selectedEmployee.email}</div>
+                                    <h3 class = "gh-no">#{manageEmployeesBean.selectedEmployee.ghanaCardNumber}</h3>
+                                    <p class="user-bio"><strong>#{manageEmployeesBean.selectedEmployee.role}</strong></p>
+                                    <p class="user-empstat">PART-TIME</p>
+                                </div>
+
+                                <div class="divider"></div>
+
+
+                                <div class="profile-section">
+                                    <h3 class="section-title">Account</h3>
+                                    <div class="profile-actions">
+                                        <button class="action-button">Entrances</button><!--Should show a drop down of all the entrances assigned to the role-->
+                                        <button class="action-button">Status</button><!--Toggle can show a dropdown list of emplouyee status, like active , on leave-->
+                                    </div>
+                                </div>
+
+                                <div class="delete">
+                                    <button class="del-statement">Want to delete this employee account? (Click here)</button>
+                                </div>
+                                <button class="primary-button" onclick="PF('profileDialog').hide();">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </p:dialog>
             </h:form>
         </div>
+        
+        <script>
+        // Simulating the modal opening behavior
+        document.getElementById('profileBtn').addEventListener('click', function() {
+            document.getElementById('profileModal').style.display = 'flex';
+        });
+        
+        document.getElementById('closeModal').addEventListener('click', function() {
+            document.getElementById('profileModal').style.display = 'none';
+        });
+        
+        // Close modal when clicking outside
+        document.getElementById('profileModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        });
+        </script>v
+        
     </ui:define>
 </ui:composition>

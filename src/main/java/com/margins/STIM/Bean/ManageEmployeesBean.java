@@ -26,6 +26,9 @@ public class ManageEmployeesBean implements Serializable {
 
     private List<Employee> employees;
     private String searchTerm;
+    @Getter
+    @Setter
+    private Employee selectedEmployee;
 
     @Getter
     @Setter
@@ -58,10 +61,38 @@ public class ManageEmployeesBean implements Serializable {
         }
     }
 
-    public String viewEmployee(String ghanaCardNumber) {
-        return "viewEmployee.xhtml?faces-redirect=true&amp;ghanaCardNumber=" + ghanaCardNumber;
+    public void viewEmployee(String ghanaCardNumber) {
+        selectedEmployee = employeeService.findEmployeeByGhanaCard(ghanaCardNumber);
     }
+    
+    public void deleteEmployee() {
+        if (selectedEmployee != null) {
+            employeeService.deleteEmployee(selectedEmployee.getGhanaCardNumber());
+            employees = employeeService.findAllEmployees(); // Refresh the list
+            selectedEmployee = null;
+        }
+    }
+    
+    public String getFullName() {
+        if (selectedEmployee != null) {
+            return selectedEmployee.getFirstname()+ " " + selectedEmployee.getLastname();
+        }
+        return "No Employee Selected";
+    }
+    
+    public String getSelectedEmployeeInitials() {
+        if (selectedEmployee == null || selectedEmployee.getFirstname() == null || selectedEmployee.getLastname() == null) {
+            return "??"; // Default initials if no employee is selected
+        }
 
+        // Extract initials from first and last name
+        String firstInitial = selectedEmployee.getFirstname().substring(0, 1).toUpperCase();
+        String lastInitial = selectedEmployee.getLastname().substring(0, 1).toUpperCase();
+
+        return firstInitial + lastInitial;
+    }
+    
+    
     public String editEmployee(String ghanaCardNumber) {
         return "editEmployee.xhtml?faces-redirect=true&amp;ghanaCardNumber=" + ghanaCardNumber;
     }

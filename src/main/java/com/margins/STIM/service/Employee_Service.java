@@ -7,6 +7,7 @@ package com.margins.STIM.service;
 import com.margins.STIM.entity.BiometricData;
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.EmployeeRole;
+import com.margins.STIM.entity.EmploymentStatus;
 import java.util.List;
 import java.util.regex.Pattern;
 import jakarta.ejb.Stateless;
@@ -138,6 +139,59 @@ public class Employee_Service {
                 + "LOWER(e.ghanaCardNumber) LIKE :query", Employee.class)
                 .setParameter("query", "%" + query + "%")
                 .getResultList();
+    }
+    
+    
+    // Create
+    public EmploymentStatus saveEmploymentStatus(EmploymentStatus status) {
+        entityManager.persist(status);
+        return status;
+    }
+
+    // Update
+    public EmploymentStatus updateEmploymentStatus(int statusId, EmploymentStatus status) {
+        EmploymentStatus existingStatus = findEmploymentStatusById(statusId);
+        if (existingStatus != null) {
+            status.setId(statusId); // Ensure ID consistency
+            return entityManager.merge(status);
+        }
+        throw new EntityNotFoundException("Employment status does not exist with ID: " + statusId);
+    }
+
+    // Retrieve all
+    public List<EmploymentStatus> findAllEmploymentStatuses() {
+        return entityManager.createQuery("SELECT es FROM EmploymentStatus es", EmploymentStatus.class)
+                .getResultList();
+    }
+
+    // Find by ID
+    public EmploymentStatus findEmploymentStatusById(int statusId) {
+        return entityManager.createQuery("SELECT es FROM EmploymentStatus es WHERE es.id = :statusId", EmploymentStatus.class)
+                .setParameter("statusId", statusId)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+    }
+
+    // Delete
+    public void deleteEmploymentStatus(int statusId) {
+        EmploymentStatus status = findEmploymentStatusById(statusId);
+        if (status != null) {
+            if (isEmploymentStatusInUse(statusId)) {
+                throw new IllegalStateException("Cannot delete employment status in use by employees.");
+            }
+            entityManager.remove(status);
+        } else {
+            throw new EntityNotFoundException("Employment status does not exist with ID: " + statusId);
+        }
+    }
+
+    // Helper to check if status is in use
+    public boolean isEmploymentStatusInUse(int statusId) {
+        Long count = entityManager.createQuery("SELECT COUNT(e) FROM Employee e WHERE e.employmentStatus.id = :statusId", Long.class)
+                .setParameter("statusId", statusId)
+                .getSingleResult();
+        return count > 0;
     }
 }
 

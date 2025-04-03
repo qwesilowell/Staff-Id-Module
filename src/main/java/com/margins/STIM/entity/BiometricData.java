@@ -20,7 +20,7 @@ public class BiometricData extends EntityModel implements Serializable {
 
 
     @OneToOne
-    @JoinColumn(name = "ghana_card_number", nullable = false, referencedColumnName = "GHANA_CARD_NUMBER") 
+    @JoinColumn(name = "employee_biometric_data_fk", nullable = false) 
     private Employee employee;
 
     @Lob

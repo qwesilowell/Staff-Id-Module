@@ -15,6 +15,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.Date;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "Employee")
@@ -41,6 +43,13 @@ public class Employee implements Serializable {
     
     @Column(name = "EMAIL" ) 
     private String email;
+    
+    @Getter
+    @Setter
+    @ManyToOne
+    @JoinColumn(name = "EMPLOYMENT_STATUS_ID")
+    private EmploymentStatus employmentStatus;
+ 
 
 //    @ManyToOne
 //    @JoinColumn(name = "department_id", nullable = false)
@@ -73,6 +82,7 @@ public class Employee implements Serializable {
 //    @ManyToOne
 //    @JoinColumn(name = "office_id", nullable = false)
 //    private Office office;
+    
     public String getFullName() {
         return firstname + " " + lastname;
     }
@@ -203,7 +213,7 @@ public class Employee implements Serializable {
     }
     
 
-    public Employee(String ghanaCardNumber,String firstname, String lastname,String email, LocalDate dateOfBirth, String gender, String address, Department department, byte[] employeePhoto, BiometricData biometricData, EmployeeRole role, Date createdAt, Users user, Office office) {
+    public Employee(String ghanaCardNumber,String firstname, String lastname,String email, LocalDate dateOfBirth, String gender, String address, Department department, byte[] employeePhoto, BiometricData biometricData, EmployeeRole role, Date createdAt, Users user, Office office,EmploymentStatus employmentStatus) {
         this.ghanaCardNumber = ghanaCardNumber;
         this.firstname = firstname;
         this.lastname = lastname;
@@ -218,6 +228,7 @@ public class Employee implements Serializable {
 //        this.user = user;
 //        this.office = office;
         this.email= email;
+        this.employmentStatus= employmentStatus;
     }
 
 //    public Employee(List<EmployeeRole> roles) {

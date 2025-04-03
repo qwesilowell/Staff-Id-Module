@@ -12,9 +12,9 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
       xmlns:p="http://primefaces.org/ui"
       xmlns:ui="jakarta.faces.facelets">
 
-    <f:metadata>
-        <f:event type="preRenderView" listener="#{loginBean.redirectIfNotLoggedIn()}" />
-    </f:metadata>
+<!--    <f:metadata>
+        <f:event type="preRenderView" listener="#-{loginBean.redirectIfNotLoggedIn()}" />
+    </f:metadata>-->
 
     <ui:insert name="metadata" />
 
@@ -29,7 +29,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
 
         <ui:insert name="head"/>
         <title><ui:insert name="title"/></title>
-        <h:outputScript library="js" name="menuscript.js" target="body" />
+<!--        <h:outputScript library="js" name="menuscript.js" target="body" />-->
     </h:head>
 
     <h:body>

@@ -106,15 +106,15 @@ public class LoginBean implements Serializable {
 
     String BASE_URL = JSF.getContextURL() + "/";
 
-    public void redirectIfNotLoggedIn() {
-        if (username == null) {
-            try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "login.xhtml");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+//    public void redirectIfNotLoggedIn() {
+//        if (username == null) {
+//            try {
+//                FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "login.xhtml");
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
     // Regular Login with Password
 //        public String login() {
