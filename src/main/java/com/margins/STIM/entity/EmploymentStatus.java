@@ -4,6 +4,7 @@
  */
 package com.margins.STIM.entity;
 
+import jakarta.persistence.Cacheable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -23,11 +24,16 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table (name ="EMPLOYMENT_STATUS", schema = "PMANTE")
+@Cacheable(false)
 public class EmploymentStatus extends EntityModel implements Serializable {
     
     
     @Column(name ="STATUS", nullable= false)
     private String empstatus;
+
+    @Override
+    public String toString() {
+        return empstatus;
+    }
     
-    
-}
+    }

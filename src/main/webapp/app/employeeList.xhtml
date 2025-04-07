@@ -7,7 +7,7 @@
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets">
-    
+
     <ui:define name ="title">Employee List</ui:define>
     <ui:define name="head">
         <h:outputStylesheet library="css" name="manageEmployee.css"/>
@@ -62,13 +62,13 @@
                 <!-- Profile Modal -->
                 <p:dialog id="profileModal" 
                           widgetVar="profileDialog" >
-<!--                          header="Profile" 
-                          modal="true" 
-                          showEffect="fade" 
-                          hideEffect="fade"
-                          resizable="false"
-                          styleClass="profile-modal"
-                                                    style="width: 90%; max-width: 420px; max-height: 90vh;">-->
+                    <!--   
+                                              modal="true" 
+                                              showEffect="fade" 
+                                              hideEffect="fade"
+                                              resizable="false"
+                                              styleClass="profile-modal"
+                                                                        style="width: 90%; max-width: 420px; max-height: 90vh;">-->
 
                     <div class="modal-overlay">
                         <div class="profile-modal">
@@ -84,7 +84,7 @@
                                     <div class="user-email">#{manageEmployeesBean.selectedEmployee.email}</div>
                                     <h3 class = "gh-no">#{manageEmployeesBean.selectedEmployee.ghanaCardNumber}</h3>
                                     <p class="user-bio"><strong>#{manageEmployeesBean.selectedEmployee.role}</strong></p>
-                                    <p class="user-empstat">PART-TIME</p>
+                                    <p class="user-empstat">#{manageEmployeesBean.selectedEmployee.employmentStatus}</p>
                                 </div>
 
                                 <div class="divider"></div>
@@ -99,33 +99,69 @@
                                 </div>
 
                                 <div class="delete">
-                                    <button class="del-statement">Want to delete this employee account? (Click here)</button>
+                                    <p:commandButton value="Want to delete this employee account? (Click here)" 
+                                                     styleClass="del-statement" 
+                                                     process="@this" 
+                                                     oncomplete="PF('deleteEmployeeDialog').show()" 
+                                                     />
                                 </div>
                                 <button class="primary-button" onclick="PF('profileDialog').hide();">Close</button>
                             </div>
                         </div>
                     </div>
                 </p:dialog>
+
+                <p:dialog id="deleteEmployeeDialog" 
+                          widgetVar="deleteEmployeeDialog" 
+                          header="Confirm Deletion" 
+                          modal="true" 
+                          showEffect="fade" 
+                          hideEffect="fade" 
+                          resizable="false" 
+                          width="300"
+                          style="color:#9ca3af">
+                    <h:panelGroup>
+                        <h:outputText value="Delete employee:" style="font-weight: bold;" />
+
+                        <h:outputText value="#{manageEmployeesBean.selectedEmployee.fullName} ?" style="display:block; margin-top:20px;" />
+                    </h:panelGroup>              
+                    <p:separator />
+                    <br/>
+                    <div style="display:flex; flex-direction: row; justify-content: flex-end; gap: 10px;">
+                    <p:commandButton value="Yes" 
+                                     icon="pi pi-check" 
+                                     action="#{manageEmployeesBean.deleteEmployee}" 
+                                     update=":employeeForm:employeeTable :employeeForm:growl" 
+                                     oncomplete="PF('deleteEmployeeDialog').hide(); PF('profileDialog').hide();" 
+                                     styleClass="" />
+                    
+                    <p:commandButton value="No" 
+                                     type="button" 
+                                     icon="pi pi-times" 
+                                     onclick="PF('deleteEmployeeDialog').hide();" 
+                                     styleClass="ui-button-secondary" />
+                    </div>
+                </p:dialog>
             </h:form>
         </div>
-        
+
         <script>
-        // Simulating the modal opening behavior
-        document.getElementById('profileBtn').addEventListener('click', function() {
-            document.getElementById('profileModal').style.display = 'flex';
-        });
-        
-        document.getElementById('closeModal').addEventListener('click', function() {
-            document.getElementById('profileModal').style.display = 'none';
-        });
-        
-        // Close modal when clicking outside
-        document.getElementById('profileModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.style.display = 'none';
-            }
-        });
-        </script>v
-        
+            // Simulating the modal opening behavior
+            document.getElementById('profileBtn').addEventListener('click', function () {
+                document.getElementById('profileModal').style.display = 'flex';
+            });
+
+            document.getElementById('closeModal').addEventListener('click', function () {
+                document.getElementById('profileModal').style.display = 'none';
+            });
+
+            // Close modal when clicking outside
+            document.getElementById('profileModal').addEventListener('click', function (e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+        </script>
+
     </ui:define>
 </ui:composition>

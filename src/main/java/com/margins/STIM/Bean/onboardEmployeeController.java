@@ -7,6 +7,7 @@ package com.margins.STIM.Bean;
 import com.google.gson.Gson;
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.EmployeeRole;
+import com.margins.STIM.entity.EmploymentStatus;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.entity.websocket.FingerCaptured;
@@ -159,6 +160,9 @@ public class onboardEmployeeController implements Serializable {
     @Setter
     private Integer selectedRoleId;
     
+    @Getter @Setter
+    private int selectedEmploymentStatusId;
+    
     @Getter
     @Setter
     private List<EmployeeRole> availableRoles; 
@@ -170,13 +174,18 @@ public class onboardEmployeeController implements Serializable {
     @Getter
     @Setter
     private Employee selectedEmployee;
+    
+    @Getter @Setter
+    private List<EmploymentStatus> availableStatuses;
 
     
     @PostConstruct
     public void init() {
         // Load available roles from database
         availableRoles = roleService.findAllEmployeeRoles();
+        availableStatuses = employeeService.findAllEmploymentStatuses();
     }
+    
     
     
 
@@ -457,6 +466,8 @@ public class onboardEmployeeController implements Serializable {
     @Getter
     @Setter
     private Integer assignedRoleId;
+    
+
 
     public void assignRole() {
         
@@ -481,6 +492,12 @@ public class onboardEmployeeController implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_WARN,
                             "No Role Selected", "Please select a role"));
         }
+    }
+    private EmploymentStatus findEmploymentStatusById(int id) {
+        return availableStatuses.stream()
+                .filter(status -> status.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
     
 
@@ -507,7 +524,8 @@ public class onboardEmployeeController implements Serializable {
             newEmployee.setAddress(address); 
             newEmployee.setEmail(email);
             newEmployee.setRole(selectedRole); 
-
+            EmploymentStatus status = findEmploymentStatusById(selectedEmploymentStatusId);
+            newEmployee.setEmploymentStatus(status);
             
 
             employeeService.saveEmployee(newEmployee); //

@@ -10,7 +10,7 @@ body {
 
 /* Top Navigation Bar */
 .topbar {
-    background-color: lightskyblue;
+    background-color: #2196f3;
     color: black;
     padding: 10px;
     display: flex;
@@ -135,7 +135,7 @@ body {
 .initials-button {
     width: 40px !Important;
     height: 40px !Important;
-    background-color: #007bff !Important;
+    background-color: #0d3c61!Important;
     color: white !Important;
     display: flex !Important;
     align-items: center !Important;

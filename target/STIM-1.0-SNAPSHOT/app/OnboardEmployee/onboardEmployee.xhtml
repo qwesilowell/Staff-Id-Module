@@ -294,19 +294,26 @@
                             <p:inputText id="employeeAddress" value="#{wizardBean.address}" placeholder="Enter Employee Address" />
 
                             <h:outputLabel value="Assigned Role:" />
-                            <p:outputPanel style="display: flex; gap: 20px">
+                            <p:outputPanel style="display: flex; gap: 10%">
                                 <p:inputText id="selectedRole" 
                                              value="#{wizardBean.assignedRoleName}" 
-                                             style="font-weight:bold; min-width: 150px; display: inline-block;" />
+                                             style="font-weight:bold; min-width: 150px; display: inline-block; border: none;"  readonly="true"/>
 
                                 <p:commandButton value="Assign Role" 
                                                  type="button" 
                                                  onclick="PF('roleSelectionDialog').show();" 
                                                  styleClass="ui-button-secondary"/>
                             </p:outputPanel>
-
-
-
+                            
+                            <h:outputLabel for="empStatus" value="Employment Status:" />
+                            <p:selectOneMenu id="empStatus" 
+                                             value="#{wizardBean.selectedEmploymentStatusId}" >
+                                <f:selectItem itemLabel="Select Status" itemValue="" noSelectionOption="true" />
+                                <f:selectItems value="#{wizardBean.availableStatuses}" 
+                                               var="status" 
+                                               itemLabel="#{status.empstatus}" 
+                                               itemValue="#{status.id}" />
+                            </p:selectOneMenu>
 
                         </p:panelGrid>
 

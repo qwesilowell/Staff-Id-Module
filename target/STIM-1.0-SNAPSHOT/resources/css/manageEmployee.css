@@ -233,18 +233,18 @@
 }
 
 .del-statement{
-    display: flex;
-    font-size: small;
-    align-content: center;
-    margin-bottom: 10px;
-    color: var(--gray);
-    width: 100%;
-    padding: 10px;
-    border: none;
-    background: none;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor:help;
+    display: flex !Important;
+    font-size: small !Important;
+    align-content: center !Important;
+margin-bottom: 10px !Important;
+    color: var(--gray) !Important;
+    width: 100%!Important;
+    padding: 10px !Important ;
+    border: none!Important;
+    background: none !Important;
+    border-radius: 6px !Important;
+    font-weight: 500 !Important;
+    cursor:help !Important;
 }
 
 .del-statement:hover {

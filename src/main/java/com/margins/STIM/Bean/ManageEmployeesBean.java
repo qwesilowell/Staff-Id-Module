@@ -9,6 +9,8 @@ import com.margins.STIM.service.Employee_Service;
 import java.io.Serializable;
 import java.util.List;
 import jakarta.annotation.PostConstruct;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -67,15 +69,29 @@ public class ManageEmployeesBean implements Serializable {
     
     public void deleteEmployee() {
         if (selectedEmployee != null) {
-            employeeService.deleteEmployee(selectedEmployee.getGhanaCardNumber());
-            employees = employeeService.findAllEmployees(); // Refresh the list
-            selectedEmployee = null;
+            try {
+                System.out.println("Deleting employee: " + selectedEmployee.getGhanaCardNumber());
+                employeeService.deleteEmployee(selectedEmployee.getGhanaCardNumber());
+                employees = employeeService.findAllEmployees(); // Refresh the list
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Employee " + selectedEmployee.getFullName() + " deleted."));
+                selectedEmployee = null; // Clear selection
+            } catch (Exception e) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to delete employee: " + e.getMessage()));
+                e.printStackTrace();
+            }
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No employee selected."));
         }
     }
     
     public String getFullName() {
         if (selectedEmployee != null) {
-            return selectedEmployee.getFirstname()+ " " + selectedEmployee.getLastname();
+            String first = selectedEmployee.getFirstname();
+            String last = selectedEmployee.getLastname();
+            return (first != null ? first : "") + " " + (last != null ? last : "");
         }
         return "No Employee Selected";
     }

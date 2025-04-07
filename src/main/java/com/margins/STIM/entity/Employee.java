@@ -44,8 +44,8 @@ public class Employee implements Serializable {
     @Column(name = "EMAIL" ) 
     private String email;
     
-    @Getter
-    @Setter
+   
+    @Setter @Getter
     @ManyToOne
     @JoinColumn(name = "EMPLOYMENT_STATUS_ID")
     private EmploymentStatus employmentStatus;
@@ -213,32 +213,7 @@ public class Employee implements Serializable {
     }
     
 
-    public Employee(String ghanaCardNumber,String firstname, String lastname,String email, LocalDate dateOfBirth, String gender, String address, Department department, byte[] employeePhoto, BiometricData biometricData, EmployeeRole role, Date createdAt, Users user, Office office,EmploymentStatus employmentStatus) {
-        this.ghanaCardNumber = ghanaCardNumber;
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.dateOfBirth = dateOfBirth;
-        this.gender = gender;
-        this.address = address;
-//        this.department = department;
-//        this.employeePhoto = employeePhoto;
-//        this.biometricData = biometricData;
-        this.role = role;
-        this.createdAt = createdAt;
-//        this.user = user;
-//        this.office = office;
-        this.email= email;
-        this.employmentStatus= employmentStatus;
-    }
-
-//    public Employee(List<EmployeeRole> roles) {
-//        this.roles = roles;
-//    }
-
-    
-
-    public Employee() {
-    }
+    public Employee() {}
     
     
 }

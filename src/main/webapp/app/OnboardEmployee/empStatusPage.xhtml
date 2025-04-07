@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
+
+    <ui:define name="title">Employment Status Management</ui:define>
+
+
+
+
+    <ui:define name ="content">
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="card">
+                <h:form id="form">
+                    <p:growl id="messages" showDetail="true" />
+
+                    <!-- Toolbar -->
+                    <p:toolbar>
+                        <p:toolbarGroup>
+                            <p:commandButton value="New" 
+                                             icon="pi pi-plus"
+                                             actionListener="#{employmentStatusBean.prepareNewEmploymentStatus}"
+                                             update=":employmentStatusDialog"
+                                             oncomplete="PF('employmentStatusDialog').show()"
+                                             styleClass="rounded-button ui-button-success" />
+                        </p:toolbarGroup>
+                        <p:toolbarGroup align="right">
+                            <p:commandButton value="Refresh" 
+                                             icon="pi pi-refresh" 
+                                             action="#{employmentStatusBean.refreshEmploymentStatuses}"
+                                             update="dt-employmentStatuses"/>
+                        </p:toolbarGroup>
+                    </p:toolbar>
+
+                    <!-- DataTable -->
+                    <p:dataTable id="dt-employmentStatuses" 
+                                 var="employmentStatus" 
+                                 value="#{employmentStatusBean.employmentStatuses}" 
+                                 widgetVar="employmentStatusTable"
+                                 styleClass="employment-statuses-table"
+                                 emptyMessage="No employment statuses found" 
+                                 rowKey="#{employmentStatus.id}" 
+                                 paginator="true" 
+                                 rows="10"
+                                 paginatorPosition="bottom">
+                        <f:facet name="header">
+                            <div class="flex justify-content-between align-items-center">
+                                <span>Employment Status List</span>
+                                <!--                            <span class="filter-container ui-input-icon-left">
+                                                                <i class="pi pi-search"></i>
+                                                                <p:inputText id="globalFilter" 
+                                                                             onkeyup="PF('employmentStatusTable').filter()" 
+                                                                             placeholder="Search" />
+                                                            </span>-->
+                            </div>
+                        </f:facet>
+                        <p:column headerText="ID" 
+                                  sortBy="#{employmentStatus.id}" 
+                                  filterBy="#{employmentStatus.id}">
+                            <h:outputText value="#{employmentStatus.id}" />
+                        </p:column>
+                        <p:column headerText="Status Name" 
+                                  sortBy="#{employmentStatus.empstatus}" 
+                                  filterBy="#{employmentStatus.empstatus}">
+                            <h:outputText value="#{employmentStatus.empstatus}" />
+                        </p:column>
+                        <p:column headerText="Actions" exportable="false">
+                            <p:commandButton icon="pi pi-pencil" 
+                                             update=":employmentStatusDialog"
+                                             oncomplete="PF('employmentStatusDialog').show()" 
+                                             styleClass="rounded-button ui-button-success ui-button-outlined"
+                                             process="@this">
+                                <f:setPropertyActionListener value="#{employmentStatus}"
+                                                             target="#{employmentStatusBean.selectedEmploymentStatus}"/>
+                                <p:resetInput target=":employmentStatusDialog"/>
+                            </p:commandButton>  
+                            <p:spacer width="10px"/>
+                            <p:commandButton class="rounded-button ui-button-danger ui-button-outlined" 
+                                             icon="pi pi-trash" 
+                                             process="@this" 
+                                             oncomplete="PF('deleteEmploymentStatusDialog').show()">
+                                <f:setPropertyActionListener value="#{employmentStatus}"
+                                                             target="#{employmentStatusBean.selectedEmploymentStatus}"/> 
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+
+                    <!-- Delete Confirmation Dialog -->
+                    <p:confirmDialog widgetVar="deleteEmploymentStatusDialog" 
+                                     showEffect="fade" 
+                                     width="300"
+                                     message="Delete this Employment status?" 
+                                     header="Confirm" 
+                                     severity="warn">
+                        <p:commandButton value="Yes" 
+                                         icon="pi pi-check" 
+                                         actionListener="#{employmentStatusBean.deleteEmploymentStatus}"
+                                         process="@this" 
+                                         oncomplete="PF('deleteEmploymentStatusDialog').hide()"
+                                         update="form:messages form:dt-employmentStatuses" />
+                        <p:commandButton value="No" 
+                                         type="button" 
+                                         styleClass="ui-button-secondary" 
+                                         icon="pi pi-times"
+                                         onclick="PF('deleteEmploymentStatusDialog').hide()" />
+                    </p:confirmDialog>
+                </h:form>
+
+                <!-- Create/Edit Dialog -->
+                <p:dialog header="Employment Status Details" 
+                          showEffect="fade" 
+                          modal="true" 
+                          widgetVar="employmentStatusDialog" 
+                          responsive="true" 
+                          width="450" 
+                          id="employmentStatusDialog" 
+                          resizable="false">
+                    <h:form id="employmentStatusForm">
+                        <div class="p-field">
+                            <p:outputLabel for="empstatus" value="Status Name:" />
+                            <p:inputText id="empstatus" 
+                                         value="#{employmentStatusBean.selectedEmploymentStatus.empstatus}" 
+                                         required="true" 
+                                         requiredMessage="Status name is required" 
+                                         style="width: 100%"/>
+                        </div>
+                        <p:separator />
+                        <p:commandButton value="Save" 
+                                         icon="pi pi-check"
+                                         actionListener="#{employmentStatusBean.saveEmploymentStatus}"
+                                         update="employmentStatusForm, :form:messages, :form:dt-employmentStatuses"
+                                         process="employmentStatusForm @this"
+                                         oncomplete="if (args &amp;&amp; !args.validationFailed) PF('employmentStatusDialog').hide()" />
+                        <p:spacer width="10px"/>
+                        <p:commandButton value="Cancel" 
+                                         icon="pi pi-times"
+                                         onclick="PF('employmentStatusDialog').hide();"
+                                         class="ui-button-secondary" 
+                                         type="button"/>
+                    </h:form>
+                </p:dialog>
+            </div>
+        </div>
+            <style>
+                .rounded-button {
+                    border-radius: 4px;
+                }
+                .employment-statuses-table {
+                    width: 100%;
+                }
+                .filter-container {
+                    margin-left: 10px;
+                }
+                .p-field {
+                    margin-bottom: 15px;
+                }
+            </style>
+    </ui:define>
+</ui:composition>
