@@ -526,13 +526,14 @@ public class onboardEmployeeController implements Serializable {
             newEmployee.setRole(selectedRole); 
             EmploymentStatus status = findEmploymentStatusById(selectedEmploymentStatusId);
             newEmployee.setEmploymentStatus(status);
+
             
 
             employeeService.saveEmployee(newEmployee); //
             
             FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Emmployee " + forenames + " created successfully!", null));
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Employee " + forenames + " created successfully!", null));
 
            
             
@@ -540,7 +541,7 @@ public class onboardEmployeeController implements Serializable {
 
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error saving employee: " + e.getMessage(), null));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Employee Already exists in system: " + e.getMessage(), null));
             e.printStackTrace();
         }
     }

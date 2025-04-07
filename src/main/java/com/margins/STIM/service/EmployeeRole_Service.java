@@ -86,6 +86,10 @@ public class EmployeeRole_Service {
                 .getResultList();
     }
     
+    public EmployeeRole save(EmployeeRole role) {
+        return entityManager.merge(role); // Updates existing or merges detached entity
+    }
+    
     /**
      * Delete an EmployeeRole by ID.
      *

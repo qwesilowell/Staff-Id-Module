@@ -20,6 +20,7 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.persistence.Cacheable;
 
 /**
  *
@@ -27,6 +28,7 @@ import jakarta.inject.Named;
  */
 @Named("assignRoleBean")
 @ViewScoped
+@Cacheable(false)
 public class AssignRoleBean implements Serializable {
 
     @Inject
@@ -65,19 +67,31 @@ public class AssignRoleBean implements Serializable {
                 return;
             }
 
-            // Fetch existing roles first
-            Set<EmployeeRole> existingRoles = new HashSet<>(entrance.getAllowedRoles());
-
-            // Fetch new roles to be added
+            // Fetch new roles
             Set<EmployeeRole> newRoles = new HashSet<>(employeeRole.findEmployeeRolesByIds(selectedRolesIds));
 
-            // Combine both existing and new roles
+            // Update inverse side (Entrances.allowedRoles)
+            Set<EmployeeRole> existingRoles = entrance.getAllowedRoles();
+            if (existingRoles == null) {
+                existingRoles = new HashSet<>();
+            }
             existingRoles.addAll(newRoles);
             entrance.setAllowedRoles(existingRoles);
 
-            // Save the updated entrance
+            // Update owning side (EmployeeRole.accessibleEntrances)
+            for (EmployeeRole role : newRoles) {
+                Set<Entrances> accessibleEntrances = role.getAccessibleEntrances();
+                if (accessibleEntrances == null) {
+                    accessibleEntrances = new HashSet<>();
+                }
+                accessibleEntrances.add(entrance);
+                role.setAccessibleEntrances(accessibleEntrances);
+                employeeRole.save(role); // Persist the owning side
+            }
+
+            // Save the entrance (optional)
             entrancesService.save(entrance);
-            loadAssignedRoles(); // Refresh assigned roles
+            loadAssignedRoles();
 
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Roles assigned successfully!"));
@@ -110,15 +124,44 @@ public class AssignRoleBean implements Serializable {
 
 
     public void removeRoleFromEntrance(int roleId) {
-        Entrances entrance = entrancesService.findEntranceById(selectedEntranceId);
-        if (entrance != null) {
-            entrance.getAllowedRoles().removeIf(role -> role.getId() == roleId);
-            entrancesService.save(entrance);
+        if (selectedEntranceId != null && !selectedEntranceId.trim().isEmpty()) {
+            Entrances entrance = entrancesService.findEntranceById(selectedEntranceId);
+            if (entrance != null) {
+                // Find the role to remove
+                EmployeeRole roleToRemove = entrance.getAllowedRoles()
+                        .stream()
+                        .filter(role -> role.getId() == roleId)
+                        .findFirst()
+                        .orElse(null);
 
+                if (roleToRemove != null) {
+                    // Update inverse side: Remove role from entrance
+                    entrance.getAllowedRoles().remove(roleToRemove);
+
+                    // Update owning side: Remove entrance from role
+                    roleToRemove.getAccessibleEntrances().remove(entrance);
+
+                    // Persist both entities
+                    entrancesService.save(entrance);
+                    employeeRole.save(roleToRemove);
+                    
+                     loadAssignedRoles();
+
+                    FacesContext.getCurrentInstance().addMessage(null,
+                            new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Role removed successfully!"));
+                } else {
+                    FacesContext.getCurrentInstance().addMessage(null,
+                            new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "Role not found for this entrance"));
+                }
+
+                loadAssignedRoles(); 
+            } else {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Entrance not found"));
+            }
+        } else {
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Role removed successfully!"));
-
-            loadAssignedRoles(); // Refresh the list
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "No entrance selected"));
         }
     }
     
