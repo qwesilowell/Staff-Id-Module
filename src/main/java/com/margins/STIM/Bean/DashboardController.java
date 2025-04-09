@@ -26,4 +26,6 @@ public class DashboardController implements Serializable {
         ec.invalidateSession(); // Ends user session
         ec.redirect(ec.getRequestContextPath() + "/login.xhtml"); // Redirects to login page
     }
+    
+    
 }

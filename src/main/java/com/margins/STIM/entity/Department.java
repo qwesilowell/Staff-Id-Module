@@ -21,11 +21,11 @@ public class Department extends EntityModel implements Serializable {
     @Column(name = "department_name", nullable = false)
     private String departmentName;
 
-    @Column(name = "department_head", nullable = false)
+    @Column(name = "department_head")
     private String departmentHead;
 
     @ManyToOne
-    @JoinColumn(name = "office_id", nullable = false)
+    @JoinColumn(name = "office_id")
     private Office office;  // One department belongs to one office
 
 

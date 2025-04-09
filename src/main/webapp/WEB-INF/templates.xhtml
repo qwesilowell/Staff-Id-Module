@@ -12,9 +12,9 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
       xmlns:p="http://primefaces.org/ui"
       xmlns:ui="jakarta.faces.facelets">
 
-    <f:metadata>
-        <f:event type="preRenderView" listener="#{loginBean.redirectIfNotLoggedIn()}" />
-    </f:metadata>
+<!--    <f:metadata>
+        <f:event type="preRenderView" listener="#-{loginBean.redirectIfNotLoggedIn()}" />
+    </f:metadata>-->
 
     <ui:insert name="metadata" />
 
@@ -29,7 +29,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
 
         <ui:insert name="head"/>
         <title><ui:insert name="title"/></title>
-        <h:outputScript library="js" name="menuscript.js" target="body" />
+       <h:outputScript library="js" name="menuscript.js" target="body" />
     </h:head>
 
     <h:body>
@@ -86,6 +86,8 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     <p:submenu label="Employee Roles" expanded="true">
                         <p:menuitem value="Assign Employee Role"  outcome="/app/EmployeeRoles/assignRole?faces-redirect=true" icon="pi pi-upload"/>
                         <p:menuitem value="Create Employee Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" icon="fa-regular fa-pen-to-square fa-flip-vertical" style="color: black;" rendered="#{sessionScope.userRole eq 'Admin'}"/>
+                        <p:menuitem value="Add Employee Status" outcome="/app/OnboardEmployee/empStatusPage?faces-redirect=true" icon="fa-regular fa-plus-square" style="color: black;" rendered="#{sessionScope.userRole eq 'Admin'}"/>
+
                     </p:submenu>
 
                     <p:submenu label="Assign Access" expanded="true" rendered="#{sessionScope.userRole eq 'Admin'}">
@@ -100,9 +102,8 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     <p:submenu label="Users" expanded="true" rendered="#{sessionScope.userRole eq 'Admin'}">
                         <p:menuitem value="Create New User" outcome="/newuser?faces-redirect=true" icon="pi pi-user-plus"/>
                     </p:submenu>
-                    <p:submenu label="Biometric" expanded="true" rendered="#{sessionScope.userRole eq 'Admin'}">
-                        <p:menuitem value="Create new biometric data" url="http://localhost:8080/STIM/newuser.xhtml" icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat"/>
-                        <p:menuitem value="Remove Biometric data" url="" icon="pi pi-times"/>
+                    <p:submenu label="Entrance Test" expanded="true" >
+                        <p:menuitem value="Entrance Access Test" outcome="/app/Entrances/accessControl?faces-redirect=true"  icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat"/>
                     </p:submenu>
                 </p:panelMenu>
             </h:form>

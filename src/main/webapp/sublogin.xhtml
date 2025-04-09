@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>Ghana Card Login</title>
+        <style type="text/css">
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #f0f2f5;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+            }
+
+            .login-container {
+                background-color: white;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                padding: 30px;
+                width: 400px;
+            }
+
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .header h1 {
+                color: #006b3f; /* Ghana flag green color */
+                margin-bottom: 10px;
+            }
+
+            .logo {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 20px;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            .form-footer {
+                text-align: center;
+                margin-top: 20px;
+                color: #666;
+                font-size: 14px;
+            }
+
+            .ui-inputfield {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .ui-button {
+                width: 100%;
+                background-color: #006b3f !important;
+                border: 1px solid #006b3f !important;
+            }
+
+            .ui-button:hover {
+                background-color: #005230 !important;
+                border: 1px solid #005230 !important;
+            }
+        </style>
+    </h:head>
+
+    <h:body>
+        <div class="login-container">
+            <div class="header">
+                <img src="resources/images/fingerprint.jpg" alt="Ghana Card Logo" class="logo" />
+                <h1>System Login</h1>
+                <p>Enter your Ghana Card details to continue</p>
+            </div>
+
+            <h:form id="loginForm">
+                <p:growl id="growl" showDetail="true" />
+
+                <div class="form-group">
+                    <p:outputLabel for="ghanaCard" value="Ghana Card Number" />
+                    <p:inputText id="ghanaCard" value="#{sublogin.ghanaCardNumber}" 
+                                 required="true" 
+                                 requiredMessage="Ghana Card Number is required"
+                                 placeholder="e.g. GHA-XXXXXXXXX-X" />
+                </div>
+
+                <div class="form-group">
+                    <p:outputLabel for="password" value="Password" />
+                    <p:password id="password" value="#{sublogin.password}" 
+                                required="true" 
+                                requiredMessage="Password is required"
+                                placeholder="Enter your password" />
+                </div>
+
+                <p:commandButton value="Login" 
+                                 action="#{sublogin.login}" 
+                                 update="growl" 
+                                 styleClass="ui-button" />
+            </h:form>
+
+            <div class="form-footer">
+                <p>Please contact system administrator if you're having trouble logging in.</p>
+            </div>
+        </div>
+    </h:body>
+</html>

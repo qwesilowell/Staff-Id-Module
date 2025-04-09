@@ -64,12 +64,6 @@ public class SingleFingerController implements Serializable {
     private byte[] fingerData;
     private String socketData;
 
-    @EJB
-    private User_Service userService;
-
-    @EJB
-    private BiometricDataService bioService;
-
     String BASE_URL = JSF.getContextURL() + "/";
 
 
