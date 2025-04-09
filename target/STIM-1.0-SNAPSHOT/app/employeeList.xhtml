@@ -83,15 +83,16 @@
                                     <h1 class="user-name">#{manageEmployeesBean.selectedEmployee.fullName}</h1>
                                     <div class="user-email">#{manageEmployeesBean.selectedEmployee.email}</div>
                                     <h3 class = "gh-no">#{manageEmployeesBean.selectedEmployee.ghanaCardNumber}</h3>
-                                    <p class="user-bio"><strong>#{manageEmployeesBean.selectedEmployee.role}</strong></p>
-                                    <p class="user-empstat">#{manageEmployeesBean.selectedEmployee.employmentStatus}</p>
+                                    <p class="user-bio">
+                                        #{manageEmployeesBean.selectedEmployee.role} <span class="user-empstat">(#{manageEmployeesBean.selectedEmployee.employmentStatus})</span>
+                                    </p>
                                 </div>
 
                                 <div class="divider"></div>
 
 
                                 <div class="profile-section">
-                                    <h3 class="section-title">Account</h3>
+                                    <h3 class="section-title">Details</h3>
                                     <div class="profile-actions">
                                         <button class="action-button">Entrances</button><!--Should show a drop down of all the entrances assigned to the role-->
                                         <button class="action-button">Status</button><!--Toggle can show a dropdown list of emplouyee status, like active , on leave-->
@@ -99,7 +100,7 @@
                                 </div>
 
                                 <div class="delete">
-                                    <p:commandButton value="Want to delete this employee account? (Click here)" 
+                                    <p:commandButton value="Want to delete this employee account? Click here" 
                                                      styleClass="del-statement" 
                                                      process="@this" 
                                                      oncomplete="PF('deleteEmployeeDialog').show()" 
@@ -121,11 +122,12 @@
                           width="300"
                           style="color:#9ca3af">
                     <h:panelGroup>
-                        <h:outputText value="Delete employee:" style="font-weight: bold;" />
+                        <h:outputText value="Are you sure you want to delete employee?" />
 
-                        <h:outputText value="#{manageEmployeesBean.selectedEmployee.fullName} ?" style="display:block; margin-top:20px;" />
+<!--                        <h:outputText value="#-{manageEmployeesBean.selectedEmployee.fullName} ?" style="display:block; margin-top:20px;" />-->
                     </h:panelGroup>              
-                    <p:separator />
+                    <br/>
+                    <br/>
                     <br/>
                     <div style="display:flex; flex-direction: row; justify-content: flex-end; gap: 10px;">
                     <p:commandButton value="Yes" 

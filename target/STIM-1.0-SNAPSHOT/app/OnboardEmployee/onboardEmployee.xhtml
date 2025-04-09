@@ -262,60 +262,93 @@
 
                     <!-- Step 3: Auto-Fill Employee Details -->
                     <p:panel rendered="#{wizardBean.currentStep == 2}">
-                        <h3>Employee Details</h3>
+                        <h3 style="font-family: Roboto, sans-serif; font-size: 26px; font-weight: bold; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">Employee Details</h3>
 
-                        <p:panelGrid columns="2">
+                        <!-- Centered Face Image -->
+                        <p:outputPanel style="text-align:center; margin-bottom:2rem;">
+                            <h:outputText value="Face Image" style="font-weight: bold; display:block; margin-bottom:0.5rem; " />
+                            <h:graphicImage value="#{wizardBean.empImage}" width="200px" style="border-radius:10px;" />
+                        </p:outputPanel>
 
-                            <h:outputLabel value="Face Image" />
-                            <img width="200px" src="#{wizardBean.empImage}"></img>
+                        <!-- Two-Column Flex Layout -->
+                        <h:panelGroup layout="block" styleClass="form-container">
+                            <!-- Left Column -->
+                            <h:panelGroup styleClass="form-left">
+                                <h:outputLabel value="Ghana Card Number:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem; " />
+                                <p:inputText value="#{wizardBean.ghanaCardNumber}" disabled="true"
+                                             style="background-color:#f0f0f0; color:black; width:100%; padding:5px; margin-bottom:1rem; font-weight:bold;" />
 
-                            <h:outputLabel value="Ghana Card Number:" />
-                            <h:outputText value="#{wizardBean.ghanaCardNumber}" />
+                                <h:outputLabel value="Full Name:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
+                                <p:inputText value="#{wizardBean.employeeName}" disabled="true"
+                                             style="background-color:#f0f0f0; color:black; font-weight:bold; width:100%; padding:5px; margin-bottom:1rem;" />
 
-                            <h:outputLabel value="Full Name:" />
-                            <h:outputText value="#{wizardBean.employeeName}" />
+                                <h:outputLabel value="Forenames:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
+                                <p:inputText value="#{wizardBean.forenames}" disabled="true"
+                                             style="background-color:#f0f0f0; color:black; font-weight:bold; width:100%; padding:5px; margin-bottom:1rem;" />
 
-                            <h:outputLabel value="Fornames:" />
-                            <h:outputText value="#{wizardBean.forenames}" />
+                                <h:outputLabel value="Surname:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
+                                <p:inputText value="#{wizardBean.surname}" disabled="true"
+                                             style="background-color:#f0f0f0; color:black; font-weight:bold; width:100%; padding:5px; margin-bottom:1rem;" />
 
-                            <h:outputLabel value="Surname:" />
-                            <h:outputText value="#{wizardBean.surname}" />
+                                <h:outputLabel value="Date of Birth:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
+                                <p:inputText value="#{wizardBean.employeeDOB}" disabled="true"
+                                             style="background-color:#f0f0f0; color:black; font-weight:bold; width:100%; padding:5px; margin-bottom:1rem;" />
 
-                            <h:outputLabel value="Date of Birth:" />
-                            <h:outputText value="#{wizardBean.employeeDOB}" />
+                                <h:outputLabel value="Gender:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
+                                <p:inputText value="#{wizardBean.gender}" disabled="true"
+                                             style="background-color:#f0f0f0; color:black; font-weight:bold; width:100%; padding:5px; margin-bottom:1rem;" />
 
-                            <h:outputLabel value="Gender:" />
-                            <h:outputText value="#{wizardBean.gender}" />
+                                <h:outputLabel value="Nationality:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
+                                <p:inputText value="#{wizardBean.nationality}" disabled="true"
+                                             style="background-color:#f0f0f0; color:black; font-weight:bold; width:100%; padding:5px; margin-bottom:1rem;" />
+                            </h:panelGroup>
 
-                            <h:outputLabel value="Nationality:" />
-                            <h:outputText value="#{wizardBean.nationality}" />
+                            <!-- Right Column -->
+                            <h:panelGroup styleClass="form-right">
+                                <h:outputLabel value="Address:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
+                                <p:inputText value="#{wizardBean.address}" placeholder="Enter address"
+                                             style="width:100%; padding:5px; margin-bottom:1rem;" />
 
-                            <h:outputLabel value="Address:" />
-                            <p:inputText id="employeeAddress" value="#{wizardBean.address}" placeholder="Enter Employee Address" />
+                                <h:outputLabel value="Assigned Role:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
+                                <p:outputPanel style="display:flex; gap:10px; align-items:center; margin-bottom:1rem;">
+                                    <p:inputText value="#{wizardBean.assignedRoleName}" readonly="true"
+                                                 style="border:none; background-color:#f0f0f0; color:gray; font-weight:bold; width:50%;" />
+                                    <p:commandButton value="Assign Role" type="button"
+                                                     onclick="PF('roleSelectionDialog').show();" styleClass="ui-button-secondary" />
+                                </p:outputPanel>
 
-                            <h:outputLabel value="Assigned Role:" />
-                            <p:outputPanel style="display: flex; gap: 10%">
-                                <p:inputText id="selectedRole" 
-                                             value="#{wizardBean.assignedRoleName}" 
-                                             style="font-weight:bold; min-width: 150px; display: inline-block; border: none;"  readonly="true"/>
+                                <h:outputLabel value="Employment Status:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
+                                <p:selectOneMenu id="empStatus" value="#{wizardBean.selectedEmploymentStatusId}"
+                                                 style="width:100%; margin-bottom:1rem;">
+                                    <f:selectItem itemLabel="Select Status" itemValue="" noSelectionOption="true" />
+                                    <f:selectItems value="#{wizardBean.availableStatuses}" var="status"
+                                                   itemLabel="#{status.empstatus}" itemValue="#{status.id}" />
+                                </p:selectOneMenu>
 
-                                <p:commandButton value="Assign Role" 
-                                                 type="button" 
-                                                 onclick="PF('roleSelectionDialog').show();" 
-                                                 styleClass="ui-button-secondary"/>
-                            </p:outputPanel>
-                            
-                            <h:outputLabel for="empStatus" value="Employment Status:" />
-                            <p:selectOneMenu id="empStatus" 
-                                             value="#{wizardBean.selectedEmploymentStatusId}" >
-                                <f:selectItem itemLabel="Select Status" itemValue="" noSelectionOption="true" />
-                                <f:selectItems value="#{wizardBean.availableStatuses}" 
-                                               var="status" 
-                                               itemLabel="#{status.empstatus}" 
-                                               itemValue="#{status.id}" />
-                            </p:selectOneMenu>
+                                <h:outputLabel value="Email Address:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
+                                <p:inputText value="#{wizardBean.email}" placeholder="Enter email address"
+                                             style="width:100%; padding:5px; margin-bottom:1rem;" />
+                            </h:panelGroup>
+                        </h:panelGroup>
 
-                        </p:panelGrid>
+                        <!-- Updated CSS -->
+                        <style>
+                            .form-container {
+                                display: flex;
+                                justify-content: space-between;
+                                width: 80%; /* Matches your original panelGrid width */
+                                margin: 0 auto; /* Centers the container */
+                            }
+                            .form-left {
+                                width: 48%;
+                                vertical-align: top;
+                                padding-right: 2%;
+                            }
+                            .form-right {
+                                width: 48%;
+                                vertical-align: top;
+                            }
+                        </style>
 
 
                         <!-- Role Selection Dialog -->

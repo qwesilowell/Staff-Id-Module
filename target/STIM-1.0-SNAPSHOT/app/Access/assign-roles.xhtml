@@ -15,7 +15,7 @@
         </f:metadata>
     </ui:define>
 
-   
+
     <ui:define name ="content">
         <!--Main Content --> 
         <div class="main-content">
@@ -33,7 +33,7 @@
                                             itemValue="#{entrance.entrance_Device_ID}"
                                             forceSelection="true" dropdown="true"
                                             placeholder="Search or Select Entrance" 
-                                            style="width: 100%;">
+                                            style="width: 100%; ">
                                 <!-- Automatically load assigned roles when an entrance is selected -->
                                 <p:ajax event="itemSelect" listener="#{assignRoleBean.loadAssignedRoles}" update="assignedRolesTable" />
                             </p:autoComplete>
@@ -113,11 +113,11 @@
                 <!-- Show Access Messages -->
                 <p:growl id="messages2" showSummary= "false" showDetail="true" life="3000" />
 
-<!--                 Close Button 
-                <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-                    <p:commandButton value="Back" icon="pi pi-arrow-left"
-                                     onclick="PF('accessTestDialog').hide();" styleClass="close-btn" />
-                </div>-->
+                <!--                 Close Button 
+                                <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                                    <p:commandButton value="Back" icon="pi pi-arrow-left"
+                                                     onclick="PF('accessTestDialog').hide();" styleClass="close-btn" />
+                                </div>-->
 
             </p:dialog>
         </h:form>
@@ -137,6 +137,11 @@
                 padding: 10px;
                 font-weight: bold;
             }
+            .ui-autocomplete .ui-autocomplete-dropdown {
+                position: absolute !Important;
+                height:100% !Important;
+            }
+
 
             .ui-panel {
                 background-color: #f5f5f5;

@@ -102,9 +102,8 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     <p:submenu label="Users" expanded="true" rendered="#{sessionScope.userRole eq 'Admin'}">
                         <p:menuitem value="Create New User" outcome="/newuser?faces-redirect=true" icon="pi pi-user-plus"/>
                     </p:submenu>
-                    <p:submenu label="Biometric" expanded="true" rendered="#{sessionScope.userRole eq 'Admin'}">
-                        <p:menuitem value="Create new biometric data" url="http://localhost:8080/STIM/newuser.xhtml" icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat"/>
-                        <p:menuitem value="Remove Biometric data" url="" icon="pi pi-times"/>
+                    <p:submenu label="Entrance Test" expanded="true" >
+                        <p:menuitem value="Entrance Access Test" outcome="/app/Entrances/accessControl?faces-redirect=true"  icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat"/>
                     </p:submenu>
                 </p:panelMenu>
             </h:form>

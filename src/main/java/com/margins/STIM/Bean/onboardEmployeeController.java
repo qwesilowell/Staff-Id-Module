@@ -144,7 +144,7 @@ public class onboardEmployeeController implements Serializable {
     
     @Getter
     @Setter
-    private String email= "try123@hotmail.com";
+    private String email;
     
     @Getter 
     @Setter
