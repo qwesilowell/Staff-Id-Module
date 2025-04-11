@@ -5,11 +5,15 @@
 package com.margins.STIM.Bean;
 
 import com.google.gson.Gson;
+import com.margins.STIM.entity.AccessLog;
+
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.EmployeeRole;
 import com.margins.STIM.entity.Entrances;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
+import com.margins.STIM.service.AccessLogService;
+
 import com.margins.STIM.service.EmployeeRole_Service;
 import com.margins.STIM.service.Employee_Service;
 import com.margins.STIM.service.EntrancesService;
@@ -53,6 +57,9 @@ public class AccessControlBean implements Serializable {
 
     @EJB
     private EmployeeRole_Service employeeRoleService;
+    
+    @EJB
+    private AccessLogService accessLogService;
 
     private List<Entrances> entrances;
     private String selectedEntrance;
@@ -115,31 +122,36 @@ public class AccessControlBean implements Serializable {
     }
 
     public void submit() {
+        String result = "denied"; // Default
+        Double verificationTime = null;
+        String entranceId = null;
 
         try {
             System.out.println("GHANACARD2 >>>>>>>>>>>>>> " + ghanaCardNumber);
             if (!ValidationUtil.isValidGhanaCardNumber(ghanaCardNumber)) {
+                statusMessage = "Invalid Ghana Card";
                 JSF.addErrorMessage("Invalid Ghana Card Format");
                 return;
             }
 
             if (capturedFinger == null || capturedFinger.isEmpty()) {
+                statusMessage = "No Fingerprint";
                 JSF.addErrorMessage("No fingerprint captured. Please scan your fingerprint.");
                 return;
             }
-            if (selectedEntrance == null || selectedEntrance.trim().isEmpty()) {
 
+            if (selectedEntrance == null || selectedEntrance.trim().isEmpty()) {
+                statusMessage = "No Entrance";
                 JSF.addErrorMessage("Please select an entrance.");
                 return;
             }
             System.out.println("GHANACARD3 >>>>>>>>>>>>>> " + ghanaCardNumber);
 
+            entranceId = extractEntranceId(selectedEntrance);
             VerificationRequest request = new VerificationRequest();
             request.setPosition(fingerPosition);
             request.setPinNumber(ghanaCardNumber);
-
             String processedImage = FingerprintProcessor.imageDpi(capturedFinger);
-
             request.setImage(processedImage);
 
             SSLContext sslContext = SSLContext.getInstance("TLS");
@@ -160,17 +172,17 @@ public class AccessControlBean implements Serializable {
             sslContext.init(null, new TrustManager[]{trustManager}, new SecureRandom());
 
             String requestString = new Gson().toJson(request);
-            HttpClient client = HttpClient
-                    .newBuilder()
-                    .sslContext(sslContext)
-                    .build();
+            HttpClient client = HttpClient.newBuilder().sslContext(sslContext).build();
             HttpRequest httpRequest = HttpRequest
                     .newBuilder(new URI("https://selfie.imsgh.org:2035/skyface/api/v1/third-party/verification/base_64/verification/kyc/finger"))
                     .POST(HttpRequest.BodyPublishers.ofString(requestString))
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
                     .build();
+
+            long startTime = System.nanoTime();
             HttpResponse<String> response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            verificationTime = (System.nanoTime() - startTime) / 1_000_000_000.0;
 
             System.out.println("Response Status: " + response.statusCode());
             System.out.println("Response Body: " + response.body());
@@ -180,43 +192,43 @@ public class AccessControlBean implements Serializable {
             if (response.statusCode() != 200 || callBack == null) {
                 statusMessage = "Verification Error";
                 JSF.addErrorMessage("Verification Error: " + (callBack != null ? callBack.getMsg() : "No response from server"));
-                return;
-            }
-
-            if (!"TRUE".equals(callBack.getData().getVerified())) {
+                // No return here—let it log
+            } else if (!"TRUE".equals(callBack.getData().getVerified())) {
                 statusMessage = "Access Denied";
                 JSF.addErrorMessage("Fingerprint Verification Failed!");
-                return;
-            }
-
-            String entranceId = extractEntranceId(selectedEntrance);
-            Entrances entrance = entrancesService.findEntranceById( entranceId);
-            if (entrance == null) {
-                statusMessage = "Invalid Entrance";
-                JSF.addErrorMessage("Selected entrance not found.");
-                return;
-            }
-
-            Employee employee = employeeService.findEmployeeByGhanaCard(ghanaCardNumber);
-            if (employee == null) {
-                statusMessage = "Access Denied";
-                JSF.addErrorMessage("Employee not found.");
-                return;
-            }
-
-            if (hasAccess(employee, entrance)) {
-                statusMessage = "Access Granted";
-                JSF.addSuccessMessage("Access granted to " + entrance.getEntrance_Name());
+                // No return here—let it log
             } else {
-                statusMessage = "Access Denied";
-                JSF.addErrorMessage("Access denied to " + entrance.getEntrance_Name());
+                Entrances entrance = entrancesService.findEntranceById(entranceId);
+                if (entrance == null) {
+                    statusMessage = "Invalid Entrance";
+                    JSF.addErrorMessage("Selected entrance not found.");
+                } else {
+                    Employee employee = employeeService.findEmployeeByGhanaCard(ghanaCardNumber);
+                    if (employee == null) {
+                        statusMessage = "Access Denied";
+                        JSF.addErrorMessage("Employee not found.");
+                    } else if (hasAccess(employee, entrance)) {
+                        statusMessage = "Access Granted";
+                        result = "granted"; // Update result on success
+                        JSF.addSuccessMessage("Access granted to " + entrance.getEntrance_Name());
+                    } else {
+                        statusMessage = "Access Denied";
+                        JSF.addErrorMessage("Access denied to " + entrance.getEntrance_Name());
+                    }
+                }
             }
 
-          
         } catch (Exception e) {
             statusMessage = "Error";
             JSF.addErrorMessage("An unexpected error occurred. Please try again!");
             e.printStackTrace();
+        } finally {
+            // Log every attempt
+            entranceId = entranceId != null ? entranceId : extractEntranceId(selectedEntrance);
+            System.out.println("Logging: employee=" + ghanaCardNumber + ", entrance=" + entranceId
+                    + ", result=" + result + ", time=" + verificationTime);
+            AccessLog log = new AccessLog(ghanaCardNumber, entranceId, result, verificationTime);
+            accessLogService.logAccess(log);
         }
     }
 

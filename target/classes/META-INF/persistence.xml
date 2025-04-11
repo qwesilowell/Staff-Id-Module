@@ -8,10 +8,13 @@
     <class>com.margins.STIM.entity.Department</class>
     <class>com.margins.STIM.entity.Employee</class>
     <class>com.margins.STIM.entity.EmployeeRole</class>
+    <class>com.margins.STIM.entity.EmploymentStatus</class>
     <class>com.margins.STIM.entity.Office</class>
     <class>com.margins.STIM.entity.Sub_Office</class>
     <class>com.margins.STIM.entity.Users</class>
     <class>com.margins.STIM.entity.Entrances</class>
+    <class>com.margins.STIM.entity.AccessLog</class>
+    <class>com.margins.STIM.entity.ActivityLog</class>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <!--      <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>-->
