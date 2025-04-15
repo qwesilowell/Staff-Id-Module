@@ -9,11 +9,13 @@ package com.margins.STIM.Bean;
  * @author PhilipManteAsare
  */
 import com.google.gson.Gson;
+import com.margins.STIM.entity.ActivityLog;
 import com.margins.STIM.entity.Users;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.entity.websocket.FingerCaptured;
 import com.margins.STIM.model.CapturedFinger;
+import com.margins.STIM.service.ActivityLogService;
 import com.margins.STIM.service.BiometricDataService;
 import com.margins.STIM.service.User_Service;
 import com.margins.STIM.util.FingerprintProcessor;
@@ -32,6 +34,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import javax.net.ssl.SSLContext;
@@ -102,34 +105,23 @@ public class LoginBean implements Serializable {
     private User_Service userService;
 
     @EJB
+    private ActivityLogService activityLogService;
+
+    @EJB
     private BiometricDataService bioService;
 
     String BASE_URL = JSF.getContextURL() + "/";
 
-//    public void redirectIfNotLoggedIn() {
-//        if (username == null) {
-//            try {
-//                FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "login.xhtml");
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
+    private void logActivity(String username, String result, String details) {
+        ActivityLog log = new ActivityLog();
+        log.setUserId(username);
+        log.setAction("login");
+        log.setTimestamp(LocalDateTime.now());
+        log.setResult(result);
+        log.setDetails(details);
+        activityLogService.logActivity(log);
+    }
 
-    // Regular Login with Password
-//        public String login() {
-//            boolean isValid = userService.validateUser(ghanaCardNumber, password);
-//
-//            if (isValid) {
-//                FacesContext.getCurrentInstance().addMessage(null,
-//                        new FacesMessage(FacesMessage.SEVERITY_INFO, "Login successful!", null));
-//                return "/app/dashboard2.xhtml?faces-redirect=true";
-//            } else {
-//                FacesContext.getCurrentInstance().addMessage(null,
-//                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "Wrong Credentials", null));
-//                return null;
-//            }
-//        }
     // Reset Fingerprint Selection
     public void reset() {
         capturedFinger = null;
@@ -147,8 +139,8 @@ public class LoginBean implements Serializable {
         String sessionRole = (String) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("userRole");
         if (sessionRole == null || !sessionRole.equals(requiredRole)) {
             try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath()+ "/login.xhtml");
-                
+                FacesContext.getCurrentInstance().getExternalContext().redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/login.xhtml");
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -262,21 +254,21 @@ public class LoginBean implements Serializable {
                     FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("userRole", userRole);
                     FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("ghanaCardNumber", ghanaCardNumber);
 
+                    logActivity(username, "Succesful", "SingleFinger login successful");
+
                     // Redirect to Dashboard
                     FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "app/dashboard2.xhtml");
                 } else {
+                    logActivity(username, "Failed", "SingleFinger login Failed(Verification Failed)");
                     JSF.addErrorMessage("Fingerprint Verification Failed!");
                 }
             } else {
+                logActivity(username, "Failed", "SingleFinger login Failed(Verification Failed)");
                 JSF.addErrorMessage("Fingerprint Verification Failed!" + (callBack != null ? callBack.msg : "No response from server"));
 
             }
-        } //        catch (IOException e) {
-        //            System.out.println("ERROR 1");
-        //            errorMessage = "IO Exception occurred while processing your request!";
-        //            e.printStackTrace(); // Log the error for debugging
-        //        } 
-        catch (Exception e) {  // Catch any other unexpected errors
+        } catch (Exception e) {
+            logActivity(username, "Failed", "SingleFinger login Failed");
             JSF.addErrorMessage("An unexpected error occurred. Please try again!");
             System.out.println("ERROR 3");
             e.printStackTrace(); // Log the error for debugging
@@ -362,6 +354,8 @@ public class LoginBean implements Serializable {
                     FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("userRole", userRole);
                     FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("ghanaCardNumber", ghanaCardNumber);
 
+                    logActivity(username, "Succesful", "Face login successful");
+
                     FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "app/dashboard2.xhtml");
                     PrimeFaces.current().ajax().update("theForm");
 
@@ -369,6 +363,7 @@ public class LoginBean implements Serializable {
 
                 } else {
                     verificationSuccess = false;
+                    logActivity(username, "Failed", "Face login Failed(Verification Failed)");
                     System.out.println("FAILED>>>>>>");
                     JSF.addErrorMessage("Verification Failed: " + msg);
                 }
@@ -377,6 +372,7 @@ public class LoginBean implements Serializable {
 //                JSF.addErrorMessage("Verification Failed Reason: " + callBack.getMsg());
             }
         } catch (Exception e) {  // Catch any other unexpected errors
+            logActivity(username, "Failed", "Face login Failed(Verification Failed)");
             JSF.addErrorMessage("An unexpected error occurred. Please try again!");
             System.out.println("ERROR 3");
             e.printStackTrace(); // Log the error for debugging
@@ -462,41 +458,57 @@ public class LoginBean implements Serializable {
             Gson g = new Gson();
             callBack = g.fromJson(res, VerificationResultData.class);
 
-            String message;
-            if (callBack.msg != null) {
-                message = callBack.msg.toString();
-            } else {
-                message = "Callback returned null";
-            }
-
-            System.out.println("Response Data: " + response.body());
+            System.out.println("Response Data: " + res);
             if (response.statusCode() == 200 && callBack != null) {
-                if (callBack.isSuccess() && "TRUE".equals(callBack.getData().getVerified())) {
+                if ("TRUE".equals(callBack.getData().getVerified())) {
                     verificationSuccess = true;
+
                     FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
                     FacesContext.getCurrentInstance().addMessage(null,
                             new FacesMessage(FacesMessage.SEVERITY_INFO, "Login Successful!", null));
 
-//
-                    FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "app/dashboard2.xhtml");
-//                    PrimeFaces.current().ajax().update("wizardForm");
+                    String forenames = callBack.data.person.forenames;
+                    String surname = callBack.data.person.surname;
+                    username = forenames + " " + surname;
+                    ghanaCardNumber = callBack.data.person.nationalId;
+                    
+                    Users foundUser = userService.findUserByGhanaCard(ghanaCardNumber);
+                    if (foundUser == null) {
+                        JSF.addErrorMessage("User Not Registered");
+                        return;
+                    }
 
+                    userRole = foundUser.getUserRole();
+
+                    FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("username", username);
+                    FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("userRole", userRole);
+                    FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("ghanaCardNumber", ghanaCardNumber);
+
+                    logActivity(username, "Succesful", "Multifinger login successful");
+
+                    FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "app/dashboard2.xhtml");
+                    PrimeFaces.current().ajax().update("theForm");
+
+                    msg = callBack.msg.toString();
                 } else {
                     verificationSuccess = false;
-                    JSF.addErrorMessage("Verification Failed: " + message);
+                    logActivity(username, "Failed", "Face login Failed(Verification Failed)");
+                    System.out.println("FAILED>>>>>>");
+                    JSF.addErrorMessage("Verification Failed: " + msg);
                 }
-            } else {
-                verificationSuccess = false;
-                JSF.addErrorMessage("Verification Failed Reason: " + message);
+//            } else {
+//                verificationSuccess = false;
+//                JSF.addErrorMessage("Verification Failed Reason: " + callBack.getMsg());
             }
         } catch (Exception e) {  // Catch any other unexpected errors
+            logActivity(username, "Failed", "Face login Failed(Verification Failed)");
             JSF.addErrorMessage("An unexpected error occurred. Please try again!");
             System.out.println("ERROR 3");
             e.printStackTrace(); // Log the error for debugging
         }
 
     }
-
+    
     public String getUserInitials() {
         String username = (String) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("username");
 

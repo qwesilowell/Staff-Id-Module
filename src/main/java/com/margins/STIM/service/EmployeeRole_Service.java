@@ -5,6 +5,7 @@
 package com.margins.STIM.service;
 
 import com.margins.STIM.entity.EmployeeRole;
+import com.margins.STIM.util.RoleCount;
 import java.util.List;
 import java.util.Set;
 import jakarta.ejb.Stateless;
@@ -12,6 +13,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -103,5 +105,21 @@ public class EmployeeRole_Service {
         } else {
             throw new EntityNotFoundException("EmployeeRole with ID " + roleId + " not found.");
         }
+    }
+    
+    public int getTotalRoles() {
+        Long count = entityManager.createQuery("SELECT COUNT(r) FROM EmployeeRole r", Long.class)
+                .getSingleResult();
+        return count.intValue();
+    }
+
+    public List<RoleCount> getTopRolesByEmployeeCount(int limit) {
+        List<Object[]> results = entityManager.createQuery(
+                "SELECT r.roleName, COUNT(e) FROM Employee e JOIN e.role r GROUP BY r.roleName ORDER BY COUNT(e) DESC")
+                .setMaxResults(limit)
+                .getResultList();
+        return results.stream()
+                .map(obj -> new RoleCount((String) obj[0], ((Long) obj[1]).intValue()))
+                .collect(Collectors.toList());
     }
 }

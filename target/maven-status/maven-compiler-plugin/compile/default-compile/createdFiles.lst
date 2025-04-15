@@ -64,7 +64,6 @@ com\margins\STIM\service\EmployeeEntranceService.class
 com\margins\STIM\Bean\DashboardBean.class
 com\margins\STIM\Bean\LoginBean.class
 com\margins\STIM\service\ActivityLogService.class
-.netbeans_automatic_build
 com\margins\STIM\Bean\LoginBean$3.class
 com\margins\STIM\entity\Employee.class
 com\margins\STIM\entity\Office.class
@@ -74,12 +73,14 @@ com\margins\STIM\rest\OfficeRest.class
 com\margins\STIM\Bean\LoginBean$2.class
 com\margins\STIM\rest\BiometricDataRest.class
 com\margins\STIM\Bean\UserBean.class
+com\margins\STIM\util\EntranceConverter.class
 com\margins\STIM\config\STIMConfig.class
 com\margins\STIM\entity\nia_verify\Data.class
 com\margins\STIM\Bean\EntranceBean.class
 com\margins\STIM\model\CapturedFinger.class
 com\margins\STIM\Bean\EmployeeRoleAssignmentBean.class
 com\margins\STIM\service\Office_Service.class
+com\margins\STIM\util\RoleCount.class
 com\margins\STIM\entity\Entrances.class
 com\margins\STIM\entity\Access_Levels.class
 com\margins\STIM\Bean\SingleFingerController$1.class

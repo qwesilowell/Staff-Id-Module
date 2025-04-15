@@ -15,6 +15,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
 /**
  *
@@ -138,6 +141,36 @@ public class Employee_Service {
                 + "LOWER(e.lastname) LIKE :query OR "
                 + "LOWER(e.ghanaCardNumber) LIKE :query", Employee.class)
                 .setParameter("query", "%" + query + "%")
+                .getResultList();
+    }
+   
+    public int getTotalEmployees() {
+        Long count = entityManager.createQuery("SELECT COUNT(e) FROM Employee e", Long.class)
+                .getSingleResult();
+        return count.intValue();
+    }
+
+    public int countEmployeesOnboarded(LocalDateTime start, LocalDateTime end) {
+        Long count = entityManager.createQuery(
+                "SELECT COUNT(e) FROM Employee e WHERE e.createdAt BETWEEN :start AND :end", Long.class)
+                .setParameter("start", Date.from(start.atZone(ZoneId.systemDefault()).toInstant()))
+                .setParameter("end", Date.from(end.atZone(ZoneId.systemDefault()).toInstant()))
+                .getSingleResult();
+        return count.intValue();
+    }
+
+    public List<Employee> getRecentEmployees(int limit) {
+        return entityManager.createQuery("SELECT e FROM Employee e ORDER BY e.createdAt DESC", Employee.class)
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
+    public List<Employee> getRecentEmployeesByUser(String userId, int limit) {
+        return entityManager.createQuery(
+                "SELECT e FROM Employee e JOIN ActivityLog a ON e.ghanaCardNumber = a.targetId "
+                + "WHERE a.action = 'create_employee' AND a.userId = :userId ORDER BY e.createdAt DESC", Employee.class)
+                .setParameter("userId", userId)
+                .setMaxResults(limit)
                 .getResultList();
     }
     

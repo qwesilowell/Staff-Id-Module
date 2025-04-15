@@ -7,9 +7,11 @@ package com.margins.STIM.service;
 import com.margins.STIM.entity.Entrances;
 import java.util.List;
 import jakarta.ejb.Stateless;
+import jakarta.faces.context.FacesContext;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
 
 /**
@@ -90,9 +92,6 @@ public class EntrancesService {
         }
     }
 
-//    public long countTotalEntrances() {
-//        return entityManager.createQuery("SELECT COUNT(e) FROM Entrances e", Long.class).getSingleResult();
-//    }
 
     public List<Entrances> searchEntrances(String query) {
         return entityManager.createQuery("SELECT e FROM Entrances e WHERE LOWER(e.entrance_Name) LIKE :query OR e.entrance_Device_ID LIKE :query", Entrances.class)
@@ -128,6 +127,31 @@ public class EntrancesService {
             // TODO: Trigger security alert
         }
     }
+    
+  public int getTotalEntrances() {
+        Long count = entityManager.createQuery("SELECT COUNT(e) FROM Entrances e", Long.class)
+                .getSingleResult();
+        return count.intValue();
+    }
 
+   
+    public List<Entrances> getEntrancesForUser(String username) {
+        // Get ghanaCardNumber from session
+        String ghanaCardNumber = (String) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("ghanaCardNumber");
+        if (ghanaCardNumber == null) {
+            return List.of(); // Return empty list if no ghanaCardNumber
+        }
+
+        // Query Employee by ghanaCardNumber
+        TypedQuery<Entrances> query = entityManager.createQuery(
+                "SELECT DISTINCT e FROM Employee emp "
+                + "LEFT JOIN emp.role r "
+                + "LEFT JOIN r.accessibleEntrances e "
+                + "WHERE emp.ghanaCardNumber = :ghanaCardNumber",
+                Entrances.class
+        );
+        query.setParameter("ghanaCardNumber", ghanaCardNumber);
+        return query.getResultList();
+    }
 
 }

@@ -30,7 +30,7 @@ public class ActivityLog implements Serializable {
     private Long id;
 
     @Column(name = "user_id")
-    private String userId; // Admin ID or employee Ghana Card
+    private String userId; 
 
     @Column(name = "action")
     private String action; // e.g., "create_employee", "assign_role"

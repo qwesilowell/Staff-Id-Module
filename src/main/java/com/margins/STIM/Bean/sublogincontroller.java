@@ -9,6 +9,8 @@ package com.margins.STIM.Bean;
  * @author PhilipManteAsare
  */
 
+import com.margins.STIM.entity.ActivityLog;
+import com.margins.STIM.service.ActivityLogService;
 import com.margins.STIM.service.User_Service;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
@@ -17,6 +19,7 @@ import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,6 +36,9 @@ public class sublogincontroller implements Serializable {
     @EJB
     private User_Service userService;
     
+    @EJB
+    private ActivityLogService activityLogService;
+    
  
     // Login method
     public String login() {
@@ -45,6 +51,13 @@ public class sublogincontroller implements Serializable {
             FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("userRole", userRole);
             FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("ghanaCardNumber", ghanaCardNumber);
 
+            ActivityLog log = new ActivityLog();
+            log.setUserId(username); 
+            log.setAction("login"); 
+            log.setTimestamp(LocalDateTime.now()); 
+            log.setResult("Success"); 
+            log.setDetails("User logged in successfully"); 
+            activityLogService.logActivity(log);
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect("app/dashboard2.xhtml");
             } catch (IOException e) {
@@ -52,6 +65,13 @@ public class sublogincontroller implements Serializable {
             }
             return null; // Prevent JSF from navigating elsewhere  
         } else {
+            ActivityLog log = new ActivityLog();
+            log.setUserId(ghanaCardNumber);
+            log.setAction("login");
+            log.setTimestamp(LocalDateTime.now());
+            log.setResult("Failed");
+            log.setDetails("login not successful");
+            activityLogService.logActivity(log);
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Invalid credentials", "Ghana Card number or password is incorrect");
             FacesContext.getCurrentInstance().addMessage(null, msg);
             return null;

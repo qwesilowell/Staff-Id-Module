@@ -9,7 +9,6 @@ package com.margins.STIM.Bean;
  * @author PhilipManteAsare
  */
 import com.google.gson.Gson;
-import com.margins.STIM.entity.Users;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.service.BiometricDataService;
@@ -17,20 +16,11 @@ import com.margins.STIM.service.User_Service;
 import com.margins.STIM.util.FingerprintProcessor;
 import com.margins.STIM.util.JSF;
 import com.margins.STIM.util.ValidationUtil;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
 import java.io.Serializable;
-import java.util.List;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
