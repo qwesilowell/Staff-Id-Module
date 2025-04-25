@@ -22,17 +22,17 @@ function updateStatusBox() {
         } else {
             parentBox.className = 'status-box';
         }
-//        setTimeout(function () {
-//            // Reset UI locally
-//            parentBox.className = 'status-box';
-//            contentBox.textContent = 'Awaiting Action';
-//            document.getElementById('ghanaCardPin').value = '';
-//            PF('position').selectValue(''); // Reset selectOneMenu
-//            PF('entranceWidget').clear();   // Reset autoComplete
-//            // Sync server
-//            resetFormCommand();
-//            console.log('Form reset triggered');
-//        }, 10000); // 10 sec delay
+        setTimeout(function () {
+            // Reset UI locally
+            parentBox.className = 'status-box';
+            contentBox.textContent = 'Awaiting Action';
+            document.getElementById('ghanaCardPin').value = '';
+            PF('position').selectValue(''); // Reset selectOneMenu
+            PF('entranceWidget').clear();   // Reset autoComplete
+            // Sync server
+            resetFormCommand();
+            console.log('Form reset triggered');
+        }, 10000); // 10 sec delay
     }, 500); // Increased to 500ms
 }
 

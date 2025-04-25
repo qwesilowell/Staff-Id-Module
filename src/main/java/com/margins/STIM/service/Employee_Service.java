@@ -167,8 +167,12 @@ public class Employee_Service {
 
     public List<Employee> getRecentEmployeesByUser(String userId, int limit) {
         return entityManager.createQuery(
-                "SELECT e FROM Employee e JOIN ActivityLog a ON e.ghanaCardNumber = a.targetId "
-                + "WHERE a.action = 'create_employee' AND a.userId = :userId ORDER BY e.createdAt DESC", Employee.class)
+                "SELECT e FROM Employee e "
+                + "WHERE e.ghanaCardNumber IN ("
+                + "  SELECT a.targetId FROM ActivityLog a "
+                + "  WHERE a.action = 'create_employee' AND a.userId = :userId"
+                + ") "
+                + "ORDER BY e.createdAt DESC", Employee.class)
                 .setParameter("userId", userId)
                 .setMaxResults(limit)
                 .getResultList();

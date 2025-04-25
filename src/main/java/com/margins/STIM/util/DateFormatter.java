@@ -5,6 +5,8 @@
 package com.margins.STIM.util;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 /**
@@ -25,6 +27,14 @@ public class DateFormatter {
 
         // Combine them to get the final formatted date
         return day + ordinalSuffix + " " + monthYear;
+    }
+    
+    public static String formatDateTime(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return "";
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return dateTime.format(formatter);
     }
 
     private static String getOrdinalSuffix(int day) {

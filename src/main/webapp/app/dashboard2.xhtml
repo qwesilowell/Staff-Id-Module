@@ -6,7 +6,6 @@
                 xmlns:h="jakarta.faces.html"
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:xdev="http://www.xdev-software.de/jsf/chartjs"
                 xmlns:ui="jakarta.faces.facelets">
 
 
@@ -17,81 +16,81 @@
             <p:growl widgetVar="fgrowl" id="growl" showSummary= "true" showDetail="true" life="6000" globalOnly="true"/>
 
             <h1> Dashboard Content </h1>
-            <h:form id="dashboardForm">
+            <h:form id="dashboardForm" prependId="false">
                 <p:tabView activeIndex="#{sessionScope.userRole == 'Admin' ? 0 : 1}">
                     <!-- Admin Dashboard -->
                     <p:tab title="Admin Dashboard" rendered="#{sessionScope.userRole == 'Admin'}">
                         <p:panelGrid columns="1" styleClass="ui-panelgrid">
-                        <ul class="insights">
-                            <li>
-                                <i class='bx pi pi-users !text-[30px]'></i>
-                                <span class="info">
-                                    <h3 class="!text-left">#{dashboard2.totalEmployees}</h3>
-                                    <p>Total Employees</p>
-                                </span>
-                            </li>
-                            <li>
-                                <i class='bx fa fa-square-plus !text-[30px]'></i>
-                                <span class="info">
-                                    <h3 class="!text-left">#{dashboard2.totalRoles}</h3>
-                                    <p>Total Roles</p>
-                                </span>
-                            </li>
-                            <li>
-                                <i class='bx fa-solid fa-door-open !text-[30px]'></i>
-                                <span class="info">
-                                    <h3 class="!text-left">#{dashboard2.totalEntrances}</h3>
-                                    <p>Total Entrances</p>
-                                </span>
-                            </li>
-                            <li>
-                                <i class='bx fa-regular fa-calendar !text-[30px]'></i>
-                                <span class="info">
-                                    <h3 class="!text-left">#{dashboard2.employeesOnboardedMonth}</h3>
-                                    <p>Onboarded This Month</p>
-                                </span>
-                            </li>
-                            <li>
-                                <i class='bx pi pi-dollar !text-[30px]'></i>
-                                <span class="info">
-                                    <h3 class="!text-left">#{dashboard2.successfulLoginsToday}</h3>
-                                    <p>Successful logins Today</p>
-                                </span>
-                            </li>
-<!--                            <li>
-                                <i class='bx pi pi-dollar !text-[30px]'></i>
-                                <span class="info">
-                                    <h3 class="!text-left">#{dashboard2.employeesOnboardedToday}</h3>
-                                    <p>Onboarded Today</p>
-                                </span>
-                            </li>
-                            
-                            <li>
-                                <i class='bx pi pi-dollar !text-[30px]'></i>
-                                <span class="info">
-                                    <h3 class="!text-left">#{dashboard2.employeesOnboardedWeek}</h3>
-                                    <p>Onboarded This Week</p>
-                                </span>
-                            </li>
-                         
-                        
-                            <li>
-                                <i class='bx pi pi-dollar !text-[30px]'></i>
-                                <span class="info">
-                                    <h3 class="!text-left">#{dashboard2.verificationSuccessRate}%</h3>
-                                    <p>Verification Success Rate</p>
-                                </span>
-                            </li>                    -->
-<!--                            <li>
-                                <i class='bx pi pi-dollar !text-[30px]'></i>
-                                <span class="info">
-                                    <h3 class="!text-left">#{dashboard2.accessSuccessRate}%</h3>
-                                    <p>Entrance Access Success Rate</p>
-                                </span>
-                            </li>-->
-                            
-                        </ul>
-                    </p:panelGrid>
+                            <ul class="insights">
+                                <li>
+                                    <i class='bx pi pi-users !text-[30px]'></i>
+                                    <span class="info">
+                                        <h3 class="!text-left">#{dashboard2.totalEmployees}</h3>
+                                        <p>Total Employees</p>
+                                    </span>
+                                </li>
+                                <li>
+                                    <i class='bx fa fa-user-tie !text-[30px]'></i>
+                                    <span class="info">
+                                        <h3 class="!text-left">#{dashboard2.totalRoles}</h3>
+                                        <p>Total Roles</p>
+                                    </span>
+                                </li>
+                                <li>
+                                    <i class='bx fa-solid fa-door-open !text-[30px]'></i>
+                                    <span class="info">
+                                        <h3 class="!text-left">#{dashboard2.totalEntrances}</h3>
+                                        <p>Total Entrances</p>
+                                    </span>
+                                </li>
+                                <li>
+                                    <i class='bx fa-regular fa-calendar !text-[30px]'></i>
+                                    <span class="info">
+                                        <h3 class="!text-left">#{dashboard2.employeesOnboardedMonth}</h3>
+                                        <p>Onboarded This Month</p>
+                                    </span>
+                                </li>
+                                <li>
+                                    <i class='bx fa-regular fa-circle-check !text-[30px]'></i>
+                                    <span class="info">
+                                        <h3 class="!text-left">#{dashboard2.successfulLoginsToday}</h3>
+                                        <p>Successful logins Today</p>
+                                    </span>
+                                </li>
+                                <!--                            <li>
+                                                                <i class='bx pi pi-dollar !text-[30px]'></i>
+                                                                <span class="info">
+                                                                    <h3 class="!text-left">#{dashboard2.employeesOnboardedToday}</h3>
+                                                                    <p>Onboarded Today</p>
+                                                                </span>
+                                                            </li>
+                                                            
+                                                            <li>
+                                                                <i class='bx pi pi-dollar !text-[30px]'></i>
+                                                                <span class="info">
+                                                                    <h3 class="!text-left">#{dashboard2.employeesOnboardedWeek}</h3>
+                                                                    <p>Onboarded This Week</p>
+                                                                </span>
+                                                            </li>
+                                                         
+                                                        
+                                                            <li>
+                                                                <i class='bx pi pi-dollar !text-[30px]'></i>
+                                                                <span class="info">
+                                                                    <h3 class="!text-left">#{dashboard2.verificationSuccessRate}%</h3>
+                                                                    <p>Verification Success Rate</p>
+                                                                </span>
+                                                            </li>                    -->
+                                <!--                            <li>
+                                                                <i class='bx pi pi-dollar !text-[30px]'></i>
+                                                                <span class="info">
+                                                                    <h3 class="!text-left">#{dashboard2.accessSuccessRate}%</h3>
+                                                                    <p>Entrance Access Success Rate</p>
+                                                                </span>
+                                                            </li>-->
+
+                            </ul>
+                        </p:panelGrid>
                         <!--
                         
                         <p:panelGrid columns="3" styleClass="ui-panelgrid">
@@ -133,43 +132,49 @@
                             </p:panel>
                         </p:panelGrid>-->
 
-                        <p:panel styleClass="filter-container">
-                            <h:outputText value="Filter by Entrance: "/>
-                            <p:selectOneMenu value="#{dashboard2.selectedEntrance}" converter="entranceConverter">
-                                <f:selectItem itemLabel="All Entrances" itemValue="#{null}"/>
-                                <f:selectItems value="#{dashboard2.allEntrances}" var="e" itemLabel="#{e.entrance_Name}" itemValue="#{e}"/>
-                                <p:ajax update="dashboardContent" process="@this" listener="#{dashboard2.updateStats}"/>
-                            </p:selectOneMenu>
-                        </p:panel>
+                        <!--                        <p:panel styleClass="filter-container" style="bor">-->
 
-                        <h:panelGroup id="dashboardContent">
+                        <h:outputText value="Filter by Entrance: "/>
+                        <p:selectOneMenu value="#{dashboard2.selectedEntranceId}">
+                            <f:selectItem itemLabel="All Entrances" itemValue="#{null}"/>
+                            <f:selectItems value="#{dashboard2.allEntrances}" var="e" itemLabel="#{e.entrance_Name}" itemValue="#{e.entrance_Device_ID}"/>
+                            <p:ajax update="dashboardContent" listener="#{dashboard2.updateStats}" process="@this"/>
+                        </p:selectOneMenu>
+
+                        <h:panelGroup id="dashboardContent" layout="block">
+                            <p:spacer height="20px"/>
                             <p:panel header="Recent Access Attempts">
                                 <p:dataTable value="#{dashboard2.recentAccessAttempts}" var="log">
                                     <p:column headerText="Employee">
+                                        <h:outputText value="#{dashboard2.getEmployeeNameFromMap(log.employeeId)}"/>
+                                    </p:column>
+                                    <p:column headerText="GhanaCard No">
                                         <h:outputText value="#{log.employeeId}"/>
                                     </p:column>
                                     <p:column headerText="Entrance">
-                                        <h:outputText value="#{log.entranceId}"/>
+                                        <h:outputText value="#{dashboard2.getEntranceName(log.entranceId)}"/>
                                     </p:column>
                                     <p:column headerText="Result">
-                                        <h:outputText value="#{log.result}"/>
+                                        <h:outputText value="#{log.result}"
+                                                      styleClass="#{log.result eq 'granted' ? 'granted-box' : 'denied-box'}" />
+
                                     </p:column>
                                     <p:column headerText="Time">
-                                        <h:outputText value="#{log.timestamp}"/>
+                                        <h:outputText value="#{dashboard2.getFormattedTimestamp(log)}">
+
+                                        </h:outputText>
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
                         </h:panelGroup>
+
+                        <!--                        </p:panel>-->
+
                         <p:spacer height="10px"/>
-                        
+
                         <p:panel id="dashboardContent2">
-                            <p:panel header="Recent Successful Logins">
-                                <p:dataTable value="#{dashboard2.recentLogins}" var="log">
-                                    <p:column headerText="User"><h:outputText value="#{log.userId}"/></p:column>
-                                    <p:column headerText="Time"><h:outputText value="#{log.timestamp}"/></p:column>
-                                    <p:column headerText="Details"><h:outputText value="#{log.details}"/></p:column>
-                                </p:dataTable>
-                            </p:panel>
+                            
+
                             <p:panel header="Recent Employees Added">
                                 <p:dataTable value="#{dashboard2.recentEmployees}" var="emp">
                                     <p:column headerText="Name"><h:outputText value="#{emp.firstname} #{emp.lastname}"/></p:column>
@@ -180,60 +185,157 @@
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
-                            
+
+                            <p:spacer height="30px"/>
+
+
                             <p:panel header="Roles with Most Employees">
                                 <p:dataTable value="#{dashboard2.rolesWithMostEmployees}" var="role">
                                     <p:column headerText="Role"><h:outputText value="#{role.roleName}"/></p:column>
                                     <p:column headerText="Employees"><h:outputText value="#{role.count}"/></p:column>
                                 </p:dataTable>
                             </p:panel>
-                            <p:panel styleClass="chart-container">
-                                <xdev:chartJS type="pie" model="#{dashboard2.verificationPieModel}" style="width:400px;height:300px;"/>
+                            
+                             <p:spacer height="30px"/>
+                            <p:panel header="Recent Successful Logins">
+                                <p:dataTable value="#{dashboard2.recentLogins}" var="log">
+                                    <p:column headerText="User"><h:outputText value="#{log.userId}"/></p:column>
+                                    <p:column headerText="Time"><h:outputText value="#{dashboard2.getFormattedActivityLogTimestamp(log)}"/></p:column>
+                                    <p:column headerText="Details"><h:outputText value="#{log.details}"/></p:column>
+                                </p:dataTable>
                             </p:panel>
-                            <!--                            <p:panel styleClass="chart-container">
-                                                            <p:chart model="#-{dashboard2.onboardedBarChart}" style="width:600px;height:300px"/>
-                                                        </p:panel>
-                                                        <p:panel styleClass="chart-container">
-                                                            <p:chart model="#-{dashboard2.loginTrendChart}" style="width:600px;height:300px"/>
-                                                        </p:panel>-->
+                           
+
+                            <p:spacer height="30px"/>
+
+                            <p:panelGrid columns="2"> 
+                                <p:panel header="Roles With Most Employees">
+                                    <p:pieChart model="#{dashboard2.rolePieChartModel}" style="height: 400px;" />
+                                </p:panel>
+
+
+                                <p:panel header="Entrance Access">
+                                    <h:outputText value="Filter by Entrance: "/>
+                                    <p:selectOneMenu value="#{dashboard2.selectedEntranceId}">
+                                        <f:selectItem itemLabel="All Entrances" itemValue="#{null}"/>
+                                        <f:selectItems value="#{dashboard2.allEntrances}" var="e" itemLabel="#{e.entrance_Name}" itemValue="#{e.entrance_Device_ID}"/>
+                                        <p:ajax update="entanceAccessChart" listener="#{dashboard2.entranceaccessupdate()}" process="@this"/>
+                                    </p:selectOneMenu>
+
+                                    <p:outputPanel id="entanceAccessChart">
+                                        <p:barChart model="#{dashboard2.barChartModelEntrance}" style=" width:50px; height: 400px;" />
+                                    </p:outputPanel>
+
+                                </p:panel>
+
+                                <p:panel header="Top 5 Most Accessed Entrances (Granted Only)">
+                                    <p:lineChart model="#{dashboard2.topEntrancesChartModel}" style="height: 300px;" />
+                                </p:panel>
+
+
+                                <!--                            <p:panel styleClass="chart-container">
+                                                                <p:chart model="#-{dashboard2.onboardedBarChart}" style="width:600px;height:300px"/>
+                                                            </p:panel>
+                                                            <p:panel styleClass="chart-container">
+                                                                <p:chart model="#-{dashboard2.loginTrendChart}" style="width:600px;height:300px"/>
+                                                            </p:panel>-->
+                            </p:panelGrid>
+
+
                         </p:panel>
                     </p:tab>
 
                     <!-- User Dashboard -->
                     <p:tab title="User Dashboard">
-                        <p:panelGrid columns="3" styleClass="ui-panelgrid">
-                            <p:panel styleClass="dashboard-card">
-                                <h:outputText value="Your Logins Today" styleClass="card-title"/>
-                                <h:outputText value="#{dashboard2.userSuccessfulLoginsToday}" styleClass="card-value"/>
-                            </p:panel>
-                            <p:panel styleClass="dashboard-card">
-                                <h:outputText value="Your Role" styleClass="card-title"/>
-                                <h:outputText value="#{dashboard2.userRole}" styleClass="card-value"/>
-                            </p:panel>
-                            <p:panel styleClass="dashboard-card">
-                                <h:outputText value="Total Entrances" styleClass="card-title"/>
-                                <h:outputText value="#{dashboard2.totalEntrances}" styleClass="card-value"/>
-                            </p:panel>
-                            <p:panel styleClass="dashboard-card">
-                                <h:outputText value="System Employees" styleClass="card-title"/>
-                                <h:outputText value="#{dashboard2.totalEmployees}" styleClass="card-value"/>
-                            </p:panel>
-                            <p:panel styleClass="dashboard-card">
-                                <h:outputText value="System Roles" styleClass="card-title"/>
-                                <h:outputText value="#{dashboard2.totalRoles}" styleClass="card-value"/>
-                            </p:panel>
-                            <p:panel styleClass="dashboard-card">
-                                <h:outputText value="Access Success Rate" styleClass="card-title"/>
+                        <p:panelGrid columns="1" styleClass="ui-panelgrid">
+                            <ul class="insights">
+                                <li>
+                                    <i class='bx pi pi-users !text-[30px]'></i>
+                                    <span class="info">
+                                        <h3 class="!text-left">#{dashboard2.totalEmployees}</h3>
+                                        <p>Total Employees</p>
+                                    </span>
+                                </li>
+                                <li>
+                                    <i class='bx fa fa-user-tie !text-[30px]'></i>
+                                    <span class="info">
+                                        <h3 class="!text-left">#{dashboard2.totalRoles}</h3>
+                                        <p>Total Roles</p>
+                                    </span>
+                                </li>
+                                <li>
+                                    <i class='bx fa-solid fa-door-open !text-[30px]'></i>
+                                    <span class="info">
+                                        <h3 class="!text-left">#{dashboard2.totalEntrances}</h3>
+                                        <p>Total Entrances</p>
+                                    </span>
+                                </li>
+                                <li>
+                                    <i class='bx fa-regular fa-calendar !text-[30px]'></i>
+                                    <span class="info">
+                                        <h3 class="!text-left">#{dashboard2.employeesUserOnboardedToday}</h3>
+                                        <p>Employees Onboarded Today</p>
+                                    </span>
+                                </li>
+                            </ul>
+                            <!--                            <p:panel styleClass="dashboard-card">
+                                                            <h:outputText value="Your Logins Today" styleClass="card-title"/>
+                                                            <h:outputText value="#-{dashboard2.userSuccessfulLoginsToday}" styleClass="card-value"/>
+                                                        </p:panel>
+                                                        <p:spacer height="30px"/>-->
+
+
+
+                           <p:panel styleClass="dashboard-card">
+                                <h:outputText value="Access Success Rate " styleClass="card-title"/>
+                                <p:spacer height="10px"/>
                                 <h:outputText value="#{dashboard2.accessSuccessRate}%"/>
                             </p:panel>
                         </p:panelGrid>
 
+                        <h:outputText value="Filter by Entrance: "/>
+                        <p:selectOneMenu value="#{dashboard2.selectedEntranceId}">
+                            <f:selectItem itemLabel="All Entrances" itemValue="#{null}"/>
+                            <f:selectItems value="#{dashboard2.allEntrances}" var="e" itemLabel="#{e.entrance_Name}" itemValue="#{e.entrance_Device_ID}"/>
+                            <p:ajax update="dashboardContentU" listener="#{dashboard2.updateStats}" process="@this"/>
+                        </p:selectOneMenu>
+
+                        <h:panelGroup id="dashboardContentU" layout="block">
+                            <p:spacer height="20px"/>
+                            <p:panel header="Recent Access Attempts">
+                                <p:dataTable value="#{dashboard2.recentAccessAttempts}" var="log">
+                                    <p:column headerText="Employee">
+                                        <h:outputText value="#{dashboard2.getEmployeeNameFromMap(log.employeeId)}"/>
+                                    </p:column>
+                                    <p:column headerText="GhanaCard No">
+                                        <h:outputText value="#{log.employeeId}"/>
+                                    </p:column>
+                                    <p:column headerText="Entrance">
+                                        <h:outputText value="#{dashboard2.getEntranceName(log.entranceId)}"/>
+                                    </p:column>
+                                    <p:column headerText="Result">
+                                        <h:outputText value="#{log.result}"
+                                                      styleClass="#{log.result eq 'granted' ? 'granted-box' : 'denied-box'}" />
+
+                                    </p:column>
+                                    <p:column headerText="Time">
+                                        <h:outputText value="#{dashboard2.getFormattedTimestamp(log)}">
+
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </h:panelGroup>
+
+                        <p:spacer height="30px"/>
+                        
                         <p:panel header="Your Assigned Entrances">
                             <p:dataTable value="#{dashboard2.userAssignedEntrances}" var="entrance">
                                 <p:column headerText="Entrance Name"><h:outputText value="#{entrance.entrance_Name}"/></p:column>
                                 <p:column headerText="Location"><h:outputText value="#{entrance.entrance_Location}"/></p:column>
                             </p:dataTable>
                         </p:panel>
+                        <p:spacer height="30px"/>
                         <p:panel header="Employees You Recently Onboarded">
                             <p:dataTable value="#{dashboard2.userRecentEmployees}" var="emp">
                                 <p:column headerText="Name"><h:outputText value="#{emp.firstname} #{emp.lastname}"/></p:column>
@@ -244,6 +346,8 @@
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
+                        <p:spacer height="30px"/>
+
                         <p:panel header="Your Recent Access Attempts">
                             <p:dataTable value="#{dashboard2.userRecentAccessAttempts}" var="log">
                                 <p:column headerText="Entrance"><h:outputText value="#{log.entranceId}"/></p:column>
@@ -257,6 +361,7 @@
             </h:form>
 
         </div>
+        <script target="head" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
         <style>
             .dashboard-card {
                 background: #f8f9fa;
@@ -275,10 +380,7 @@
                 font-size: 2em;
                 color: #007bff;
             }
-            .ui-panelgrid {
-                width: 100%;
-                margin: 0 auto;
-            }
+
             .chart-container {
                 margin: 20px;
                 padding: 20px;
@@ -286,7 +388,7 @@
             .filter-container {
                 margin: 10px;
             }
-            
+
             .insights{
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -334,9 +436,9 @@
             }
             .insights li:nth-child(5) .bx{
                 background: #cfff00;
-                color: #D32F2F;
+                color: #425e9e;
             }
-           
+
             .insights li:nth-child(6) .bx{
                 background: #9A98EA;
                 color: #D32F2F;
@@ -365,6 +467,23 @@
 
             .insights li .info p{
                 color: #363949;
+            }
+            .granted-box {
+                background-color: #d4edda; /* light green */
+                color: black;
+                padding: 4px 8px;
+                border-radius: 5px;
+                font-weight: bold;
+                display: inline-block;
+            }
+
+            .denied-box {
+                background-color: #dc143c ; /* red */
+                color: white;
+                padding: 4px 8px;
+                border-radius: 5px;
+                font-weight: bold;
+                display: inline-block;
             }
         </style>
     </ui:define>

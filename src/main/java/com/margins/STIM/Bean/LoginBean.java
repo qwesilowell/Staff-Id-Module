@@ -254,7 +254,7 @@ public class LoginBean implements Serializable {
                     FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("userRole", userRole);
                     FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("ghanaCardNumber", ghanaCardNumber);
 
-                    logActivity(username, "Succesful", "SingleFinger login successful");
+                    logActivity(username, "Success", "SingleFinger login successful");
 
                     // Redirect to Dashboard
                     FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "app/dashboard2.xhtml");
@@ -354,7 +354,7 @@ public class LoginBean implements Serializable {
                     FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("userRole", userRole);
                     FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("ghanaCardNumber", ghanaCardNumber);
 
-                    logActivity(username, "Succesful", "Face login successful");
+                    logActivity(username, "Success", "Face login successful");
 
                     FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "app/dashboard2.xhtml");
                     PrimeFaces.current().ajax().update("theForm");
@@ -484,7 +484,7 @@ public class LoginBean implements Serializable {
                     FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("userRole", userRole);
                     FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("ghanaCardNumber", ghanaCardNumber);
 
-                    logActivity(username, "Succesful", "Multifinger login successful");
+                    logActivity(username, "Success", "Multifinger login successful");
 
                     FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "app/dashboard2.xhtml");
                     PrimeFaces.current().ajax().update("theForm");

@@ -5,9 +5,11 @@ C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\ST
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\Bean\multiFingerBean.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\entity\EmployeeRole.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\Bean\CreateAccessLevelsBean.java
+C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\Charts\BaseLineChart.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\service\User_Service.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\util\ValidationUtil.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\util\JSF.java
+C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\Charts\RolePieChart.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\rest\DepartmentRest.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\entity\nia_verify\Person.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\Bean\SingleFingerController.java
@@ -15,6 +17,7 @@ C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\ST
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\rest\EntrancesRestService.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\converter\AccessLevelConverter.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\entity\AccessLog.java
+C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\Charts\EntranceAccessBarChart.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\service\BiometricDataService.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\service\EmployeeEntranceService.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\Bean\EmployeeBean.java
@@ -24,6 +27,7 @@ C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\ST
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\service\AccessLogService.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\stim\resources\JakartaEE8Resource.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\entity\EntityModel.java
+C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\Charts\BaseBarChart.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\service\ActivityLogService.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\entity\Office.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\entity\nia_verify\Address.java
@@ -33,6 +37,7 @@ C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\ST
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\Bean\AssignRoleBean.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\Bean\GrowlView.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\rest\Sub_OfficeRest.java
+C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\enums\ChartColor.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\Bean\BiometricLoginBean.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\service\Department_Service.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\service\EmployeeRole_Service.java
@@ -47,7 +52,6 @@ C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\ST
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\Bean\AccessControlBean.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\entity\Employee.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\service\Sub_Office_Service.java
-C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\util\EntranceConverter.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\model\CapturedFinger.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\entity\nia_verify\VerificationResultData.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\rest\EmployeeRoleRest.java
@@ -74,3 +78,4 @@ C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\ST
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\entity\EmployeeEntrance.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\util\RoleCount.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\rest\EmployeeEntranceRest.java
+C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\util\EntranceAccessCount.java

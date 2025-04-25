@@ -5,12 +5,18 @@
 package com.margins.STIM.service;
 
 import com.margins.STIM.entity.AccessLog;
+import com.margins.STIM.entity.Entrances;
+import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+
 
 /**
  *
@@ -19,12 +25,17 @@ import java.util.List;
 @Stateless
 @Transactional
 public class AccessLogService {
+    
+    @EJB 
+    private EntrancesService entrancesService;
 
     @PersistenceContext
     private EntityManager em;
 
     public void logAccess(AccessLog log) {
         em.persist(log);
+        em.flush();
+        em.clear();
     }
 
     // For dashboard later
@@ -70,4 +81,82 @@ public class AccessLogService {
                 .setMaxResults(limit)
                 .getResultList();
     }
+
+    public Map<String, Integer> countAccessResultsByEntrance(LocalDateTime start, LocalDateTime end, String entranceId) {
+
+        List<Object[]> results = em.createQuery(
+                "SELECT a.result, COUNT(a) FROM AccessLog a "
+                + "WHERE a.result IN ('granted', 'denied') "
+                + "AND a.entranceId = :entranceId "
+                + "GROUP BY a.result", Object[].class)
+                .setParameter("entranceId", entranceId)
+                .getResultList();
+
+        Map<String, Integer> resultCounts = new HashMap<>();
+        resultCounts.put("granted", 0);
+        resultCounts.put("denied", 0);
+
+        for (Object[] row : results) {
+            String result = (String) row[0];
+            Long count = (Long) row[1];
+            if (result.equals("granted") || result.equals("denied")) {
+                resultCounts.put(result, count.intValue());
+            }
+        }
+
+        return resultCounts;
+    }
+
+    public Map<String, Integer> countAccessResultsForAllEntrances(LocalDateTime start, LocalDateTime end) {
+
+        List<Object[]> results = em.createQuery(
+                "SELECT a.result, COUNT(a) FROM AccessLog a "
+                + "WHERE a.result IN ('granted', 'denied') "
+                + "GROUP BY a.result", Object[].class)
+                .getResultList();
+
+        Map<String, Integer> resultCounts = new HashMap<>();
+        resultCounts.put("granted", 0);
+        resultCounts.put("denied", 0);
+
+        for (Object[] row : results) {
+            String result = (String) row[0];
+            Long count = (Long) row[1];
+            if (result.equals("granted") || result.equals("denied")) {
+                resultCounts.put(result, count.intValue());
+            }
+        }
+
+        return resultCounts;
+    }
+
+    public Map<String, Integer> getTop5RecentEntrancesByGrantedAccess(LocalDateTime start, LocalDateTime end) {
+
+        List<Object[]> results = em.createQuery(
+                "SELECT a.entranceId, COUNT(a) as accessCount, MAX(a.timestamp) as lastAccessTime "
+                + "FROM AccessLog a "
+                + "WHERE a.result = 'granted' AND a.timestamp BETWEEN :start AND :end "
+                + "GROUP BY a.entranceId "
+                + "ORDER BY MAX(a.timestamp) DESC", Object[].class)
+                .setParameter("start", start)
+                .setParameter("end", end)
+                .setMaxResults(5)
+                .getResultList();
+
+        Map<String, Integer> entranceCounts = new HashMap<>();
+        for (Object[] row : results) {
+            String entranceId = (String) row[0];
+            Long count = (Long) row[1];
+            
+            Entrances entrance = entrancesService.findEntranceById(entranceId); 
+            String entranceName = entrance != null ? entrance.getEntrance_Name() : entranceId;
+            
+            
+            entranceCounts.put(entranceName, count.intValue());
+        }
+        
+
+        return entranceCounts;
+    }
+
 }
