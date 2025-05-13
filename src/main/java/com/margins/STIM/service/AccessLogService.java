@@ -5,6 +5,8 @@
 package com.margins.STIM.service;
 
 import com.margins.STIM.entity.AccessLog;
+import com.margins.STIM.entity.Employee;
+import com.margins.STIM.entity.EmployeeRole;
 import com.margins.STIM.entity.Entrances;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -157,6 +159,39 @@ public class AccessLogService {
         
 
         return entranceCounts;
+    }
+    
+    // New method to check access
+    public boolean hasAccess(String ghanaCardNumber, String entranceDeviceId) {
+        Employee employee = em.find(Employee.class, ghanaCardNumber);
+        if (employee == null) {
+            System.out.println("Employee not found: " + ghanaCardNumber);
+            return false;
+        }
+
+        // Check role-based entrances
+        EmployeeRole role = employee.getRole();
+        if (role != null && role.getAccessibleEntrances()!= null) {
+            for (Entrances entrance : role.getAccessibleEntrances()) {
+                if (entrance.getEntrance_Device_ID().equals(entranceDeviceId)) {
+                    System.out.println("Access granted via role for employee: " + ghanaCardNumber + ", entrance: " + entranceDeviceId);
+                    return true;
+                }
+            }
+        }
+
+        // Check custom entrances
+        if (employee.getCustomEntrances() != null) {
+            for (Entrances entrance : employee.getCustomEntrances()) {
+                if (entrance.getEntrance_Device_ID().equals(entranceDeviceId)) {
+                    System.out.println("Access granted via custom entrance for employee: " + ghanaCardNumber + ", entrance: " + entranceDeviceId);
+                    return true;
+                }
+            }
+        }
+
+        System.out.println("Access denied for employee: " + ghanaCardNumber + ", entrance: " + entranceDeviceId);
+        return false;
     }
 
 }

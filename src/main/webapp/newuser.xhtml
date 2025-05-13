@@ -44,7 +44,7 @@
                         <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
                             <p:commandButton value="Next" action="#{userBean.nextStep}" update="wizardForm"
                                              disabled="#{empty userBean.verificationType}" 
-                                             style="background-color: green; color: white; padding: 10px 20px; font-weight: bold;"/>
+                                             style="background-color: green; color: white; padding: 1px 2px; font-weight: bold;"/>
                         </div>
                     </p:panel>
 
@@ -298,7 +298,7 @@
 
                         <div style="display: flex; justify-content: space-between; margin-top: 20px;">
                             <p:commandButton value="Back" action="#{userBean.prevStep}" update="wizardForm"/>
-                            <p:commandButton value="Create User" action="#{userBean.saveUserToDatabase}" update="growl"/>
+                            <p:commandButton value="Create User" action="#{userBean.saveUserToDatabase}" update="growl" style="background: #689f38; border-color: #689f38; "/>
                         </div>
 
 

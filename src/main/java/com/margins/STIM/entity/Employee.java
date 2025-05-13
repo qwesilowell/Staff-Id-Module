@@ -14,7 +14,9 @@ import jakarta.persistence.Entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -70,6 +72,18 @@ public class Employee implements Serializable {
 //            inverseJoinColumns = @JoinColumn(name = "role_id")
 //    )
 //    private List<EmployeeRole> roles;
+    
+    
+    @Getter
+    @Setter
+    @ManyToMany
+    @JoinTable(
+            name = "employee_entrance_access",
+            joinColumns = @JoinColumn(name = "GHANA_CARD_NUMBER"),
+            inverseJoinColumns = @JoinColumn(name = "entrance_device_id")
+    )
+    private List<Entrances> customEntrances = new ArrayList<>();
+    
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", nullable = false)

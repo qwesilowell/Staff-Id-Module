@@ -6,8 +6,11 @@ package com.margins.STIM.Bean;
 
 import com.margins.STIM.entity.EmployeeRole;
 import com.margins.STIM.entity.Entrances;
+
+import com.margins.STIM.entity.TimeAccessRule;
 import com.margins.STIM.service.EmployeeRole_Service;
 import com.margins.STIM.service.EntrancesService;
+import com.margins.STIM.service.TimeAccessRuleService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,6 +24,17 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.persistence.Cacheable;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Map;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  *
@@ -37,17 +51,43 @@ public class AssignRoleBean implements Serializable {
     @Inject
     private EntrancesService entrancesService;
 
+    @Inject
+    private TimeAccessRuleService timeAccessRuleService;
+
+    @Setter
     private List<EmployeeRole> allRoles;
+      
+    @Setter
     private List<Entrances> allEntrances;
     private String selectedEntranceId;
+
     private Set<Integer> selectedRolesIds;
     private List<EmployeeRole> assignedRoles;
     private String selectedEmployeeRoleId;
+
+    @Getter
+    @Setter
+    private TimeAccessRule newRule;
+
+    @Getter
+    @Setter
+    private List<String> newRuleDays;
+
+    @Getter
+    @Setter
+    private Entrances selectedEntrance;
     
+    @Getter @Setter
+    private EmployeeRole currentRole;
+
     @PostConstruct
     public void init() {
         allRoles = getAllRoles();
         allEntrances = getAllEntrances();
+        assignedRoles = new ArrayList<>();
+        selectedRolesIds = new HashSet<>();
+        newRule = new TimeAccessRule();
+        newRuleDays = new ArrayList<>();
     }
 
     public List<EmployeeRole> getAllRoles() {
@@ -101,70 +141,254 @@ public class AssignRoleBean implements Serializable {
         }
     }
 
-
-    
     public List<Entrances> searchEntrances(String query) {
         return allEntrances.stream()
                 .filter(e -> e.getEntrance_Name().toLowerCase().contains(query.toLowerCase()))
                 .collect(Collectors.toList());
     }
-    
+
     public void loadAssignedRoles() {
         if (selectedEntranceId != null && !selectedEntranceId.trim().isEmpty()) {
-            Entrances entrance = entrancesService.findEntranceById(selectedEntranceId);
-            if (entrance != null) {
-                assignedRoles = new ArrayList<>(entrance.getAllowedRoles());
+            selectedEntrance = entrancesService.findEntranceById(selectedEntranceId);
+            if (selectedEntrance != null) {
+                assignedRoles = new ArrayList<>(selectedEntrance.getAllowedRoles());
             } else {
                 assignedRoles = new ArrayList<>();
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "No roles assigned to this entrance"));
             }
+        } else {
+            assignedRoles = new ArrayList<>();
         }
     }
 
 
     public void removeRoleFromEntrance(int roleId) {
-        if (selectedEntranceId != null && !selectedEntranceId.trim().isEmpty()) {
-            Entrances entrance = entrancesService.findEntranceById(selectedEntranceId);
-            if (entrance != null) {
-                // Find the role to remove
-                EmployeeRole roleToRemove = entrance.getAllowedRoles()
-                        .stream()
-                        .filter(role -> role.getId() == roleId)
-                        .findFirst()
-                        .orElse(null);
-
-                if (roleToRemove != null) {
-                    // Update inverse side: Remove role from entrance
-                    entrance.getAllowedRoles().remove(roleToRemove);
-
-                    // Update owning side: Remove entrance from role
-                    roleToRemove.getAccessibleEntrances().remove(entrance);
-
-                    // Persist both entities
-                    entrancesService.save(entrance);
-                    employeeRole.save(roleToRemove);
-                    
-                     loadAssignedRoles();
-
-                    FacesContext.getCurrentInstance().addMessage(null,
-                            new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Role removed successfully!"));
-                } else {
-                    FacesContext.getCurrentInstance().addMessage(null,
-                            new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "Role not found for this entrance"));
-                }
-
-                loadAssignedRoles(); 
-            } else {
-                FacesContext.getCurrentInstance().addMessage(null,
-                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Entrance not found"));
-            }
-        } else {
+        if (selectedEntranceId == null || selectedEntranceId.trim().isEmpty()) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "No entrance selected"));
+            return;
+        }
+
+        Entrances entrance = entrancesService.findEntranceById(selectedEntranceId);
+        if (entrance == null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Entrance not found"));
+            return;
+        }
+
+   
+
+        // Find the role to remove
+        EmployeeRole roleToRemove = entrance.getAllowedRoles()
+                .stream()
+                .filter(r -> r.getId() == roleId)
+                .findFirst()
+                .orElse(null);
+
+        if (roleToRemove == null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "Role not found for this entrance"));
+            return;
+        }
+
+        try {
+            // 1) Delete all time‐access rules for this role+entrance
+            timeAccessRuleService.deleteTimeRulesByRoleAndEntrance(roleId, selectedEntranceId);
+
+            // 2) Remove the bidirectional relationship
+            entrance.getAllowedRoles().remove(roleToRemove);
+            roleToRemove.getAccessibleEntrances().remove(entrance);
+
+            // 3) Persist both sides
+            entrancesService.save(entrance);
+            employeeRole.save(roleToRemove);
+
+            // 4) Refresh UI model
+            loadAssignedRoles();
+
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Role and its time rules removed!"));
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not remove role: " + e.getMessage()));
+        }
+    }
+
+
+    public void prepareTimeRule(EmployeeRole role) {
+        // Reset the rule
+        newRule = new TimeAccessRule();
+        newRule.setRole(role);
+        this.currentRole = role;
+
+        // Reset days
+        newRuleDays = new ArrayList<>();
+
+        // Check for existing rule for this role and entrance
+        List<TimeAccessRule> existingRules = timeAccessRuleService.getTimeRulesByRole(role.getId());
+
+        // Find rule for the selected entrance
+        existingRules.stream()
+                .filter(r -> r.getEntrance().getEntrance_Device_ID().equals(selectedEntranceId))
+                .findFirst()
+                .ifPresent(existingRule -> {
+                    // Populate existing rule
+                    newRule = existingRule;
+
+                    // Populate days
+                    if (existingRule.getDaysOfWeek() != null && !existingRule.getDaysOfWeek().isEmpty()) {
+                        newRuleDays = new ArrayList<>(Arrays.asList(existingRule.getDaysOfWeek().split(",")));
+                    }
+                });
+
+        // Ensure entrance is set
+        if (selectedEntrance == null && selectedEntranceId != null) {
+            selectedEntrance = entrancesService.findEntranceById(selectedEntranceId);
+        }
+        newRule.setEntrance(selectedEntrance);
+    }
+
+    public void saveTimeRule() {
+        // Validate inputs
+        if (validateTimeRule()) {
+            try {
+             
+                // Set days of week
+                newRule.setDaysOfWeek(String.join(",", newRuleDays));
+
+                // Save the rule
+                timeAccessRuleService.saveTimeRule(newRule);
+
+                // Show success message
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_INFO,
+                                "Success",
+                                "Time rule saved successfully!"));
+
+                // Optional: Load assigned roles or perform any post-save actions
+                loadAssignedRoles();
+            } catch (Exception e) {
+                // Handle any exceptions during save
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Error",
+                                "Failed to save time rule: " + e.getMessage()));
+            }
         }
     }
     
+    private boolean validateTimeRule() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        boolean isValid = true;
+
+        // Validate start time
+        if (newRule.getStartTime() == null) {
+            context.addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Validation Error",
+                            "Start time is required"));
+            isValid = false;
+        }
+
+        // Validate end time
+        if (newRule.getEndTime() == null) {
+            context.addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Validation Error",
+                            "End time is required"));
+            isValid = false;
+        }
+
+        // Proceed only if both times are set
+        if (newRule.getStartTime() != null && newRule.getEndTime() != null) {
+            Date startDate = newRule.getStartTime();
+            Date endDate = newRule.getEndTime();
+
+            LocalTime startTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
+            LocalTime endTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
+
+            if (endTime.equals(startTime)) {
+                context.addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Validation Error",
+                                "Start and end time cannot be the same"));
+                isValid = false;
+            }
+
+            LocalDate today = LocalDate.now();
+            LocalDateTime startDateTime = LocalDateTime.of(today, startTime);
+            LocalDateTime endDateTime = LocalDateTime.of(today, endTime);
+
+            // Handle overnight time span
+            if (endTime.isBefore(startTime)) {
+                endDateTime = endDateTime.plusDays(1);
+            }
+
+            Duration duration = Duration.between(startDateTime, endDateTime);
+            if (duration.isNegative() || duration.isZero()) {
+                context.addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Validation Error",
+                                "End time must be after start time"));
+                isValid = false;
+            }
+        }
+
+        // Validate days selection (outside of time validation block)
+        if (newRuleDays == null || newRuleDays.isEmpty()) {
+            context.addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN,
+                            "Validation Warning",
+                            "Please Select Days. The rule will not be applied."));
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    
+    
+    public String getTimeRulesForRoleAndEntrance(int roleId) {
+        List<TimeAccessRule> rules = timeAccessRuleService.getTimeRulesByRole(roleId);
+
+        return rules.stream()
+                .filter(r -> r.getEntrance().getEntrance_Device_ID().equals(selectedEntranceId))
+                .map(r -> formatTimeRange(r.getStartTime(), r.getEndTime(), r.getDaysOfWeek()))
+                .findFirst()
+                .orElse("No time rules");
+    }
+    
+    public String formatTimeRange(Date start, Date end, String daysCsv) {
+        if (start == null || end == null) {
+            return "-";
+        }
+
+        SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a");
+        String formattedStart = timeFormat.format(start);
+        String formattedEnd = timeFormat.format(end);
+
+        String days = formatDays(daysCsv);
+        return formattedStart + " - " + formattedEnd + " (" + days + ")";
+    }
+    
+    public String formatDays(String daysCsv) {
+        if (daysCsv == null || daysCsv.trim().isEmpty()) {
+            return "-";
+        }
+
+        Map<String, String> dayMap = Map.of(
+                "MON", "Monday", "TUE", "Tuesday", "WED", "Wednesday",
+                "THU", "Thursday", "FRI", "Friday", "SAT", "Saturday", "SUN", "Sunday"
+        );
+
+        return Arrays.stream(daysCsv.split(","))
+                .map(String::trim)
+                .map(code -> dayMap.getOrDefault(code, code))
+                .collect(Collectors.joining(", "));
+    }
+
+
     // Method to check access for a role to an entrance
     public void checkAccess() {
         if (selectedEmployeeRoleId == null || selectedEmployeeRoleId.isEmpty()
@@ -184,13 +408,14 @@ public class AssignRoleBean implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Access Denied", "You do not have access to this entrance"));
         }
     }
-
-
+    
+    
+    
 
     public List<EmployeeRole> getAssignedRoles() {
         return assignedRoles;
     }
-    
+
     public String getSelectedEntranceId() {
         return selectedEntranceId;
     }

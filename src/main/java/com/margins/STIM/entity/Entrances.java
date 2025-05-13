@@ -9,6 +9,10 @@ import java.util.HashSet;
 import java.util.Set;
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  *
@@ -30,6 +34,10 @@ public class Entrances  /*extends EntityModel*/ implements Serializable{
 
     @ManyToMany(mappedBy="accessibleEntrances")
     private Set<EmployeeRole> allowedRoles = new HashSet<>();
+    
+    @Getter @Setter
+    @ManyToMany(mappedBy = "customEntrances")
+    private List<Employee> employees = new ArrayList<>();
 
  
     //Getters And Setters

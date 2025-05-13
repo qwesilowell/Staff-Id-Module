@@ -438,7 +438,7 @@ public class UserBean implements Serializable {
         if (userService.findUserByGhanaCard(ghanaCardNumber) != null) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                            "Employee with Ghana Card Number already registered", null));
+                            "User with Ghana Card Number already registered", null));
             return;
         }
         if (userRole == null || userRole.isBlank()) {

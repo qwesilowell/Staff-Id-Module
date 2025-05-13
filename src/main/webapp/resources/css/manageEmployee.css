@@ -244,7 +244,7 @@ margin-bottom: 10px !Important;
     background: none !Important;
     border-radius: 6px !Important;
     font-weight: 500 !Important;
-    cursor:help !Important;
+    cursor:pointer !Important;
 }
 
 .del-statement:hover {
@@ -255,11 +255,30 @@ margin-bottom: 10px !Important;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInUp 0.5s ease forwards;
 }
 
 .skill-tag {
     background-color: #f3f4f6;
     padding: 6px 12px;
     border-radius: 16px;
+    font-size: 14px;
+}
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.skill-tag {
+    background-color: #e0f7fa;
+    color: #006064;
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 20px;
+    display: inline-block;
     font-size: 14px;
 }

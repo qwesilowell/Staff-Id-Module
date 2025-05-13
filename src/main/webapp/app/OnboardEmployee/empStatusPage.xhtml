@@ -19,6 +19,7 @@
                     <p:growl id="messages" showDetail="true" />
 
                     <!-- Toolbar -->
+                    <p:spacer height="30px"/>
                     <p:toolbar>
                         <p:toolbarGroup>
                             <p:commandButton value="New" 
@@ -101,10 +102,11 @@
                                          actionListener="#{employmentStatusBean.deleteEmploymentStatus}"
                                          process="@this" 
                                          oncomplete="PF('deleteEmploymentStatusDialog').hide()"
-                                         update="form:messages form:dt-employmentStatuses" />
+                                         update="form:messages form:dt-employmentStatuses"
+                                         styleClass="rounded-button"/>
                         <p:commandButton value="No" 
                                          type="button" 
-                                         styleClass="ui-button-secondary" 
+                                         styleClass="ui-button-secondary rounded-button" 
                                          icon="pi pi-times"
                                          onclick="PF('deleteEmploymentStatusDialog').hide()" />
                     </p:confirmDialog>

@@ -207,7 +207,7 @@ public class AccessControlBean implements Serializable {
                     if (employee == null) {
                         statusMessage = "Access Denied";
                         JSF.addErrorMessage("Employee not found.");
-                    } else if (hasAccess(employee, entrance)) {
+                    } else if (accessLogService.hasAccess(ghanaCardNumber, entranceId)) {
                         statusMessage = "Access Granted";
                         result = "granted"; // Update result on success
                         JSF.addSuccessMessage("Access granted to " + entrance.getEntrance_Name());

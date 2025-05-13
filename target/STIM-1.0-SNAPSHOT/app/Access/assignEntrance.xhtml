@@ -1,155 +1,238 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
 
-    
-<!--    <h:body style="font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px;">-->
-       
-        <ui:composition template="/WEB-INF/templates.xhtml"
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        xmlns:h="jakarta.faces.html"
-                        xmlns:f="jakarta.faces.core"
-                        xmlns:p="http://primefaces.org/ui"
-                        xmlns:ui="jakarta.faces.facelets">
-            
-            <ui:define name="title">Assign Entrances to Employees</ui:define>
-            
-            <ui:define name ="metadata">    
-                <f:metadata>
-                <f:viewAction action="#{loginBean.checkAccess('Admin')}" />
-                </f:metadata>
-            </ui:define>
-            
-            <ui:define name ="content">
+    <ui:define name="title">Assign Custom Entrances to Employees</ui:define>
 
-        <!-- Main Content -->
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{loginBean.checkAccess('Admin')}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="content">
         <div class="main-content">
-        <h:form id="assignEntranceForm">
-            <p:panel header="Assign Entrances" style="background: white; padding: 20px; border-radius: 8px;">
+            <h:form id="assignEntranceForm">
+                <p:growl id="messages" showSummary= "true" showDetail="true" life="6000" />
 
-                <!-- Search Bar -->
-                <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                    <p:inputText id="searchQuery" value="#{assignEntranceBean.searchQuery}"
-                                 placeholder="Search by Name or Ghana Card" style="width: 300px; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
-                        <p:ajax event="keyup" listener="#{assignEntranceBean.searchEmployees}" update="employeeTable" />
-                    </p:inputText>
-                </div>
+                <p:panel header="Assign Custom Entrances" style="background: white; padding: 20px; border-radius: 8px;">
+                    <!-- Search Bar -->
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <p:inputText id="searchQuery" value="#{assignEntranceBean.searchQuery}"
+                                     placeholder="Search by Name or Ghana Card" style="width: 300px; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                            <p:ajax event="keyup" listener="#{assignEntranceBean.searchEmployees}" update="employeeTable" />
+                        </p:inputText>
+                    </div>
 
-                <!-- Employee Table -->
-                <p:dataTable id="employeeTable" value="#{assignEntranceBean.employees}" var="employee" paginator="true" rows="10">
-                    <p:column headerText="Name">
-                        <h:outputText value="#{employee.fullName}"/>
-                    </p:column>
-                    <p:column headerText="Role">
-                        <h:outputText value="#{employee.role.roleName}"/>
-                    </p:column>
-                    <p:column headerText="Ghana Card">
-                        <h:outputText value="#{employee.ghanaCardNumber}"/>
-                    </p:column>
-                    <p:column headerText="Actions">
+                    <!-- Employee Table -->
+                    <p:dataTable id="employeeTable" value="#{assignEntranceBean.employees}" var="employee" paginator="true" rows="10">
+                        <p:column headerText="Name">
+                            <h:outputText value="#{employee.fullName}"/>
+                        </p:column>
+                        <p:column headerText="Role">
+                            <h:outputText value="#{employee.role.roleName}"/>
+                        </p:column>
+                        <p:column headerText="Ghana Card">
+                            <h:outputText value="#{employee.ghanaCardNumber}"/>
+                        </p:column>
                         <p:column headerText="Actions">
-                            <p:commandButton value="#{assignEntranceBean.hasAssignedEntrances(employee) ? 'Edit Entrance' : 'Assign Entrance'}"
-                                             actionListener="#{assignEntranceBean.openAssignPopup(employee)}"
+                            <p:commandButton value="#{employee.customEntrances.isEmpty() ? 'Assign Entrances' : 'Edit Entrances'}"
+                                             action="#{assignEntranceBean.openAssignPopup(employee)}"
                                              update=":assignEntranceForm:assignEntranceDialog"
-                                             oncomplete="PF('assignEntranceDialogWidget').show()"
+                                             oncomplete="PF('assignEntranceDialog').show()"
                                              style="background: #007bff; color: white; border-radius: 4px;"/>
-                        </p:column>
-                    </p:column>
-                </p:dataTable>
-            </p:panel>
-
-            <!-- Assign Entrance Dialog -->
-            <p:dialog id="assignEntranceDialog" widgetVar="assignEntranceDialogWidget" header="Assign Entrance" modal="true" closable="true" width="80%">
-                <h:panelGrid columns="2">
-                    <h:outputLabel value="Employee Name:"/>
-                    <h:outputText value="#{assignEntranceBean.selectedEmployee.fullName}"/>
-
-                    <h:outputLabel value="Ghana Card Number: "/>
-                    <h:outputText value="#{assignEntranceBean.selectedEmployee.ghanaCardNumber}"/>
-                </h:panelGrid>
-
-                <!-- Entrances List -->
-                <p:dataTable id="entranceTable" value="#{assignEntranceBean.entrances}" var="entrance">
-                    <p:column headerText="Entrance Name">
-                        <h:outputText value="#{entrance.entrance_Name}"/>
-                    </p:column>
-                    <p:column headerText="Action">
-                        <p:commandButton icon="pi pi-plus" 
-                                         actionListener="#{assignEntranceBean.addEntranceToEmployee(entrance)}"
-                                         update=":assignEntranceForm:selectedEntrancesTable"
-                                         style="background: #28a745; color: white; border-radius: 4px; padding: 5px;"/>
-                    </p:column>
-                </p:dataTable>
-
-                <!-- Assigned Entrances -->
-                <p:panel header="Assigned Entrances">
-                    <p:dataTable id="selectedEntrancesTable" value="#{assignEntranceBean.assignedEntrances}" var="assignedEntrance">
-                        <p:column headerText="Entrance">
-                            <h:outputText value="#{assignedEntrance.entrance.entrance_Name}"/>
-                        </p:column>
-                        <p:column headerText="Access Level">
-                            <p:selectOneMenu value="#{assignedEntrance.accessLevel}" converter="accessLevelConverter" style="width: 100px;">
-                                <f:selectItems value="#{assignEntranceBean.accessLevels}" 
-                                               var="level"
-                                               itemLabel="#{level.level_name}"
-                                               itemValue="#{level}" />
-                            </p:selectOneMenu>
-                            <!-- Slider Animation -->
-                            <div id="accessAnimation_#{assignedEntrance.entrance.entrance_Device_ID}" class="accessAnimation">
-                                <div id="slider_#{assignedEntrance.entrance.entrance_Device_ID}" class="slider"></div>
-                            </div>
-                        </p:column>
-                        <p:column headerText="Remove">
-                            <p:commandButton icon="pi pi-trash" actionListener="#{assignEntranceBean.removeAssignedEntrance(assignedEntrance)}"
-                                             update=":assignEntranceForm:selectedEntrancesTable"
-                                             style="background: #dc3545; color: white; border-radius: 15px; padding: 5px;"/>
                         </p:column>
                     </p:dataTable>
                 </p:panel>
 
-                <!-- Save/Update Buttons -->
-                <div style="margin-top: 15px; text-align: right;">
-                    <p:commandButton value="#{assignEntranceBean.hasAssignedEntrances(selectedEmployee) ? 'Update' : 'Save'}" 
-                                     actionListener="#{assignEntranceBean.handleSaveOrUpdate}"
-                                     update="messages employeeTable"
-                                     oncomplete="PF('assignEntranceDialogWidget').hide()"
-                                     style="background: #007bff; color: white; border-radius: 4px;"/>
-                </div>
-            </p:dialog>
+                <!-- Assign Entrance Dialog -->
+                <p:dialog id="assignEntranceDialog" widgetVar="assignEntranceDialog" header="Assign Custom Entrances" modal="true" width="600px">
+                    <div class="dialog-content" style="padding-bottom: 60px;">
+                        <h:panelGrid columns="2" style="margin-bottom: 15px;">
+                            <h:outputLabel value="Employee Name:"/>
+                            <h:outputText value="#{assignEntranceBean.selectedEmployee.fullName}"/>
+                            <h:outputLabel value="Ghana Card Number:"/>
+                            <h:outputText value="#{assignEntranceBean.selectedEmployee.ghanaCardNumber}"/>
+                        </h:panelGrid>
 
-            <p:messages id="messages" showSummary= "false" showDetail="true" closable="true"/>
-        </h:form>
+                        <!-- Available Entrances -->
+                        <p:panel header="Available Entrances">
+                            <p:selectManyMenu id="availableEntrances" value="#{assignEntranceBean.selectedEntrances}" showCheckbox="true">
+                                <f:selectItems value="#{assignEntranceBean.filteredAvailableEntrances}" 
+                                               var="entrance" 
+                                               itemLabel="#{entrance.entrance_Name}" 
+                                               itemValue="#{entrance}"/>
+                            </p:selectManyMenu>
+                        </p:panel>
+
+                        <!-- Assigned Entrances --> 
+                        <p:panel header="Assigned Entrances" style="margin-top: 15px; background-color: #f5f9ff; border: 1px solid #ccc; border-radius: 5px;"> 
+                            <!-- Custom Entrances Section -->
+                            <h:panelGroup rendered="#{not empty assignEntranceBean.assignedCustomEntrances}"> 
+                                <p:outputLabel value="Custom Entrances:" style="font-weight: bold; font-size: 1.1em; color: #333;"/> 
+
+                                <div class="scrollable-container" style="max-height: 400px; overflow-y: auto;   margin: 10px 0; padding: 5px; background-color: #fcfcfc;">
+
+                                    <p:dataList value="#{assignEntranceBean.assignedCustomEntrances}"  
+                                                var="entrance"  
+                                                styleClass="custom-entrances-list"
+                                                itemType="none"
+                                                style="margin: 10px 0;"> 
+                                        <div class="entrance-item" style="display: flex; align-items:flex-start; gap: 10px; border: 1px solid #ddd; padding: 12px 16px; border-radius: 8px; background-color: #f9f9f9; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"> 
+                                            <h:outputText value="#{entrance.entrance_Name} (#{entrance.entrance_Device_ID})" style="font-weight: 500;"/> 
+
+                                            <p:commandButton icon="pi pi-trash" 
+                                                             action="#{assignEntranceBean.removeCustomEntrance(entrance)}" 
+                                                             update=":assignEntranceForm" 
+                                                             styleClass="rounded-button ui-button-danger ui-button-outlined" 
+                                                             style="margin-left: auto;"/> 
+                                        </div> 
+                                    </p:dataList>
+                                </div>
+
+                            </h:panelGroup> 
+                            <h:panelGroup rendered="#{empty assignEntranceBean.assignedCustomEntrances}"> 
+                                <p:outputLabel value="No Custom Entrances Assigned" style="color: #666; font-style: italic;"/> 
+                            </h:panelGroup> 
+
+                            <div style="height: 20px;"></div> <!-- Spacer between sections -->
+
+                            <!-- Role-Based Entrances Section -->
+                            <h:panelGroup rendered="#{not empty assignEntranceBean.assignedRoleEntrances}"> 
+                                <p:outputLabel value="Role-Based Entrances:" style="font-weight: bold; font-size: 1.1em; color: #333; margin-top: 20px;"/> 
+                                <div class="scrollable-container" style="max-height: 400px; overflow-y: auto;   margin: 10px 0; padding: 5px; background-color: #fcfcfc;">
+                                    <p:dataList value="#{assignEntranceBean.assignedRoleEntrances}"  
+                                                var="entrance"  
+                                                styleClass="role-entrances-list"
+                                                itemType="none"
+                                                style="margin: 5px 0;"> 
+                                        <div class="entrance-item" style="display: flex; align-items: center; border: 1px solid #e0e0e0; padding: 10px 14px; border-radius: 6px; background-color: #f5f5f5; margin-bottom: 10px;">
+                                            <h:outputText value="#{entrance.entrance_Name} (#{entrance.entrance_Device_ID})" style="padding: 5px;"/> 
+                                        </div>
+                                    </p:dataList> 
+                                </div>
+                            </h:panelGroup> 
+                            <h:panelGroup rendered="#{empty assignEntranceBean.assignedRoleEntrances}"> 
+                                <p:outputLabel value="No Role-Based Entrances Assigned" style="color: #666; font-style: italic;"/> 
+                            </h:panelGroup> 
+                        </p:panel>
+                    </div>
+
+
+                    <!-- Save/Cancel Buttons -->
+                    <div class="dialog-footer" style="position: absolute; bottom: 0; left: 0; right: 0; background: #f8f8f8; padding: 12px; border-top: 1px solid #ddd; text-align: right; border-radius: 0 0 3px 3px;">
+                        <p:commandButton value="Save" 
+                                         action="#{assignEntranceBean.saveCustomEntrances}"
+                                         update=":assignEntranceForm:employeeTable :assignEntranceForm:messages"
+                                         oncomplete="PF('assignEntranceDialog').hide()"
+                                         styleClass="action-button save-button"
+                                         style="background: #007bff; color: white; border-radius: 4px; margin-right: 10px;"/>
+                        <p:commandButton value="Cancel" 
+                                         action="#{assignEntranceBean.cancel}"
+                                         update=":assignEntranceForm"
+                                         oncomplete="PF('assignEntranceDialog').hide()"
+                                         styleClass="action-button cancel-button"
+                                         style="background: #dc3545; color: white; border-radius: 4px;"/>
+                    </div>
+                </p:dialog>
+
+            </h:form>
         </div>
         <style>
-    /* CSS for the slider animation */
-    #accessAnimation {
-        width: 200px;
-        height: 50px;
-        background-color: #ddd;
-        position: relative;
-        overflow: hidden;
-        border-radius: 25px;
-        margin-top: 10px;
-    }
+            .employee-table {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            .search-panel {
+                margin-bottom: 20px;
+            }
+            .entrance-panel {
+                margin-top: 20px;
+            }
+            .ui-dialog {
+                width: 50vw !important;
+            }
+            .assigned-entrances {
+                margin-top: 20px;
+            }
+            .entrance-list {
+                margin: 10px 0;
+            }
+            .entrance-item {
+                padding: 5px;
+            }
+            .remove-button {
+                margin-left: 10px;
+            }
+            .custom-entrances-list .ui-datalist-content,
+            .role-entrances-list .ui-datalist-content {
+                border: none;
+                background: transparent;
+            }
 
-    #slider {
-        width: 100px;
-        height: 50px;
-        background-color: green;
-        position: absolute;
-        left: 0;
-        transition: all 0.5s ease;
-        border-radius: 25px;
-        text-align: center;
-        line-height: 50px;
-        color: white;
-        font-weight: bold;
-    }
+            .entrance-item:hover {
+                background-color: #f0f0f0 !important;
+                transition: background-color 0.2s;
+            }
 
-    #slider.deny {
-        left: 100px;
-        background-color: red;
-    }
+            .ui-dialog {
+                width: 50vw !important;
+                position: absolute;
+            }
+
+            /* Make PrimeFaces Dialog footer stick to bottom */
+            .ui-dialog .ui-dialog-content {
+                padding-bottom: 60px !important; /* Space for fixed footer */
+                position: relative;
+                overflow-y: auto;
+            }
+
+            /* Handle footer position in dialog */
+            .dialog-footer {
+                position: absolute !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                background: #f8f8f8 !important;
+                z-index: 100 !important;
+                box-shadow: 0 -2px 5px rgba(0,0,0,0.1) !important;
+            }
+
+            /* Hover effect for buttons */
+            .action-button:hover {
+                opacity: 0.9;
+                transition: opacity 0.2s;
+            }
+
+            /* Scrollbar styling */
+            .scrollable-container {
+                scrollbar-width: thin;
+                scrollbar-color: #aaaaaa #f0f0f0;
+            }
+
+            .scrollable-container::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .scrollable-container::-webkit-scrollbar-track {
+                background: #f0f0f0;
+                border-radius: 4px;
+            }
+
+            .scrollable-container::-webkit-scrollbar-thumb {
+                background-color: #aaaaaa;
+                border-radius: 4px;
+                border: 2px solid #f0f0f0;
+            }
+
+            .scrollable-container::-webkit-scrollbar-thumb:hover {
+                background-color: #888888;
+            }
         </style>
-        
-            </ui:define>
-        </ui:composition>
+    </ui:define>
+</ui:composition>

@@ -32,9 +32,12 @@
                                      ajax="false" style="font-size: 1em; background-color: #FFF8E1; color: black; margin-left: auto;" />
                 </h:panelGroup>
 
+                <p:spacer height="30px"/>
+
+
                 <!-- Employee List -->
                 <p:dataTable id="employeeTable" value="#{manageEmployeesBean.employees}" var="employee" 
-                             paginator="true" rows="10">
+                             paginator="true" paginatorPosition="bottom" rows="10">
 
                     <p:column headerText="First Name">
                         <h:outputText value="#{employee.firstname}" />
@@ -94,20 +97,58 @@
                                 <div class="profile-section">
                                     <h3 class="section-title">Details</h3>
                                     <div class="profile-actions">
-                                        <button class="action-button">Entrances</button><!--Should show a drop down of all the entrances assigned to the role-->
-                                        <button class="action-button">Status</button><!--Toggle can show a dropdown list of emplouyee status, like active , on leave-->
+                                        <h:commandButton value=" Default Entrances"
+                                                         action="#{manageEmployeesBean.toggleEntrances}"
+                                                         styleClass="action-button">
+                                            <f:ajax render="entrancesPanel" />
+                                        </h:commandButton>
+                                             
                                     </div>
+
+                                    <h:panelGroup id="entrancesPanel">
+                                        <h:panelGroup rendered="#{manageEmployeesBean.showEntrances}"
+                                                      styleClass="skill-tags"
+                                                      style="margin-top: 10px;">
+                                            <ui:repeat value="#{manageEmployeesBean.selectedEmployeeEntrances}" var="entrance">
+                                                <span class="skill-tag">#{entrance.entrance_Name}</span>
+                                            </ui:repeat>
+                                            <h:outputText value="No entrances assigned" rendered="#{empty manageEmployeesBean.selectedEmployeeEntrances}" />
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                    <p:spacer height="10px"/>
+                               
+                                    
+                                    <div class="profile-actions">
+                                        <h:commandButton value=" Custom Entrances"
+                                                         action="#{manageEmployeesBean.toggleCustomEntrances}"
+                                                         styleClass="action-button">
+                                            <f:ajax render="CustomEntrancesPanel" />
+                                        </h:commandButton>
+
+                                    </div>
+                                    
+                                    <h:panelGroup id="CustomEntrancesPanel">
+                                        <h:panelGroup rendered="#{manageEmployeesBean.showCustomEntrances}"
+                                                      styleClass="skill-tags"
+                                                      style="margin-top: 10px;">
+                                            <ui:repeat value="#{manageEmployeesBean.selectedCustomEmpEntrances}" var="entrance">
+                                                <span class="skill-tag">#{entrance.entrance_Name}</span>
+                                            </ui:repeat>
+                                            <h:outputText value="No Custom entrances assigned" rendered="#{empty manageEmployeesBean.selectedCustomEmpEntrances}" />
+                                        </h:panelGroup>
+                                    </h:panelGroup>
                                 </div>
 
-                                <div class="delete">
-                                    <p:commandButton value="Want to delete this employee account? Click here" 
-                                                     styleClass="del-statement" 
-                                                     process="@this" 
-                                                     oncomplete="PF('deleteEmployeeDialog').show()" 
-                                                     />
-                                </div>
-                                <button class="primary-button" onclick="PF('profileDialog').hide();">Close</button>
                             </div>
+
+                            <div class="delete">
+                                <p:commandButton value="Want to delete this employee account? Click here" 
+                                                 styleClass="del-statement" 
+                                                 process="@this" 
+                                                 oncomplete="PF('deleteEmployeeDialog').show()" 
+                                                 />
+                            </div>
+                            <button class="primary-button" onclick="PF('profileDialog').hide();">Close</button>
                         </div>
                     </div>
                 </p:dialog>
@@ -124,24 +165,24 @@
                     <h:panelGroup>
                         <h:outputText value="Are you sure you want to delete employee?" />
 
-<!--                        <h:outputText value="#-{manageEmployeesBean.selectedEmployee.fullName} ?" style="display:block; margin-top:20px;" />-->
+                        <!--                        <h:outputText value="#-{manageEmployeesBean.selectedEmployee.fullName} ?" style="display:block; margin-top:20px;" />-->
                     </h:panelGroup>              
                     <br/>
                     <br/>
                     <br/>
                     <div style="display:flex; flex-direction: row; justify-content: flex-end; gap: 10px;">
-                    <p:commandButton value="Yes" 
-                                     icon="pi pi-check" 
-                                     action="#{manageEmployeesBean.deleteEmployee}" 
-                                     update=":employeeForm:employeeTable :employeeForm:growl" 
-                                     oncomplete="PF('deleteEmployeeDialog').hide(); PF('profileDialog').hide();" 
-                                     styleClass="" />
-                    
-                    <p:commandButton value="No" 
-                                     type="button" 
-                                     icon="pi pi-times" 
-                                     onclick="PF('deleteEmployeeDialog').hide();" 
-                                     styleClass="ui-button-secondary" />
+                        <p:commandButton value="Yes" 
+                                         icon="pi pi-check" 
+                                         action="#{manageEmployeesBean.deleteEmployee}" 
+                                         update=":employeeForm:employeeTable :employeeForm:growl" 
+                                         oncomplete="PF('deleteEmployeeDialog').hide(); PF('profileDialog').hide();" 
+                                         styleClass="" />
+
+                        <p:commandButton value="No" 
+                                         type="button" 
+                                         icon="pi pi-times" 
+                                         onclick="PF('deleteEmployeeDialog').hide();" 
+                                         styleClass="ui-button-secondary" />
                     </div>
                 </p:dialog>
             </h:form>

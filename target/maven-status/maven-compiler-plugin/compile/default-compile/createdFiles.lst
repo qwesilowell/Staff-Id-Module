@@ -15,6 +15,7 @@ com\margins\STIM\Bean\multiFingerBean.class
 com\margins\STIM\service\Department_Service.class
 com\margins\STIM\Bean\DashboardController.class
 com\margins\STIM\Bean\onboardEmployeeController$1.class
+com\margins\STIM\entity\TimeAccessRule.class
 com\margins\STIM\rest\DepartmentRest.class
 com\margins\STIM\Bean\UserBean$2.class
 com\margins\STIM\service\Sub_Office_Service.class
@@ -38,6 +39,7 @@ com\margins\STIM\Bean\EmployeeRoleAssignmentBean.class
 com\margins\STIM\util\RoleCount.class
 com\margins\STIM\entity\Entrances.class
 com\margins\STIM\entity\Access_Levels.class
+com\margins\STIM\service\TimeAccessRuleService.class
 com\margins\STIM\Bean\SingleFingerController$1.class
 com\margins\STIM\enums\ChartColor.class
 com\margins\STIM\Bean\AssignEntranceBean.class

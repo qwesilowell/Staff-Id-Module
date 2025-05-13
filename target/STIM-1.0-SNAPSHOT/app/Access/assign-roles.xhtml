@@ -21,7 +21,7 @@
         <div class="main-content">
             <p:growl id="messages" showSummary= "true" showDetail="true" life="3000" />
 
-            <h:form>
+            <h:form id="mainForm">
                 <p:panel header="Assign Roles to Entrance" style="margin-top:20px;">
                     <p:panelGrid columns="2" style="width: 100%; align-items: center;" columnClasses="left-column,right-column">
                         <h:panelGroup>
@@ -62,65 +62,154 @@
                 <div style="margin-top: 50px;"></div>
 
                 <p:dataTable id="assignedRolesTable" value="#{assignRoleBean.assignedRoles}" var="role" style="margin-top: 10px;">
-
                     <p:column headerText="Assigned Job Roles">
                         <h:outputText value="#{role.roleName}" />
+                    </p:column>
+                    <p:column headerText="Time Rules">
+                        <h:outputText value="#{assignRoleBean.getTimeRulesForRoleAndEntrance(role.id)}"  style="font-family: Times New Roman, serif; font-weight: bold" />
+                    </p:column>
+                    <p:column headerText="Assign Time Rule">
+                        <p:commandButton  class="rounded-button ui-button-info ui-button-outlined"  icon="fa-solid fa-business-time" action="#{assignRoleBean.prepareTimeRule(role)}"
+                                         update=":mainForm:timeRuleDialog" oncomplete="PF('timeRuleDialog').show()" />
                     </p:column>
                     <p:column headerText="Remove">
                         <p:commandButton class="rounded-button ui-button-danger ui-button-outlined" 
                                          icon="pi pi-trash"  action="#{assignRoleBean.removeRoleFromEntrance(role.id)}"
                                          update="assignedRolesTable messages" />
                     </p:column>
-
                 </p:dataTable>
+                <p:dialog id="timeRuleDialog" header="Assign Access Time Rule" widgetVar="timeRuleDialog" 
+                          modal="true" responsive="true" styleClass="time-rule-dialog" 
+                          style="width: 500px;">
+                    <p:panel styleClass="p-card">
+                        <div class="p-grid p-fluid">
+                            <div class="p-col-12">
+                                <div class="same-line-container">
+                                    <i class="pi pi-user p-mr-2 text-primary icon-style"></i>
+                                    <p:outputLabel value="Role:" styleClass="label-style" />
+                                    <h:outputText value="#{assignRoleBean.newRule.role.roleName}" styleClass="value-style" />
+                                </div>
+                                <br/>
+                                <div class="same-line-container">
+                                    <i class="pi pi-map-marker p-mr-2 text-success icon-style"></i>
+                                    <p:outputLabel value="Entrance:" styleClass="label-style" />
+                                    <h:outputText value="#{assignRoleBean.selectedEntrance.entrance_Name}" styleClass="value-style" />
+                                </div>
+                                <p:separator/>
+                                <div class="dialog-section">
+                                    <h3 class="section-title">Time Settings</h3>
+                                    <!-- Start Time -->
+                                    <div class="same-line-container">
+                                        <i class="pi pi-clock" style="margin-right:4px;color:#6366F1;" />
+                                        <p:outputLabel value="Start Time:" styleClass="label-style"/>          
+                                        <p:datePicker id="startTime"
+                                                      value="#{assignRoleBean.newRule.startTime}"
+                                                      timeOnly="true"
+                                                      placeholder="HH:MM" 
+                                                      pattern="HH:mm"
+                                                      hourFormat="12"
+                                                      showIcon="true"
+                                                      showTime="true"
+   
+                                                      stepMinute="1"
+                                                      style="width: 100%;" />
+                                    </div>
+                                    <div style="height: 30px"/>
+                                    <!-- End Time -->
+                                    <div class="same-line-container">
+                                        <i class="pi pi-clock" style="margin-right:4px;color:#EF4444;" />
+                                        <p:outputLabel value="End Time:" styleClass="label-style">                                          
+                                        </p:outputLabel>                                      
+                                        <p:datePicker id="endTime"
+                                                      value="#{assignRoleBean.newRule.endTime}"                                                      
+                                                      timeOnly="true"
+                                                      placeholder="HH:MM" 
+                                                      pattern="HH:mm"
+                                                      hourFormat="12"
+                                                      showIcon="true"
+                                                      showTime="true"
+
+                                                      stepMinute="1"
+                                                      style="width: 100%;" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="dialog-section">
+                                <h3 class="section-title">
+                                    <i class="pi pi-calendar" style="margin-right:8px;color:#22C55E;" />
+                                    Allowed Days
+                                </h3>
+                                <div class="days-container">
+                                    <p:selectManyCheckbox value="#{assignRoleBean.newRuleDays}" layout="grid" 
+                                                          columns="4" styleClass="days-checkboxes">
+                                        <f:selectItem itemLabel="Mon" itemValue="MON" />
+                                        <f:selectItem itemLabel="Tue" itemValue="TUE" />
+                                        <f:selectItem itemLabel="Wed" itemValue="WED" />
+                                        <f:selectItem itemLabel="Thu" itemValue="THU" />
+                                        <f:selectItem itemLabel="Fri" itemValue="FRI" />
+                                        <f:selectItem itemLabel="Sat" itemValue="SAT" />
+                                        <f:selectItem itemLabel="Sun" itemValue="SUN" />
+                                    </p:selectManyCheckbox>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dialog-footer">
+                            <p:commandButton value="Save Rule" icon="pi pi-save" 
+                                             action="#{assignRoleBean.saveTimeRule}" 
+                                             update="assignedRolesTable messages" 
+                                             oncomplete="PF('timeRuleDialog').hide()" 
+                                             styleClass="save" />
+                        </div>
+                    </p:panel>
+                </p:dialog>
             </h:form>
         </div>
-        <h:form id="accessControlForm">
-            <p:commandButton value="Test Role's Access" icon="pi pi-key" 
-                             onclick="PF('accessTestDialog').show();" 
-                             styleClass="test-access-btn" />
-
-            <!-- Pop-up Dialog for Access Testing -->
-
-            <p:dialog id="accessTestDialog" widgetVar="accessTestDialog" modal="true" 
-                      header="Access Control Test" responsive="true" showEffect="fade"
-                      hideEffect="fade" width="400">
-
-                <!-- Select Role -->
-                <p:outputLabel for="employeeRole" value="Select Role:" />
-                <p:selectOneMenu id="employeeRole" value="#{assignRoleBean.selectedEmployeeRoleId}" style="width: 100%;">
-                    <f:selectItem itemLabel="-- Select Role --" itemValue="" noSelectionOption="true"/>
-                    <f:selectItems value="#{assignRoleBean.allRoles}" var="role"
-                                   itemLabel="#{role.roleName}" itemValue="#{role.id}" />
-                </p:selectOneMenu>
-
-                <div style="margin-top: 20px;"></div>
-
-                <!-- Select Entrance -->
-                <p:outputLabel for="employeeEntrance" value="Select Entrance:" />
-                <p:selectOneMenu id="employeeEntrance" value="#{assignRoleBean.selectedEntranceId}" style="width: 100%;">
-                    <f:selectItem itemLabel="-- Select Entrance --" itemValue="" noSelectionOption="true"/>
-                    <f:selectItems value="#{assignRoleBean.allEntrances}" var="entrance"
-                                   itemLabel="#{entrance.entrance_Name}" itemValue="#{entrance.entrance_Device_ID}" />
-                </p:selectOneMenu>
-
-                <div style="margin-top: 20px;"></div>
-
-                <!-- Check Access Button -->
-                <p:commandButton value="Check Access" action="#{assignRoleBean.checkAccess}"
-                                 update="messages2" icon="pi pi-lock" styleClass="ui-button-success"  style="margin-top: 10px;" />
-
-                <!-- Show Access Messages -->
-                <p:growl id="messages2" showSummary= "false" showDetail="true" life="3000" />
-
-                <!--                 Close Button 
-                                <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-                                    <p:commandButton value="Back" icon="pi pi-arrow-left"
-                                                     onclick="PF('accessTestDialog').hide();" styleClass="close-btn" />
-                                </div>-->
-
-            </p:dialog>
-        </h:form>
+        <!--        <h:form id="accessControlForm">
+                    <p:commandButton value="Test Role's Access" icon="pi pi-key" 
+                                     onclick="PF('accessTestDialog').show();" 
+                                     styleClass="test-access-btn" />
+        
+                     Pop-up Dialog for Access Testing 
+        
+                    <p:dialog id="accessTestDialog" widgetVar="accessTestDialog" modal="true" 
+                              header="Access Control Test" responsive="true" showEffect="fade"
+                              hideEffect="fade" width="400">
+        
+                         Select Role 
+                        <p:outputLabel for="employeeRole" value="Select Role:" />
+                        <p:selectOneMenu id="employeeRole" value="#-{assignRoleBean.selectedEmployeeRoleId}" style="width: 100%;">
+                            <f:selectItem itemLabel="Select Role " itemValue="" noSelectionOption="true"/>
+                            <f:selectItems value="#-{assignRoleBean.allRoles}" var="role"
+                                           itemLabel="#-{role.roleName}" itemValue="#-{role.id}" />
+                        </p:selectOneMenu>
+        
+                        <div style="margin-top: 20px;"></div>
+        
+                         Select Entrance 
+                        <p:outputLabel for="employeeEntrance" value="Select Entrance:" />
+                        <p:selectOneMenu id="employeeEntrance" value="#-{assignRoleBean.selectedEntranceId}" style="width: 100%;">
+                            <f:selectItem itemLabel=" Select Entrance " itemValue="" noSelectionOption="true"/>
+                            <f:selectItems value="#-{assignRoleBean.allEntrances}" var="entrance"
+                                           itemLabel="#-{entrance.entrance_Name}" itemValue="#-{entrance.entrance_Device_ID}" />
+                        </p:selectOneMenu>
+        
+                        <div style="margin-top: 20px;"></div>
+        
+                         Check Access Button 
+                        <p:commandButton value="Check Access" action="#-{assignRoleBean.checkAccess}"
+                                         update="messages2" icon="pi pi-lock" styleClass="ui-button-success"  style="margin-top: 10px;" />
+        
+                         Show Access Messages 
+                        <p:growl id="messages2" showSummary= "false" showDetail="true" life="3000" />
+        
+                                         Close Button 
+                                        <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                                            <p:commandButton value="Back" icon="pi pi-arrow-left"
+                                                             onclick="PF('accessTestDialog').hide();" styleClass="close-btn" />
+                                        </div>
+        
+                    </p:dialog>
+                </h:form>-->
         <style>
             .left-column {
                 width: 50%;
@@ -209,7 +298,135 @@
             .test-access-btn:hover {
                 background-color: black;
             }
+            .time-rule-dialog .p-panel {
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            .time-rule-dialog .p-field {
+                margin-bottom: 1rem;
+            }
+            .time-rule-dialog .p-selectmanyCheckbox {
+                flex-grow: 1;
+            }
+            /* Dialog styling */
+            .time-rule-dialog {
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            }
 
+
+            .time-rule-dialog .ui-dialog-titlebar {
+                background: #4F46E5;
+                color: white;
+                padding: 14px 20px;
+                font-weight: 600;
+            }
+
+            .dialog-content {
+                padding: 16px;
+            }
+
+            .dialog-section {
+                margin-bottom: 20px;
+            }
+
+            .section-title {
+                font-size: 16px;
+                color: #4B5563;
+                margin: 0 0 12px 0;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+            }
+
+            /* Field styling */
+            .labelColumn {
+                font-weight: 600;
+                vertical-align: middle;
+                padding-right: 15px;
+                width: 35%;
+                color: #374151;
+            }
+            .same-line-container {
+                display: flex;
+                align-items: center; /* Vertically align items in the container */
+                gap: 10px; /* Adjust the spacing between the elements as needed */
+            }
+
+            .icon-style {
+                font-size: 1.2rem; /* Apply the font size to all icons */
+                margin-right: 0.5rem; /* Add a little space to the right of each icon */
+                color:#644d12;
+                ;
+            }
+
+            .label-style {
+                font-weight: 600; /* Make the labels bold */
+                color: #374151; /* Apply the label color */
+            }
+
+            .value-style {
+                color: #111827; /* Apply the value color */
+            }
+
+            .valueColumn {
+                color: #111827;
+                width: 65%;
+            }
+
+            .field-value {
+                font-weight: 500;
+            }
+
+            .field-label i {
+                vertical-align: middle;
+            }
+
+            /* Days selection */
+            .days-container {
+                background: #F9FAFB;
+                border-radius: 8px;
+                padding: 15px 10px 10px;
+            }
+
+            .days-checkboxes {
+                width: 100%;
+            }
+
+            .days-checkboxes .ui-selectmanycheckbox label {
+                margin-right: 8px;
+                padding: 6px 0;
+                font-weight: 500;
+            }
+
+            .days-checkboxes .ui-chkbox-box {
+                border-radius: 4px;
+            }
+
+            /* Footer */
+            .dialog-footer {
+                background: #F9FAFB;
+                padding: 16px;
+                display: flex;
+                justify-content: flex-end;
+                border-top: 1px solid #E5E7EB;
+            }
+
+            .p-dialog .ui-panelgrid td {
+                padding: 10px 4px;
+            }
+
+            .custom-panelgrid {
+                width: 100%;
+            }
+
+            .save {
+                background-color: #2196f3;
+                color: white !important;
+                padding: 6px 4px !important;
+            }
         </style>
 
 

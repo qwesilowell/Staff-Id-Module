@@ -18,6 +18,7 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -44,6 +45,28 @@ public class Employee_Service {
             employee.setGhanaCardNumber(ghanaCardNumber); // Ensure Ghana Card number consistency
             return entityManager.merge(employee);
         }
+        throw new EntityNotFoundException("Employee does not exist with Ghana Card number: " + ghanaCardNumber);
+    }
+    
+    public Employee updateEmployeeEnt(String ghanaCardNumber, Employee employee) {
+        System.out.println("Starting update for employee: " + ghanaCardNumber);
+        Employee existingEmployee = findEmployeeByGhanaCard(ghanaCardNumber);
+        if (existingEmployee != null) {
+            employee.setGhanaCardNumber(ghanaCardNumber);
+            System.out.println("Merging employee with custom entrances: "
+                    + employee.getCustomEntrances().stream()
+                            .map(e -> e.getEntrance_Device_ID() + ":" + e.getEntrance_Name())
+                            .collect(Collectors.joining(", ")));
+            Employee merged = entityManager.merge(employee);
+            System.out.println("Merged employee with custom entrances: "
+                    + merged.getCustomEntrances().stream()
+                            .map(e -> e.getEntrance_Device_ID() + ":" + e.getEntrance_Name())
+                            .collect(Collectors.joining(", ")));
+            entityManager.flush();
+            System.out.println("Flushed changes for employee: " + ghanaCardNumber);
+            return merged;
+        }
+        System.err.println("Employee not found: " + ghanaCardNumber);
         throw new EntityNotFoundException("Employee does not exist with Ghana Card number: " + ghanaCardNumber);
     }
 

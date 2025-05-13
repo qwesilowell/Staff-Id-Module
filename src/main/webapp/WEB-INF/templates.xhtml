@@ -12,9 +12,9 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
       xmlns:p="http://primefaces.org/ui"
       xmlns:ui="jakarta.faces.facelets">
 
-<!--    <f:metadata>
-        <f:event type="preRenderView" listener="#-{loginBean.redirectIfNotLoggedIn()}" />
-    </f:metadata>-->
+    <!--    <f:metadata>
+            <f:event type="preRenderView" listener="#-{loginBean.redirectIfNotLoggedIn()}" />
+        </f:metadata>-->
 
     <ui:insert name="metadata" />
 
@@ -29,7 +29,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
 
         <ui:insert name="head"/>
         <title><ui:insert name="title"/></title>
-       <h:outputScript library="js" name="menuscript.js" target="body" />
+        <h:outputScript library="js" name="menuscript.js" target="body" />
     </h:head>
 
     <h:body>
@@ -47,7 +47,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     <p:menu overlay="true" trigger="userMenu" my="left top" at="left bottom">
                         <p:submenu label="#{sessionScope.username}">
                             <p:menuitem value="Profile" url="profile.xhtml" icon="pi pi-user" />
-                            <p:menuitem value="Settings" url="settings.xhtml" icon="pi pi-cog" />
+                            <p:menuitem value="Reports" url="settings.xhtml" icon="pi pi-book" />
                             <p:separator />
                             <p:menuitem value="Logout" action="#{dashboard2.logout()}" icon="pi pi-sign-out" />
                         </p:submenu>
@@ -84,20 +84,19 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     </p:submenu>
 
                     <p:submenu label="Employee Roles" expanded="true">
-                        <p:menuitem value="Assign Employee Role"  outcome="/app/EmployeeRoles/assignRole?faces-redirect=true" icon="pi pi-upload"/>
+                        <p:menuitem value="Update Employee Role"  outcome="/app/EmployeeRoles/assignRole?faces-redirect=true" icon="pi pi-upload"/>
                         <p:menuitem value="Create Employee Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" icon="fa-regular fa-pen-to-square fa-flip-vertical" style="color: black;" rendered="#{sessionScope.userRole eq 'Admin'}"/>
                         <p:menuitem value="Add Employee Status" outcome="/app/OnboardEmployee/empStatusPage?faces-redirect=true" icon="fa-regular fa-plus-square" style="color: black;" rendered="#{sessionScope.userRole eq 'Admin'}"/>
 
                     </p:submenu>
 
                     <p:submenu label="Assign Access" expanded="true" rendered="#{sessionScope.userRole eq 'Admin'}">
-                        <p:menuitem value="New Access Levels" outcome="/app/Access/manageAccessLevels?faces-redirect=true" icon="pi pi-plus" />
-                        <p:menuitem value="Assign Entrances" outcome="/app/Access/assignEntrance?faces-redirect=true" icon="fa-solid fa-door-closed"/>
+                        <p:menuitem value="Assign Roles to Entrances" outcome="/app/Access/assign-roles?facess-redirect=true" icon="fa-solid fa-building-user" />
+                        <p:menuitem value="Assign Custom Entrance " outcome="/app/Access/assignEntrance?faces-redirect=true" icon="fa-solid fa-door-closed"/>
                     </p:submenu>
 
                     <p:submenu label="Entrances" expanded="true" rendered="#{sessionScope.userRole eq 'Admin'}">
                         <p:menuitem value="Manage Entrances" outcome="/app/Entrances/manageEntrances?faces-redirect=true" icon="fa-solid fa-door-open"/>
-                        <p:menuitem value="Assign Roles to Entrances" outcome="/app/Access/assign-roles?facess-redirect=true" icon="fa-solid fa-building-user " />
                     </p:submenu>
                     <p:submenu label="Users" expanded="true" rendered="#{sessionScope.userRole eq 'Admin'}">
                         <p:menuitem value="Create New User" outcome="/newuser?faces-redirect=true" icon="pi pi-user-plus"/>

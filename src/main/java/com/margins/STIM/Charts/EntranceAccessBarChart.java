@@ -26,7 +26,7 @@ public class EntranceAccessBarChart {
         ChartData data = new ChartData();
 
         BarChartDataSet barDataSet = new BarChartDataSet();
-        barDataSet.setLabel("Access Outcomes");
+        barDataSet.setLabel("VERIFICATION OUTCOMES ");
 
         List<Object> values = new ArrayList<>();
         List<String> bgColor = new ArrayList<>();
@@ -37,10 +37,10 @@ public class EntranceAccessBarChart {
             values.add(value);
             labels.add(key);
             // Hardcode colors based on key
-            if (key.equalsIgnoreCase("granted")) {
-                bgColor.add("rgba(rgb(64, 175, 115)"); // Green for granted
+            if (key.equalsIgnoreCase("Granted")) {
+                bgColor.add("rgba(64, 175, 115, 0.8)"); // Green for granted
                 borderColor.add("rgb(64, 175, 115)");
-            } else if (key.equalsIgnoreCase("denied")) {
+            } else if (key.equalsIgnoreCase("Denied")) {
                 bgColor.add("rgba(255, 99, 132, 0.8)"); // Red for denied
                 borderColor.add("rgb(255, 99, 132)");
             } else {
@@ -58,6 +58,7 @@ public class EntranceAccessBarChart {
 
         data.addChartDataSet(barDataSet);
         data.setLabels(labels);
+    
 
         barModel.setData(data);
 
@@ -72,6 +73,9 @@ public class EntranceAccessBarChart {
         ticks.setStepSize(1); // Only step in whole numbers
         ticks.setPrecision(0); // Optional: 0 decimal places
         linearAxes.setTicks(ticks);
+        
+        
+        
         cScales.addYAxesData(linearAxes);
         options.setScales(cScales);
 

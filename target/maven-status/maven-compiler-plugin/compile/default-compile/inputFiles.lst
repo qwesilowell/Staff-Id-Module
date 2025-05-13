@@ -15,12 +15,14 @@ C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\ST
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\Bean\SingleFingerController.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\rest\BiometricDataRest.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\rest\EntrancesRestService.java
+C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\service\TimeAccessRuleService.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\converter\AccessLevelConverter.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\entity\AccessLog.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\Charts\EntranceAccessBarChart.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\service\BiometricDataService.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\service\EmployeeEntranceService.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\Bean\EmployeeBean.java
+C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\entity\TimeAccessRule.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\entity\websocket\FingerCaptured.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\Bean\EntranceBean.java
 C:\Users\PhilipManteAsare\THE DOCUMENTS\JAVA P\STIM\src\main\java\com\margins\STIM\rest\UserRest.java

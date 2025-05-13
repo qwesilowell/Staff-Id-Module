@@ -5,18 +5,15 @@
 package com.margins.STIM.Bean;
 
 import com.google.gson.Gson;
+import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
-import com.margins.STIM.service.BiometricDataService;
-import com.margins.STIM.service.User_Service;
+import com.margins.STIM.service.Employee_Service;
 import com.margins.STIM.util.FingerprintProcessor;
 import com.margins.STIM.util.JSF;
-import static com.margins.STIM.util.JSF.context;
 import com.margins.STIM.util.ValidationUtil;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,6 +37,10 @@ import javax.net.ssl.X509TrustManager;
 @Named("singlefingerBean")
 @SessionScoped
 public class SingleFingerController implements Serializable {
+    
+    @EJB 
+    private Employee_Service employeeService;
+    
     @Getter
     @Setter
     private String ghanaCardNumber;
@@ -60,6 +61,19 @@ public class SingleFingerController implements Serializable {
     @Getter
     @Setter
     VerificationResultData callBack = new VerificationResultData();
+    
+    @Getter
+    @Setter
+    private Employee foundEmployee;
+    
+    @Getter
+    @Setter
+    private boolean showDialog;
+    
+    
+    @Getter
+    @Setter
+    private boolean showUpdateButton = false;
 
     private byte[] fingerData;
     private String socketData;
@@ -153,21 +167,68 @@ public class SingleFingerController implements Serializable {
             System.out.println("Response from API: " + res);
             if (response.statusCode() == 200 && callBack != null) {
                 if ("TRUE".equals(callBack.getData().getVerified())) {
-                    JSF.addSuccessMessage("Single Finger Verification Successful!");
-                    // Redirect to Employee SignUp Page
-                    FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "app/dashboard2.xhtml");
-                } else {
-                    JSF.addErrorMessage("Fingerprint Verification Failed!");                }
-            } else {
+                    String cardNumber = callBack.getData().getPerson().nationalId;
+                    String newFirstName = callBack.getData().getPerson().getForenames();
+                    String newLastName = callBack.getData().getPerson().getSurname();
+                    foundEmployee = employeeService.findEmployeeByGhanaCard(cardNumber);
+
+                    if (foundEmployee != null) {
+                        showDialog = true;
+                        showUpdateButton = true;
+                        JSF.addSuccessMessage("Verification successful. Employee found: " + foundEmployee.getFullName());
+                    } else {
+                        showDialog = false;
+                        JSF.addErrorMessage("Verification successful but no matching employee found.");
+                    }
+                }
+            } 
+            else {
+                showDialog = false;
                 JSF.errorMessage("Verification Error:" + (callBack != null ? callBack.msg : "No response from server"));
-            }
-        } 
+                    }
+                }
         catch (Exception e) {  // Catch any other unexpected errors
+            showDialog = false;
             JSF.addErrorMessage("An unexpected error occurred. Please try again!");
             System.out.println("ERROR 3");
             e.printStackTrace(); // Log the error for debugging
         }
 
+    }
+    
+    
+    public void updateEmployeeName() {
+        if (callBack == null || callBack.getData() == null) {
+            JSF.addErrorMessage("No verification result available.");
+            return;
+        }
+
+        String cardNumber = callBack.getData().getPerson().nationalId;
+        String newFirstName = callBack.getData().getPerson().getForenames();
+        String newLastName = callBack.getData().getPerson().getSurname();
+
+        try {
+            Employee existingEmployee = employeeService.findEmployeeByGhanaCard(cardNumber);
+
+            if (existingEmployee == null) {
+                JSF.addErrorMessage("No employee found with Ghana Card Number: " + cardNumber);
+                return;
+            }
+
+            // Update only the name fields
+            existingEmployee.setFirstname(newFirstName);
+            existingEmployee.setLastname(newLastName);
+
+            employeeService.updateEmployee(cardNumber, existingEmployee); 
+
+            foundEmployee = existingEmployee; // Update UI reference
+            JSF.addSuccessMessage("Employee name updated to: " + newFirstName + " " + newLastName);
+            showDialog = false;
+
+        } catch (Exception e) {
+            JSF.addErrorMessage("Error updating employee name.");
+            e.printStackTrace();
+        }
     }
 
     private void reload() {

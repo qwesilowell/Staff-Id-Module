@@ -60,6 +60,10 @@ public class onboardEmployeeController implements Serializable {
     @Getter
     @Setter
     private String ghanaCardNumber;
+    
+    @Getter
+    @Setter
+    private String ghanaCardNumberDisplay;
 
     @Getter
     @Setter
@@ -324,6 +328,7 @@ public class onboardEmployeeController implements Serializable {
 
                     empImage = "data:image/png;base64," + callBack.data.person.biometricFeed.face.data;
                     forenames = callBack.data.person.forenames;
+                    ghanaCardNumberDisplay = ghanaCardNumber;
                     surname = callBack.data.person.surname;
                     employeeName = callBack.data.person.forenames + " " + callBack.data.person.surname;
                     employeeDOB = DateFormatter.formatDate(callBack.data.person.birthDate);
@@ -462,6 +467,7 @@ public class onboardEmployeeController implements Serializable {
                     currentStep++;
 
                     empImage = "data:image/png;base64," + callBack.data.person.biometricFeed.face.data;
+                    ghanaCardNumberDisplay = callBack.data.person.nationalId;
                     forenames = callBack.data.person.forenames;
                     surname = callBack.data.person.surname;
                     employeeName = callBack.data.person.forenames + " " + callBack.data.person.surname;
@@ -573,6 +579,7 @@ public class onboardEmployeeController implements Serializable {
             ActivityLog log = new ActivityLog(userId, action, targetId, result, details);
             activityLogService.logActivity(log);
             System.out.println("Logging activity: " + details);
+            resetWizard();
             
             FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             FacesContext.getCurrentInstance().addMessage(null,
@@ -584,7 +591,7 @@ public class onboardEmployeeController implements Serializable {
 
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Employee Already exists in system: " + e.getMessage(), null));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Employee Already exists in system: " + "Onboarding Aborted", null));
             
             String userId = (String) FacesContext.getCurrentInstance()
                     .getExternalContext()
@@ -599,6 +606,7 @@ public class onboardEmployeeController implements Serializable {
             ActivityLog log = new ActivityLog(userId, action, targetId, result, details);
             activityLogService.logActivity(log);
             System.out.println("Logging activity: " + details);
+            resetWizard();
             e.printStackTrace();
         }
         
@@ -663,6 +671,7 @@ public class onboardEmployeeController implements Serializable {
                     empImage = "data:image/png;base64," + callBack.data.person.biometricFeed.face.data;
                     forenames = callBack.data.person.forenames;
                     surname = callBack.data.person.surname;
+                    ghanaCardNumberDisplay = ghanaCardNumber;
                     employeeName = callBack.data.person.forenames + " " + callBack.data.person.surname;
                     employeeDOB = DateFormatter.formatDate(callBack.data.person.birthDate);
                     empDOB = callBack.data.person.birthDate;
@@ -688,6 +697,38 @@ public class onboardEmployeeController implements Serializable {
     } 
     
     
+    public void resetWizard() {
+        currentStep = 0;
+        verificationType = null;
+        verificationSuccess = false;
+        ghanaCardNumber = null;
+        password = null;
+        capturedFinger = null;
+        capturedMultiFinger = new CapturedFinger();
+        capturedFingers.clear();
+        fingerPosition = null;
+        callBack = new VerificationResultData();
+        empImage = null;
+        employeeName = null;
+        empDOB = null;
+        employeeDOB = null;
+        forenames = null;
+        surname = null;
+        nationality = null;
+        gender = null;
+        address = null;
+        email = null;
+        faceImageData = null;
+        selectedRoleId = null;
+        assignedRoleName = null;
+        selectedEmployee = null;
+        selectedEmploymentStatusId = 0;
+        selectedRole = null;
+        assignedRoleId = null;
+
+        PrimeFaces.current().ajax().update("wizardForm");
+    }
+
     
     
     private void reload() {

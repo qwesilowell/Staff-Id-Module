@@ -29,7 +29,7 @@
                                      style="background: #28a745; color: white; padding: 8px 12px; border-radius: 4px;"/>
                 </div>
 
-                <p:dataTable id="accessLevelTable" value="#{accessLevelsBean.accessLevels}" var="accessLevel" paginator="true" rows="10"
+                <p:dataTable id="accessLevelTable" value="#{accessLevelsBean.accessLevels}" var="accessLevel" paginator="true"  paginatorPosition="bottom" rows="10"
                              style="border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     <p:column headerText="Level Name">
                         <h:outputText value="#{accessLevel.level_name}"/>

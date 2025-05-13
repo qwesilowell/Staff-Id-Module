@@ -5,6 +5,7 @@
 package com.margins.STIM.Bean;
 
 import com.margins.STIM.entity.Employee;
+import com.margins.STIM.entity.Entrances;
 import com.margins.STIM.service.Employee_Service;
 import java.io.Serializable;
 import java.util.List;
@@ -14,6 +15,8 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,15 +38,31 @@ public class ManageEmployeesBean implements Serializable {
     @Getter
     @Setter
     private String searchQuery;
-    
+
     @Inject
     private Employee_Service employeeService;
+
+    @Getter
+    @Setter
+    private Set<Entrances> selectedEmployeeEntrances = new HashSet<>();
+    
+    @Getter
+    @Setter
+    private Set<Entrances> selectedCustomEmpEntrances = new HashSet<>();
+
+    @Getter
+    @Setter
+    private boolean showEntrances = false;
+    
+    @Getter
+    @Setter
+    private boolean showCustomEntrances = false;
 
     @PostConstruct
     public void init() {
         employees = employeeService.findAllEmployees();
     }
-    
+
     public void findEmployee() {
         if (searchQuery == null || searchQuery.trim().isEmpty()) {
             employees = employeeService.findAllEmployees();
@@ -65,8 +84,9 @@ public class ManageEmployeesBean implements Serializable {
 
     public void viewEmployee(String ghanaCardNumber) {
         selectedEmployee = employeeService.findEmployeeByGhanaCard(ghanaCardNumber);
+        loadEntrancesForRole();
     }
-    
+
     public void deleteEmployee() {
         if (selectedEmployee != null) {
             try {
@@ -86,7 +106,7 @@ public class ManageEmployeesBean implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No employee selected."));
         }
     }
-    
+
     public String getFullName() {
         if (selectedEmployee != null) {
             String first = selectedEmployee.getFirstname();
@@ -95,7 +115,7 @@ public class ManageEmployeesBean implements Serializable {
         }
         return "No Employee Selected";
     }
-    
+
     public String getSelectedEmployeeInitials() {
         if (selectedEmployee == null || selectedEmployee.getFirstname() == null || selectedEmployee.getLastname() == null) {
             return "??"; // Default initials if no employee is selected
@@ -107,8 +127,48 @@ public class ManageEmployeesBean implements Serializable {
 
         return firstInitial + lastInitial;
     }
+
+    private void loadEntrancesForRole() {
+        selectedEmployeeEntrances.clear(); // clear old data first
+
+        if (selectedEmployee != null && selectedEmployee.getRole() != null) {
+            Set<Entrances> entrances = selectedEmployee.getRole().getAccessibleEntrances();
+
+            if (entrances != null && !entrances.isEmpty()) {
+                selectedEmployeeEntrances.addAll(entrances);
+            } else {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_INFO, "Info", "No entrances assigned to this role."));
+            }
+        }
+    }
     
+    public void loadCustomEntrances(){
+        selectedCustomEmpEntrances.clear(); // Clear existing entries
+        if (selectedEmployee != null) {
+            List<Entrances> customEntrances = selectedEmployee.getCustomEntrances();
+
+            if (customEntrances != null && !customEntrances.isEmpty()) {
+                selectedCustomEmpEntrances.clear();
+                selectedCustomEmpEntrances.addAll(customEntrances);
+            } else {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_INFO, "Info", "No custom entrances assigned to this employee."));
+            }
+        }
+    }
+
+    public void toggleEntrances() {
+        showEntrances = !showEntrances;
+    }
     
+    public void toggleCustomEntrances(){
+     showCustomEntrances = !showCustomEntrances;
+        if (showCustomEntrances) {
+            loadCustomEntrances();
+        }
+    }
+
     public String editEmployee(String ghanaCardNumber) {
         return "editEmployee.xhtml?faces-redirect=true&amp;ghanaCardNumber=" + ghanaCardNumber;
     }
@@ -129,6 +189,7 @@ public class ManageEmployeesBean implements Serializable {
     public void setSearchTerm(String searchTerm) {
         this.searchTerm = searchTerm;
     }
+
     public String goToSignup() {
         return "/app/OnboardEmployee/onboardEmployee.xhtml?faces-redirect=true";
     }

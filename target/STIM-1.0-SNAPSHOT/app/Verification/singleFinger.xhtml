@@ -9,7 +9,196 @@
                 xmlns:ui="jakarta.faces.facelets">
 
     <ui:define name ="title">Single Finger Verification</ui:define>
-    <ui:define name =""></ui:define>
+    <ui:define name ="head">
+        <style>
+            body {
+                font-family: 'Inter', Arial, sans-serif;
+                background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                margin: 0;
+                padding: 20px;
+            }
+            .main-content {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+            }
+            .ui-panel {
+                background: #ffffff;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+                padding: 30px;
+                width: 100%;
+                height:100%;/* Fill most of the page height */
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                transition: transform 0.3s ease;
+            }
+            .ui-panel:hover {
+                transform: translateY(-5px);
+            }
+            .ui-panel .ui-panel-title {
+                font-size: 1.5rem;
+                color: #1e3a8a;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            .ui-outputlabel {
+                color: #1e3a8a;
+                font-size: 1.1rem;
+                font-weight: 600;
+                margin-bottom: 10px;
+                display: block;
+            }
+            .ui-inputtext, .ui-selectonemenu {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #d1d5db;
+                border-radius: 8px;
+                font-size: 1rem;
+                transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            }
+            .ui-inputtext:focus, .ui-selectonemenu:focus {
+                border-color: #1e3a8a;
+                box-shadow: 0 0 8px rgba(30, 58, 138, 0.2);
+                outline: none;
+            }
+            .ui-selectonemenu .ui-selectonemenu-label {
+                padding: 10px;
+            }
+            .fingerprint-preview {
+                border: 2px solid #1e3a8a;
+                border-radius: 12px;
+                padding: 10px;
+                background: #f8fafc;
+                display: inline-block;
+                transition: box-shadow 0.3s ease;
+            }
+            .fingerprint-preview:hover {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            .button-group {
+                display: flex;
+                justify-content: center;
+                gap: 15px;
+                margin-top: 20px;
+            }
+            .ui-button {
+                padding: 3px 5px;
+                border-radius: 5px;
+                transition: background-color 0.3s ease, transform 0.2s ease;
+            }
+            .ui-button-success {
+                background-color: #22c55e;
+                border-color: #22c55e;
+            }
+            .ui-button-success:hover {
+                background-color: #16a34a;
+                transform: translateY(-2px);
+            }
+            .ui-button-warning {
+                background-color: #f97316;
+                border-color: #f97316;
+            }
+            .ui-button-warning:hover {
+                background-color: #ea580c;
+                transform: translateY(-2px);
+            }
+            .ui-button-secondary {
+                background-color: #64748b;
+                border-color: #64748b;
+            }
+            .ui-button-secondary:hover {
+                background-color: #475569;
+                transform: translateY(-2px);
+            }
+            .ui-dialog {
+                width: 50vw !important; /* Half screen width */
+                height: 90vh !important; /* Half screen height */
+                max-width: 600px; /* Prevent overly wide dialog on large screens */
+                max-height: 600px; /* Prevent overly tall dialog */
+                background: rgba(255, 255, 255, 0.98);
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+                border-radius: 12px;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+            .ui-dialog .ui-dialog-titlebar {
+                background: #1e3a8a;
+                color: #ffffff;
+                padding: 15px;
+                font-size: 1.5rem;
+                border-radius: 0;
+            }
+            .ui-dialog .ui-dialog-content {
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: calc(100vh - 60px);
+                overflow-y: auto;
+            }
+            .ui-panelgrid {
+                background: #f8fafc;
+                border-radius: 8px;
+                padding: 20px;
+                width: 100%;
+                max-width: 600px;
+            }
+            .ui-panelgrid .ui-panelgrid-cell {
+                padding: 10px;
+                font-size: 1rem;
+            }
+            .ui-dialog .ui-button {
+                margin-top: 20px;
+            }
+            @media (max-width: 768px) {
+                .ui-panel {
+                    width: 95vw;
+                    height: auto; /* Allow height to adjust on smaller screens */
+                    padding: 20px;
+                }
+                .ui-panel .ui-panel-title {
+                    font-size: 1.5rem;
+                }
+                .button-group {
+                    flex-direction: column;
+                    gap: 15px;
+                }
+                .ui-button {
+                    width: 100%;
+                }
+                .ui-dialog {
+                    width: 80vw !important; /* Slightly larger on small screens */
+                    height: 70vh !important;
+                    max-width: none;
+                    max-height: none;
+                }
+            }
+            @media (max-width: 480px) {
+                .ui-panel {
+                    padding: 15px;
+                }
+                .ui-outputlabel {
+                    font-size: 1rem;
+                }
+                .ui-inputtext, .ui-selectonemenu {
+                    font-size: 1rem;
+                }
+                .ui-dialog {
+                    width: 90vw !important;
+                    height: 80vh !important;
+                }
+                .ui-panelgrid .ui-panelgrid-cell {
+                    font-size: 0.9rem;
+                }
+            }
+        </style>
+    </ui:define>
 
     <ui:define name ="content">
 
@@ -19,10 +208,10 @@
             <h:form id= "theForm" prependId="false">
                 <p:growl widgetVar="fgrowl" id="growl" showDetail="true" life="3000" />
 
-                <p:panel header="Ghana Card and Single Finger Verification" style="width: 600px; margin: auto; margin-top:50px; height:auto; color: blue; text-align: center;">
+                <p:panel header="Ghana Card and Single Finger Verification" style="width: 600px; margin: auto; margin-top:10px; height:auto; color: blue; text-align: center;">
 
                     <!-- Ghana Card Input -->
-                    <h:outputLabel for="ghanaCard" value="Enter Ghana Card here" style="font-size: large; font-weight: bolder;"/>
+                    <h:outputLabel for="ghanaCard" value="Enter Ghana Card Number here" style="font-size: large; font-weight: bolder;"/>
                     <br/>
                     <p:inputText id="ghanaCardPin" value="#{singlefingerBean.ghanaCardNumber}" required="true" requiredMessage="Please Enter Ghana Card number"
                                  placeholder="GHA-XXXXXXXXX-X"/>
@@ -69,6 +258,55 @@
 
 
                 </p:panel>
+
+
+                <!-- Full-Screen Dialog for Verification Results -->
+                <p:dialog id="verificationDialog" header="Update Employee Name" widgetVar="verificationDialog" 
+                          modal="true" visible="#{singlefingerBean.showDialog}" 
+                          showEffect="fade" hideEffect="fade" resizable="false" closable="true">
+                    
+                    <h:panelGroup layout="block" style="margin-bottom: 15px; text-align: left; width: 100%; display: block;"> 
+                        <h:outputLabel value="New Name from Verification:" 
+                                       style="font-weight:bold; display:block; margin-bottom:5px; text-align: left;" /> 
+                        <h:outputText value="#{singlefingerBean.callBack.data.person.forenames} #{singlefingerBean.callBack.data.person.surname}" 
+                                      rendered="#{singlefingerBean.callBack.data != null}" 
+                                      style="display:block; font-style:italic; text-align: left;" /> 
+                    </h:panelGroup>
+
+
+                    <h:outputText value="Current Employee Details"
+                                  style="font-weight:bold; margin-bottom:10px; display:block;" />
+
+                    <h:panelGrid columns="2" styleClass="ui-panelgrid" cellpadding="10">
+                        <h:outputLabel value="Ghana Card Number:" />
+                        <h:outputText value="#{singlefingerBean.foundEmployee.ghanaCardNumber}" />
+                        <h:outputLabel value="First Name:" />
+                        <h:outputText value="#{singlefingerBean.foundEmployee.firstname}" />
+                        <h:outputLabel value="Last Name:" />
+                        <h:outputText value="#{singlefingerBean.foundEmployee.lastname}" />
+                        <h:outputLabel value="Email:" />
+                        <h:outputText value="#{singlefingerBean.foundEmployee.email}" />
+                        <h:outputLabel value="Gender:" />
+                        <h:outputText value="#{singlefingerBean.foundEmployee.gender}" />
+                        <h:outputLabel value="Date of Birth:" />
+                        <h:outputText value="#{singlefingerBean.foundEmployee.dateOfBirth}" />
+                        <h:outputLabel value="Role:" />
+                        <h:outputText value="#{singlefingerBean.foundEmployee.role.roleName}" />
+                        <h:outputLabel value="Address:" />
+                        <h:outputText value="#{singlefingerBean.foundEmployee.address}" />
+                    </h:panelGrid>
+
+
+                    <h:panelGroup rendered="#{singlefingerBean.showUpdateButton}">
+                        <p:commandButton value="Update Employee Name"
+                                         action="#{singlefingerBean.updateEmployeeName}"
+                                         update="@form"
+                                         icon="pi pi-refresh"
+                                         styleClass="ui-button-success" />
+                    </h:panelGroup>
+
+                </p:dialog>
+
             </h:form>  
         </div>
         <h:outputScript library="js" name="orbis.js" target="head"/>

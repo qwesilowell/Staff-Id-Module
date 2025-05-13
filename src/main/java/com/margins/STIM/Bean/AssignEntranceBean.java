@@ -1,102 +1,85 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.margins.STIM.Bean;
 
-import com.margins.STIM.entity.*;
-import com.margins.STIM.service.*;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import com.margins.STIM.entity.Employee;
+import com.margins.STIM.entity.Entrances;
+import com.margins.STIM.service.Employee_Service;
+import com.margins.STIM.service.EntrancesService;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
+import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
+import jakarta.persistence.EntityNotFoundException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.Setter;
 
 @Named("assignEntranceBean")
-@ViewScoped
+@SessionScoped
 public class AssignEntranceBean implements Serializable {
 
     @EJB
     private Employee_Service employeeService;
-    @EJB
-    private AccessLevelsService accessLevelsService;
-    @EJB
-    private EntrancesService entranceService;
-    @EJB
-    private EmployeeEntranceService employeeEntranceService;
 
-    private List<Employee> employees = new ArrayList<>();
-    private List<Entrances> entrances = new ArrayList<>();
-    private List<EmployeeEntrance> assignedEntrances = new ArrayList<>();
-    private List<Access_Levels> accessLevels = new ArrayList<>();
-    private Employee selectedEmployee;
+    @EJB
+    private EntrancesService entrancesService;
+
     private String searchQuery;
+    private List<Employee> employees;
+    private Employee selectedEmployee;
+    private List<Entrances> availableEntrances;
+    private List<Entrances> selectedEntrances;
+    @Getter
+    @Setter
+    private List<Entrances> assignedCustomEntrances;
+    @Getter
+    @Setter
+    private List<Entrances> assignedRoleEntrances;
 
     @PostConstruct
     public void init() {
         try {
-            employees = employeeService.findAllEmployees();
-            entrances = entranceService.findAllEntrances();
-            accessLevels = accessLevelsService.findAllAccessLevels();
+            employees = getAllEmployees();
+            availableEntrances = getAllEntrances();
+            selectedEntrances = new ArrayList<>();
+            assignedCustomEntrances = new ArrayList<>();
+            assignedRoleEntrances = new ArrayList<>();
+            searchQuery = "";
         } catch (Exception e) {
             logError("Error initializing data", e);
+            showMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to initialize data.");
         }
+    }
+
+    public List<Entrances> getAllEntrances() {
+        return entrancesService.findAllEntrances(); // Fetch from DB once
+    }
+
+    public List<Employee> getAllEmployees() {
+        return employeeService.findAllEmployees(); // Fetch from DB once
     }
 
     public void searchEmployees() {
-        employees = (searchQuery == null || searchQuery.trim().isEmpty())
-                ? employeeService.findAllEmployees()
-                : employeeService.searchEmployees(searchQuery);
-    }
-
-    public void prepareAssignEntrance(Employee employee) {
-        if (employee == null) {
-            showMessage(FacesMessage.SEVERITY_ERROR, "Error", "Employee cannot be null!");
-            return;
-        }
-        this.selectedEmployee = employee;
         try {
-            assignedEntrances = employeeEntranceService.getEmployeeEntrancesByGhanaCardNumber(employee.getGhanaCardNumber());
+            if (searchQuery == null || searchQuery.trim().isEmpty()) {
+                employees = employeeService.findAllEmployees();
+            } else {
+                String query = searchQuery.toLowerCase().trim();
+                employees = employeeService.findAllEmployees().stream()
+                        .filter(e -> e.getFullName().toLowerCase().contains(query)
+                        || e.getGhanaCardNumber().toLowerCase().contains(query))
+                        .collect(Collectors.toList());
+            }
         } catch (Exception e) {
-            logError("Error fetching assigned entrances", e);
-            assignedEntrances = new ArrayList<>();
+            logError("Error searching employees", e);
+            showMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to search employees.");
         }
-    }
-
-    public void confirmAssignEntrance(Entrances entrance) {
-        if (assignedEntrances.stream()
-                .anyMatch(e -> e.getEntrance().getEntrance_Device_ID().equals(entrance.getEntrance_Device_ID()))) {
-            showMessage(FacesMessage.SEVERITY_WARN, "Warning", "Entrance already assigned!");
-            return;
-        }
-        assignedEntrances.add(new EmployeeEntrance(selectedEmployee, entrance, new Access_Levels()));
-    }
-
-    public void removeAssignedEntrance(EmployeeEntrance assignedEntrance) {
-        assignedEntrances.removeIf(entry
-                -> entry.getEntrance().getEntrance_Device_ID().equals(assignedEntrance.getEntrance().getEntrance_Device_ID()));
-        showMessage(FacesMessage.SEVERITY_INFO, "Success", "Entrance removed successfully!");
-    }
-
-    public void saveEntrances() {
-        if (validateAssignedEntrances()) {
-            executeAssignment(() -> employeeEntranceService.saveEmployeeEntrances(selectedEmployee, assignedEntrances), "Entrances assigned successfully!");
-        }
-    }
-
-    public void updateEntrances() {
-        if (validateAssignedEntrances()) {
-            executeAssignment(() -> employeeEntranceService.updateEmployeeEntrances(selectedEmployee, assignedEntrances), "Entrances updated successfully!");
-        }
-    }
-
-    public boolean hasAssignedEntrances(Employee employee) {
-        return employee != null && employee.getGhanaCardNumber() != null
-                && !employeeEntranceService.getAssignedEntrances(employee.getGhanaCardNumber()).isEmpty();
     }
 
     public void openAssignPopup(Employee employee) {
@@ -104,35 +87,124 @@ public class AssignEntranceBean implements Serializable {
             showMessage(FacesMessage.SEVERITY_ERROR, "Error", "No employee selected!");
             return;
         }
-        this.selectedEmployee = employee;
-        assignedEntrances = employeeEntranceService.getEmployeeEntrancesByGhanaCardNumber(employee.getGhanaCardNumber());
-        if (assignedEntrances == null) {
-            assignedEntrances = new ArrayList<>();
+        try {
+            this.selectedEmployee = employeeService.findEmployeeByGhanaCard(employee.getGhanaCardNumber());
+            if (this.selectedEmployee == null) {
+                showMessage(FacesMessage.SEVERITY_ERROR, "Error", "Employee not found!");
+                return;
+            }
+            this.availableEntrances = getAllEntrances();
+            List<Entrances> customEntrances = selectedEmployee.getCustomEntrances() != null
+                    ? selectedEmployee.getCustomEntrances() : new ArrayList<>();
+            this.selectedEntrances = new ArrayList<>(customEntrances);
+            this.assignedCustomEntrances = new ArrayList<>(customEntrances);
+            this.assignedRoleEntrances = selectedEmployee.getRole() != null && selectedEmployee.getRole().getAccessibleEntrances() != null
+                    ? new ArrayList<>(selectedEmployee.getRole().getAccessibleEntrances())
+                    : new ArrayList<>();
+        } catch (Exception e) {
+            logError("Error opening assign popup", e);
+            showMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to load employee entrances: " + e.getMessage());
         }
     }
 
-    public void addEntranceToEmployee(Entrances entrance) {
+    public List<Entrances> getFilteredAvailableEntrances() {
+        Set<String> roleEntranceIds = new HashSet<>();
+        if (assignedRoleEntrances != null) {
+            assignedRoleEntrances.forEach(e -> roleEntranceIds.add(e.getEntrance_Device_ID()));
+        }
+        if (assignedCustomEntrances != null) {
+            assignedCustomEntrances.forEach(e -> roleEntranceIds.add(e.getEntrance_Device_ID()));
+        }
+        return availableEntrances.stream()
+                .filter(e -> !roleEntranceIds.contains(e.getEntrance_Device_ID()))
+                .collect(Collectors.toList());
+    }
+
+    public void saveCustomEntrances() {
         if (selectedEmployee == null) {
             showMessage(FacesMessage.SEVERITY_WARN, "Warning", "No employee selected!");
             return;
         }
-        if (assignedEntrances.stream().anyMatch(e -> e.getEntrance().getEntrance_Device_ID().equals(entrance.getEntrance_Device_ID()))) {
-            showMessage(FacesMessage.SEVERITY_WARN, "Warning", "Entrance already assigned!");
-            return;
+        try {
+            System.out.println("Saving custom entrances for employee: " + selectedEmployee.getGhanaCardNumber());
+            System.out.println("Selected entrances: " + selectedEntrances.stream()
+                    .map(e -> e.getEntrance_Device_ID() + ":" + e.getEntrance_Name())
+                    .collect(Collectors.joining(", ")));
+
+            // Fetch existing entrances
+            List<Entrances> currentEntrances;
+            List<Entrances> customEntrances = selectedEmployee.getCustomEntrances();
+            if (customEntrances != null) {
+                currentEntrances = new ArrayList<>(customEntrances);
+            } else {
+                currentEntrances = new ArrayList<>();
+            }
+
+            // Add only new ones that aren't already in the list
+            for (Entrances selected : selectedEntrances) {
+                boolean exists = currentEntrances.stream()
+                        .anyMatch(e -> e.getEntrance_Device_ID().equals(selected.getEntrance_Device_ID()));
+                if (!exists) {
+                    currentEntrances.add(selected);
+                }
+            }
+
+            // Save merged list
+            selectedEmployee.setCustomEntrances(currentEntrances);
+            employeeService.updateEmployeeEnt(selectedEmployee.getGhanaCardNumber(), selectedEmployee);
+
+            // Update UI list
+            assignedCustomEntrances = new ArrayList<>(currentEntrances);
+            employees = employeeService.findAllEmployees(); // Refresh list
+
+            showMessage(FacesMessage.SEVERITY_INFO, "Success", "Custom entrances updated for " + selectedEmployee.getFullName());
+
+            // Clear state
+            selectedEmployee = null;
+            selectedEntrances.clear();
+
+        } catch (EntityNotFoundException e) {
+            logError("Employee not found", e);
+            showMessage(FacesMessage.SEVERITY_ERROR, "Error", "Employee not found: " + selectedEmployee.getGhanaCardNumber());
+        } catch (Exception e) {
+            logError("Error saving custom entrances", e);
+            showMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to save custom entrances: " + e.getMessage());
         }
-        assignedEntrances.add(new EmployeeEntrance(selectedEmployee, entrance, accessLevels.get(0))); // Default access level
     }
 
-    public void handleSaveOrUpdate() {
-        if (selectedEmployee == null) {
+    public void removeCustomEntrance(Entrances entrance) {
+        if (selectedEmployee == null || entrance == null) {
             showMessage(FacesMessage.SEVERITY_WARN, "Warning", "No employee selected!");
             return;
         }
-        if (hasAssignedEntrances(selectedEmployee)) {
-            updateEntrances();
-        } else {
-            saveEntrances();
+        try {
+            System.out.println("Removing entrance " + entrance.getEntrance_Device_ID() + " for employee: " + selectedEmployee.getGhanaCardNumber());
+
+            // Remove entrance from the list
+            selectedEntrances.removeIf(e -> e.getEntrance_Device_ID().equals(entrance.getEntrance_Device_ID()));
+            assignedCustomEntrances.removeIf(e -> e.getEntrance_Device_ID().equals(entrance.getEntrance_Device_ID()));
+
+            // Sync with employee object
+            selectedEmployee.setCustomEntrances(new ArrayList<>(assignedCustomEntrances));
+
+            // Update in database
+            employeeService.updateEmployee(selectedEmployee.getGhanaCardNumber(), selectedEmployee);
+
+            availableEntrances = getAllEntrances();
+
+          
+            showMessage(FacesMessage.SEVERITY_WARN, "Success", "Removed custom entrance \"" + entrance.getEntrance_Name() + "\" for " + selectedEmployee.getFullName());
+        } catch (Exception e) {
+            logError("Error removing custom entrance", e);
+            showMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to remove entrance: " + e.getMessage());
         }
+    }
+
+    public void cancel() {
+        selectedEmployee = null;
+        selectedEntrances.clear();
+        assignedCustomEntrances.clear();
+        assignedRoleEntrances.clear();
     }
 
     private void showMessage(FacesMessage.Severity severity, String title, String message) {
@@ -143,36 +215,21 @@ public class AssignEntranceBean implements Serializable {
         System.err.println(message + ": " + e.getMessage());
     }
 
-    private boolean validateAssignedEntrances() {
-        if (assignedEntrances == null || assignedEntrances.isEmpty()) {
-            showMessage(FacesMessage.SEVERITY_WARN, "Warning", "No entrances assigned!");
-            return false;
-        }
-        return true;
+    // Getters and setters
+    public String getSearchQuery() {
+        return searchQuery;
     }
 
-    private void executeAssignment(Runnable assignment, String successMessage) {
-        try {
-            assignment.run();
-            assignedEntrances.clear();
-            showMessage(FacesMessage.SEVERITY_INFO, "Success", successMessage);
-        } catch (Exception e) {
-            showMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to assign entrances.");
-            logError("Assignment error", e);
-        }
+    public void setSearchQuery(String searchQuery) {
+        this.searchQuery = searchQuery;
     }
 
-    // Getters & Setters
     public List<Employee> getEmployees() {
         return employees;
     }
 
-    public List<Entrances> getEntrances() {
-        return entrances;
-    }
-
-    public List<EmployeeEntrance> getAssignedEntrances() {
-        return assignedEntrances;
+    public void setEmployees(List<Employee> employees) {
+        this.employees = employees;
     }
 
     public Employee getSelectedEmployee() {
@@ -183,15 +240,19 @@ public class AssignEntranceBean implements Serializable {
         this.selectedEmployee = selectedEmployee;
     }
 
-    public String getSearchQuery() {
-        return searchQuery;
+    public List<Entrances> getAvailableEntrances() {
+        return availableEntrances;
     }
 
-    public void setSearchQuery(String searchQuery) {
-        this.searchQuery = searchQuery;
+    public void setAvailableEntrances(List<Entrances> availableEntrances) {
+        this.availableEntrances = availableEntrances;
     }
 
-    public List<Access_Levels> getAccessLevels() {
-        return accessLevels;
+    public List<Entrances> getSelectedEntrances() {
+        return selectedEntrances;
+    }
+
+    public void setSelectedEntrances(List<Entrances> selectedEntrances) {
+        this.selectedEntrances = selectedEntrances;
     }
 }

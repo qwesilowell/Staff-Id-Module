@@ -26,8 +26,10 @@
                     </p:inputText>
                     <p:button value="Add New Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" styleClass="add-role-btn"/>
                 </div>
+                
+                <p:spacer height="30px"/>
 
-                <p:dataTable id="employeeTable" value="#{employeeRoleAssignmentBean.employees}" var="employee" paginator="true" rows="10">
+                <p:dataTable id="employeeTable" value="#{employeeRoleAssignmentBean.employees}" var="employee" paginator="true" paginatorPosition="bottom" rows="10">
                     <p:column headerText="Ghana Card Number">
                         <h:outputText value="#{employee.ghanaCardNumber}"/>
                     </p:column>
@@ -38,7 +40,7 @@
                         <h:outputText value="#{employee.role != null ? employee.role.roleName : 'No Role Assigned'}"/>
                     </p:column>
                     <p:column headerText="Action">
-                        <p:commandButton value="Assign Role" icon="pi pi-user-edit"
+                        <p:commandButton value="Update Role" icon="pi pi-user-edit"
                                          actionListener="#{employeeRoleAssignmentBean.prepareAssignRole(employee)}"
                                          update=":assignRoleForm:assignRoleDialog :assignRoleForm:selectedEmployeeName :assignRoleForm:roleSelect"
                                          oncomplete="PF('assignRoleDialogWidget').show()"/>
@@ -68,7 +70,7 @@
                     </f:facet>
                 </p:dialog>
 
-                <p:messages id="messages" showSummary= "false" showDetail="true" closable="true"/>
+                <p:growl id="messages" widgetVar="fgrowl" showSummary= "false" showDetail="true"  life="6000" globalOnly="true" />
             </p:panel>
         </h:form>
         </div>
@@ -101,7 +103,7 @@
      .add-role-btn {
          background: #28a745;
          color: white;
-         padding: 8px 12px;
+         padding: 5px 10px;
          border-radius: 4px;
      }
      .add-role-btn:hover {

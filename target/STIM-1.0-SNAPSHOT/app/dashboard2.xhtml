@@ -143,7 +143,7 @@
 
                         <h:panelGroup id="dashboardContent" layout="block">
                             <p:spacer height="20px"/>
-                            <p:panel header="Recent Access Attempts">
+                            <p:panel header="Recent Entrance Access Attempts">
                                 <p:dataTable value="#{dashboard2.recentAccessAttempts}" var="log">
                                     <p:column headerText="Employee">
                                         <h:outputText value="#{dashboard2.getEmployeeNameFromMap(log.employeeId)}"/>
@@ -169,6 +169,39 @@
                         </h:panelGroup>
 
                         <!--                        </p:panel>-->
+                        <p:panelGrid columns="2"> 
+                            <p:panel header="Roles With Most Employees">
+                                <p:pieChart model="#{dashboard2.rolePieChartModel}" style="height: 400px;" />
+                            </p:panel>
+
+
+                            <p:panel header="Entrance Access Count ">
+                                <h:outputText value="Filter by Entrance: "/>
+                                <p:selectOneMenu value="#{dashboard2.selectedEntranceId}">
+                                    <f:selectItem itemLabel="All Entrances" itemValue="#{null}"/>
+                                    <f:selectItems value="#{dashboard2.allEntrances}" var="e" itemLabel="#{e.entrance_Name}" itemValue="#{e.entrance_Device_ID}"/>
+                                    <p:ajax update="entanceAccessChart" listener="#{dashboard2.entranceaccessupdate()}" process="@this"/>
+                                </p:selectOneMenu>
+
+                                <p:outputPanel id="entanceAccessChart" style="align-items:center">
+                              
+                                    <p:barChart model="#{dashboard2.barChartModelEntrance}" style=" width:50px; height: 400px;" />
+                                </p:outputPanel>
+
+                            </p:panel>
+
+                            <p:panel header="Top 5 Most Accessed Entrances (Granted Only)">
+                                <p:lineChart model="#{dashboard2.topEntrancesChartModel}" style="height: 300px;" />
+                            </p:panel>
+
+
+                            <!--                            <p:panel styleClass="chart-container">
+                                                            <p:chart model="#-{dashboard2.onboardedBarChart}" style="width:600px;height:300px"/>
+                                                        </p:panel>
+                                                        <p:panel styleClass="chart-container">
+                                                            <p:chart model="#-{dashboard2.loginTrendChart}" style="width:600px;height:300px"/>
+                                                        </p:panel>-->
+                        </p:panelGrid>
 
                         <p:spacer height="10px"/>
 
@@ -208,39 +241,7 @@
 
                             <p:spacer height="30px"/>
 
-                            <p:panelGrid columns="2"> 
-                                <p:panel header="Roles With Most Employees">
-                                    <p:pieChart model="#{dashboard2.rolePieChartModel}" style="height: 400px;" />
-                                </p:panel>
-
-
-                                <p:panel header="Entrance Access">
-                                    <h:outputText value="Filter by Entrance: "/>
-                                    <p:selectOneMenu value="#{dashboard2.selectedEntranceId}">
-                                        <f:selectItem itemLabel="All Entrances" itemValue="#{null}"/>
-                                        <f:selectItems value="#{dashboard2.allEntrances}" var="e" itemLabel="#{e.entrance_Name}" itemValue="#{e.entrance_Device_ID}"/>
-                                        <p:ajax update="entanceAccessChart" listener="#{dashboard2.entranceaccessupdate()}" process="@this"/>
-                                    </p:selectOneMenu>
-
-                                    <p:outputPanel id="entanceAccessChart">
-                                        <p:barChart model="#{dashboard2.barChartModelEntrance}" style=" width:50px; height: 400px;" />
-                                    </p:outputPanel>
-
-                                </p:panel>
-
-                                <p:panel header="Top 5 Most Accessed Entrances (Granted Only)">
-                                    <p:lineChart model="#{dashboard2.topEntrancesChartModel}" style="height: 300px;" />
-                                </p:panel>
-
-
-                                <!--                            <p:panel styleClass="chart-container">
-                                                                <p:chart model="#-{dashboard2.onboardedBarChart}" style="width:600px;height:300px"/>
-                                                            </p:panel>
-                                                            <p:panel styleClass="chart-container">
-                                                                <p:chart model="#-{dashboard2.loginTrendChart}" style="width:600px;height:300px"/>
-                                                            </p:panel>-->
-                            </p:panelGrid>
-
+                           
 
                         </p:panel>
                     </p:tab>
@@ -363,6 +364,11 @@
         </div>
         <script target="head" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
         <style>
+            body .ui-panel .ui-panel-titlebar{
+                background: #2196f3;
+                color: white;  
+                
+            }
             .dashboard-card {
                 background: #f8f9fa;
                 border-radius: 8px;
