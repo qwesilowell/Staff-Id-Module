@@ -144,18 +144,18 @@
                         <h:panelGroup id="dashboardContent" layout="block">
                             <p:spacer height="20px"/>
                             <p:panel header="Recent Entrance Access Attempts">
-                                <p:dataTable value="#{dashboard2.recentAccessAttempts}" var="log">
+                                <p:dataTable value="#{dashboard2.recentAccessAttempts}" var="log" rowIndexVar="rowIndex"  rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">  
                                     <p:column headerText="Employee">
-                                        <h:outputText value="#{dashboard2.getEmployeeNameFromMap(log.employeeId)}"/>
+                                        <h:outputText value="#{dashboard2.getEmployeeNameFromMap(log.employee)}"/>
                                     </p:column>
                                     <p:column headerText="GhanaCard No">
-                                        <h:outputText value="#{log.employeeId}"/>
+                                        <h:outputText value="#{log.employee.ghanaCardNumber}"/>
                                     </p:column>
                                     <p:column headerText="Entrance">
                                         <h:outputText value="#{dashboard2.getEntranceName(log.entranceId)}"/>
                                     </p:column>
                                     <p:column headerText="Result">
-                                        <h:outputText value="#{log.result}"
+                                        <h:outputText value="#{log.result.toUpperCase()}"
                                                       styleClass="#{log.result eq 'granted' ? 'granted-box' : 'denied-box'}" />
 
                                     </p:column>
@@ -184,7 +184,7 @@
                                 </p:selectOneMenu>
 
                                 <p:outputPanel id="entanceAccessChart" style="align-items:center">
-                              
+
                                     <p:barChart model="#{dashboard2.barChartModelEntrance}" style=" width:50px; height: 400px;" />
                                 </p:outputPanel>
 
@@ -206,7 +206,7 @@
                         <p:spacer height="10px"/>
 
                         <p:panel id="dashboardContent2">
-                            
+
 
                             <p:panel header="Recent Employees Added">
                                 <p:dataTable value="#{dashboard2.recentEmployees}" var="emp">
@@ -228,8 +228,8 @@
                                     <p:column headerText="Employees"><h:outputText value="#{role.count}"/></p:column>
                                 </p:dataTable>
                             </p:panel>
-                            
-                             <p:spacer height="30px"/>
+
+                            <p:spacer height="30px"/>
                             <p:panel header="Recent Successful Logins">
                                 <p:dataTable value="#{dashboard2.recentLogins}" var="log">
                                     <p:column headerText="User"><h:outputText value="#{log.userId}"/></p:column>
@@ -237,11 +237,11 @@
                                     <p:column headerText="Details"><h:outputText value="#{log.details}"/></p:column>
                                 </p:dataTable>
                             </p:panel>
-                           
+
 
                             <p:spacer height="30px"/>
 
-                           
+
 
                         </p:panel>
                     </p:tab>
@@ -287,7 +287,7 @@
 
 
 
-                           <p:panel styleClass="dashboard-card">
+                            <p:panel styleClass="dashboard-card">
                                 <h:outputText value="Access Success Rate " styleClass="card-title"/>
                                 <p:spacer height="10px"/>
                                 <h:outputText value="#{dashboard2.accessSuccessRate}%"/>
@@ -303,13 +303,13 @@
 
                         <h:panelGroup id="dashboardContentU" layout="block">
                             <p:spacer height="20px"/>
-                            <p:panel header="Recent Access Attempts">
-                                <p:dataTable value="#{dashboard2.recentAccessAttempts}" var="log">
+                            <p:panel header="Recent Entrance Access Attempts">
+                                <p:dataTable value="#{dashboard2.recentAccessAttempts}" var="log" rowIndexVar="rowIndex"  rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">  
                                     <p:column headerText="Employee">
-                                        <h:outputText value="#{dashboard2.getEmployeeNameFromMap(log.employeeId)}"/>
+                                        <h:outputText value="#{dashboard2.getEmployeeNameFromMap(log.employee)}"/>
                                     </p:column>
                                     <p:column headerText="GhanaCard No">
-                                        <h:outputText value="#{log.employeeId}"/>
+                                        <h:outputText value="#{log.employee.ghanaCardNumber}"/>
                                     </p:column>
                                     <p:column headerText="Entrance">
                                         <h:outputText value="#{dashboard2.getEntranceName(log.entranceId)}"/>
@@ -329,7 +329,7 @@
                         </h:panelGroup>
 
                         <p:spacer height="30px"/>
-                        
+
                         <p:panel header="Your Assigned Entrances">
                             <p:dataTable value="#{dashboard2.userAssignedEntrances}" var="entrance">
                                 <p:column headerText="Entrance Name"><h:outputText value="#{entrance.entrance_Name}"/></p:column>
@@ -366,8 +366,8 @@
         <style>
             body .ui-panel .ui-panel-titlebar{
                 background: #2196f3;
-                color: white;  
-                
+                color: white;
+
             }
             .dashboard-card {
                 background: #f8f9fa;
@@ -490,6 +490,17 @@
                 border-radius: 5px;
                 font-weight: bold;
                 display: inline-block;
+            }
+            .white-row {
+                background-color: white !important;
+            }
+
+            .ash-row {
+                background-color: #f0f0f0 !important; 
+            }
+            .white-row:hover, .ash-row:hover {
+                background-color: #dceeff !important;
+                cursor: pointer;
             }
         </style>
     </ui:define>

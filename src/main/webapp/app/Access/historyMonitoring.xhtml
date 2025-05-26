@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>        
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:f="jakarta.faces.core">
+
+    <ui:define name ="title">History Monitoring</ui:define>
+
+    <ui:define name="metadata">
+        <!--                <f:metadata>
+                            <f:viewAction action="#-{loginBean.checkAccess('Admin')}" />
+                        </f:metadata>-->
+    </ui:define>
+
+    <ui:define name ="content">
+        <!-- Main Content -->
+        <div class="main-content">
+            <h:form id="historyMonitorForm">
+                <p:growl id="messages"  showSummary= "true" showDetail="true"/>
+
+                <p:spacer height="10px"/>
+
+                <p:panel toggleable="true" header="Filters">
+
+                    <p:panelGrid columns="4">
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter based on Employee name</p:outputLabel>
+                            <p:inputText value="#{historyBean.employeeName}"
+                                         placeholder="Search by Name"
+                                         styleClass="search-box"
+                                         style="width: 100%;">
+                            </p:inputText>
+                        </p:outputPanel>
+
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter based on GhanaCard Number</p:outputLabel>
+                            <p:inputText  value="#{historyBean.ghanaCardNumber}"
+                                          placeholder="Search by GhanaCard"
+                                          styleClass="search-box"
+                                          style="width: 100%;">
+                            </p:inputText>
+                        </p:outputPanel>
+
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter by Entrance</p:outputLabel>
+                            <p:selectOneMenu value="#{historyBean.selectedEntranceId}" style="width: 100%">
+                                <f:selectItem itemLabel="All Entrances" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{historyBean.allEntrances}" var="entrance" itemLabel="#{entrance.entrance_Name}" itemValue="#{entrance.entrance_Device_ID}"/>
+                            </p:selectOneMenu>
+                        </p:outputPanel>
+
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter  by result</p:outputLabel>
+                            <p:selectOneMenu value="#{historyBean.result}" style="width: 100%">
+                                <f:selectItem itemLabel="All Results" itemValue="#{null}"/>
+                                <f:selectItem  itemLabel="GRANTED" itemValue="granted"/>
+                                <f:selectItem  itemLabel="DENIED" itemValue="denied"/>
+                            </p:selectOneMenu>
+                        </p:outputPanel>
+
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter  by date</p:outputLabel>
+                            <p:datePicker selectionMode="range" monthNavigator="true" yearNavigator="true" showButtonBar="true" value="#{historyBean.timeRange}"/>
+                        </p:outputPanel>
+                    </p:panelGrid>
+                    
+                    <div style="display: flex; justify-content: space-between;">
+                        <p:commandButton value="Reset" action="#{historyBean.reset()}" update="@form" 
+                                         icon="pi pi-spinner-dotted" iconPos="left" 
+                                         styleClass="ui-button-raised ui-button-danger" style="margin-left: 1%"/>
+                        <p:commandButton value="Generate Search Criteria" action="#{historyBean.fetchCriteria()}"
+                                         icon="pi pi-search" iconPos="left" 
+                                          update="@form" styleClass="ui-button-raised ui-button-success" style="margin-right: 1%"/>
+                    </div>
+                </p:panel>
+
+                <p:dataTable value="#{historyBean.recentAccessAttempts}" var="log" rowIndexVar="rowIndex"  
+                             rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}"  widgetVar="historytable" 
+                             id="historytable"  rows="20" paginator="true" paginatorPosition="bottom"
+                             emptyMessage="No record found with given criteria"
+                             filteredValue="#{historyBean.filteredAccessAttempts}" lazy="true">
+
+                    <f:facet name="header">
+                        <div class="flex align-items-center justify-content-between">
+                            <span>ENTRANCE ACCESS HISTORY</span>
+                        </div>
+                    </f:facet>
+
+
+
+                    <!-- Employee Name Filter -->
+                    <p:column headerText="Employee" sortBy="#{historyBean.getEmployeeName(log.employee)}" filterable="true">
+<!--                        <f:facet name="filter">
+                            <p:inputText value="#-{historyBean.employeeName}" placeholder="Filter by name">
+                                <p:ajax event="keyup" oncomplete="PF('historytable').filter()" />
+                            </p:inputText>
+                        </f:facet>-->
+                        <h:outputText value="#{historyBean.getEmployeeName(log.employee)}" />
+                    </p:column>
+
+                    <!-- Ghana Card Number Filter -->
+                    <p:column headerText="GhanaCard No" sortBy="#{log.employee.ghanaCardNumber}">
+<!--                        <f:facet name="filter">
+                            <p:inputText value="#-{historyBean.employeeId}" placeholder="Filter by ID">
+                                <p:ajax event="keyup" oncomplete="PF('historytable').filter()" />
+                            </p:inputText>
+                        </f:facet>-->
+                        <h:outputText value="#{log.employee.ghanaCardNumber}" />
+                    </p:column>
+
+                    <!-- Entrance Filter -->
+                    <p:column headerText="Entrance" sortBy="#{historyBean.getEntranceName(log.entranceId)}">
+           <!--             <f:facet name="filter">
+                            <p:selectOneMenu value="#-{historyBean.entranceId}" style="width: 100%">
+                                <f:selectItem itemLabel="All Entrances" itemValue="#-{null}" />
+                                <f:selectItems value="#-{historyBean.allEntrances}" var="e"
+                                               itemLabel="#-{e.entrance_Name}" itemValue="#-{e.entrance_Device_ID}" />
+                                <p:ajax oncomplete="PF('historytable').filter()" />
+                            </p:selectOneMenu>
+                        </f:facet>-->
+                        <h:outputText value="#{historyBean.getEntranceName(log.entranceId)}" />
+                    </p:column>
+
+                    <!-- Result Filter -->
+                    <p:column headerText="Result" sortBy="#{log.result}">
+<!--                        <f:facet name="filter">
+                            <p:selectOneMenu value="#-{historyBean.result}" style="width: 100%">
+                                <f:selectItem itemLabel="All Results" itemValue="#-{null}" />
+                                <f:selectItems value="#-{historyBean.allResults}" var="r" itemLabel="#-{r}" itemValue="#-{r}" />
+                                <p:ajax oncomplete="PF('historytable').filter()" />
+                            </p:selectOneMenu>
+                        </f:facet>-->
+                        <h:outputText value="#{log.result.toUpperCase()}"
+                                      styleClass="#{log.result eq 'granted' ? 'granted-box' : 'denied-box'}" />
+                    </p:column>
+
+                    <!-- Timestamp Column (not filterable yet, just showing formatted) -->
+                    <p:column headerText="Time" sortBy="#{log.timestamp}">
+                        <h:outputText value="#{historyBean.getFormattedTimestamp(log)}" />
+                    </p:column>
+                </p:dataTable>
+
+
+
+            </h:form>
+        </div>
+        <style>
+            .white-row {
+                background-color: white !important;
+            }
+
+            .ash-row {
+                background-color: #f0f0f0 !important;
+            }
+            .granted-box {
+                background-color: #d4edda; /* light green */
+                color: black;
+                padding: 4px 8px;
+                border-radius: 5px;
+                font-weight: bold;
+                display: inline-block;
+            }
+
+            .denied-box {
+                background-color: #dc143c ; /* red */
+                color: white;
+                padding: 4px 8px;
+                border-radius: 5px;
+                font-weight: bold;
+                display: inline-block;
+            }
+            .white-row:hover, .ash-row:hover {
+                background-color: #dceeff !important;
+                cursor: pointer;
+            }
+            .ui-filter-column .ui-column-customfilter .custom-filter {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        </style>
+
+    </ui:define>
+</ui:composition>

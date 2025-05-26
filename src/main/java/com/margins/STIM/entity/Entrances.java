@@ -11,42 +11,38 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  *
  * @author PhilipManteAsare
  */
-
-@Entity   
+@Entity
 @Table(name = "ENTRANCES")
-public class Entrances  /*extends EntityModel*/ implements Serializable{
+public class Entrances /*extends EntityModel*/ implements Serializable {
+
     @Id
     @Column(name = "ENTRANCE_DEVICE_ID", nullable = false, unique = true)
-    private String entrance_Device_ID;
-    
+    private String entranceDeviceId;
+
     @Column(name = "ENTRANCE_NAME", nullable = false, unique = true)
     private String entrance_Name;
-    
-    @Column(name= "ENTRANCE_LOCATION",nullable = false)
+
+    @Column(name = "ENTRANCE_LOCATION", nullable = false)
     private String entrance_Location;
 
-    @ManyToMany(mappedBy="accessibleEntrances")
+    @ManyToMany(mappedBy = "accessibleEntrances")
     private Set<EmployeeRole> allowedRoles = new HashSet<>();
-    
-    @Getter @Setter
+
     @ManyToMany(mappedBy = "customEntrances")
     private List<Employee> employees = new ArrayList<>();
 
- 
     //Getters And Setters
     public String getEntrance_Device_ID() {
-        return entrance_Device_ID;
+        return entranceDeviceId;
     }
 
     public void setEntrance_Device_ID(String entrance_Device_ID) {
-        this.entrance_Device_ID = entrance_Device_ID;
+        this.entranceDeviceId = entrance_Device_ID;
     }
 
     public String getEntrance_Name() {
@@ -72,19 +68,13 @@ public class Entrances  /*extends EntityModel*/ implements Serializable{
     public void setAllowedRoles(Set<EmployeeRole> allowedRoles) {
         this.allowedRoles = allowedRoles;
     }
-    
-    
 
     public Entrances(String entrance_Device_ID, String entrance_Name, String entrance_Location) {
-        this.entrance_Device_ID = entrance_Device_ID;
+        this.entranceDeviceId = entrance_Device_ID;
         this.entrance_Name = entrance_Name;
         this.entrance_Location = entrance_Location;
     }
-    
-    
-    
-        public Entrances() {
-    }
-    }
 
-    
+    public Entrances() {
+    }
+}

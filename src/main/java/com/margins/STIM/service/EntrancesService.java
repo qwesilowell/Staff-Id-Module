@@ -54,6 +54,12 @@ public class EntrancesService {
     public Entrances findEntranceById(String id) {
         return entityManager.find(Entrances.class, id);
     }
+    public List<Entrances> findEntranceByIds(List<String> ids) {
+        return entityManager.createQuery(
+                "SELECT e FROM Entrances e WHERE e.entrance_Device_ID IN :ids", Entrances.class)
+                .setParameter("ids", ids)
+                .getResultList();
+    }
 
     /**
      * Update an existing entrance.
@@ -94,7 +100,8 @@ public class EntrancesService {
 
 
     public List<Entrances> searchEntrances(String query) {
-        return entityManager.createQuery("SELECT e FROM Entrances e WHERE LOWER(e.entrance_Name) LIKE :query OR e.entrance_Device_ID LIKE :query", Entrances.class)
+        return entityManager.createQuery("SELECT e FROM Entrances e WHERE LOWER(e.entrance_Name) LIKE :query OR e.entranceDeviceId "
+                + "LIKE :query", Entrances.class)
                 .setParameter("query", "%" + query.toLowerCase() + "%")
                 .getResultList();
     }

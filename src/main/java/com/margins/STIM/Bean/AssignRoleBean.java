@@ -54,30 +54,30 @@ public class AssignRoleBean implements Serializable {
     @Inject
     private TimeAccessRuleService timeAccessRuleService;
 
-    @Setter
-    private List<EmployeeRole> allRoles;
-      
-    @Setter
-    private List<Entrances> allEntrances;
     private String selectedEntranceId;
-
     private Set<Integer> selectedRolesIds;
     private List<EmployeeRole> assignedRoles;
     private String selectedEmployeeRoleId;
+ 
 
+    @Getter
+    @Setter
+    private List<String> selectedEntranceIds;
+    @Setter
+    private List<EmployeeRole> allRoles;
+    @Setter
+    private List<Entrances> allEntrances;
     @Getter
     @Setter
     private TimeAccessRule newRule;
-
     @Getter
     @Setter
     private List<String> newRuleDays;
-
     @Getter
     @Setter
     private Entrances selectedEntrance;
-    
-    @Getter @Setter
+    @Getter
+    @Setter
     private EmployeeRole currentRole;
 
     @PostConstruct
@@ -162,7 +162,6 @@ public class AssignRoleBean implements Serializable {
         }
     }
 
-
     public void removeRoleFromEntrance(int roleId) {
         if (selectedEntranceId == null || selectedEntranceId.trim().isEmpty()) {
             FacesContext.getCurrentInstance().addMessage(null,
@@ -176,8 +175,6 @@ public class AssignRoleBean implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Entrance not found"));
             return;
         }
-
-   
 
         // Find the role to remove
         EmployeeRole roleToRemove = entrance.getAllowedRoles()
@@ -214,7 +211,6 @@ public class AssignRoleBean implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not remove role: " + e.getMessage()));
         }
     }
-
 
     public void prepareTimeRule(EmployeeRole role) {
         // Reset the rule
@@ -253,7 +249,7 @@ public class AssignRoleBean implements Serializable {
         // Validate inputs
         if (validateTimeRule()) {
             try {
-             
+
                 // Set days of week
                 newRule.setDaysOfWeek(String.join(",", newRuleDays));
 
@@ -277,7 +273,7 @@ public class AssignRoleBean implements Serializable {
             }
         }
     }
-    
+
     private boolean validateTimeRule() {
         FacesContext context = FacesContext.getCurrentInstance();
         boolean isValid = true;
@@ -347,8 +343,6 @@ public class AssignRoleBean implements Serializable {
         return isValid;
     }
 
-    
-    
     public String getTimeRulesForRoleAndEntrance(int roleId) {
         List<TimeAccessRule> rules = timeAccessRuleService.getTimeRulesByRole(roleId);
 
@@ -358,7 +352,7 @@ public class AssignRoleBean implements Serializable {
                 .findFirst()
                 .orElse("No time rules");
     }
-    
+
     public String formatTimeRange(Date start, Date end, String daysCsv) {
         if (start == null || end == null) {
             return "-";
@@ -371,7 +365,7 @@ public class AssignRoleBean implements Serializable {
         String days = formatDays(daysCsv);
         return formattedStart + " - " + formattedEnd + " (" + days + ")";
     }
-    
+
     public String formatDays(String daysCsv) {
         if (daysCsv == null || daysCsv.trim().isEmpty()) {
             return "-";
@@ -387,7 +381,6 @@ public class AssignRoleBean implements Serializable {
                 .map(code -> dayMap.getOrDefault(code, code))
                 .collect(Collectors.joining(", "));
     }
-
 
     // Method to check access for a role to an entrance
     public void checkAccess() {
@@ -408,9 +401,66 @@ public class AssignRoleBean implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Access Denied", "You do not have access to this entrance"));
         }
     }
-    
-    
-    
+
+//    public boolean isRoleFirstMode() {
+//        return roleFirstMode;
+//    }
+//
+//    public void toggleMode() {
+//        roleFirstMode = !roleFirstMode;
+//
+//        String message = roleFirstMode
+//                ? "Switched to Role-First Mode"
+//                : "Switched to Entrance-First Mode";
+//
+//        FacesContext.getCurrentInstance().addMessage(null,
+//                new FacesMessage(FacesMessage.SEVERITY_INFO, "Mode Changed", message));
+//    }
+//
+//    public void assignEntrancesToRole() {
+//        if (selectedRoleId != null && selectedEntranceIds != null && !selectedEntranceIds.isEmpty()) {
+//            EmployeeRole role = employeeRole.findEmployeeRoleById(selectedRoleId);
+//            if (role == null) {
+//                FacesContext.getCurrentInstance().addMessage(null,
+//                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Role not found"));
+//                return;
+//            }
+//
+//            List<Entrances> entrancesToAdd = entrancesService.findEntranceByIds(selectedEntranceIds);
+//            if (entrancesToAdd == null || entrancesToAdd.isEmpty()) {
+//                FacesContext.getCurrentInstance().addMessage(null,
+//                        new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "No valid entrances found"));
+//                return;
+//            }
+//
+//            // Ensure role's accessible entrances is initialized
+//            Set<Entrances> currentEntrances = role.getAccessibleEntrances();
+//            if (currentEntrances == null) {
+//                currentEntrances = new HashSet<>();
+//            }
+//
+//            // Add new entrances
+//            currentEntrances.addAll(entrancesToAdd);
+//            role.setAccessibleEntrances(currentEntrances);
+//
+//            // Update the inverse side: Entrances.allowedRoles
+//            for (Entrances entrance : entrancesToAdd) {
+//                if (entrance.getAllowedRoles() == null) {
+//                    entrance.setAllowedRoles(new HashSet<>());
+//                }
+//                entrance.getAllowedRoles().add(role);
+//                entrancesService.save(entrance); // Optional, depending on cascade
+//            }
+//
+//            employeeRole.save(role); // Save role as it’s the owning side
+//
+//            FacesContext.getCurrentInstance().addMessage(null,
+//                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Entrances assigned to role successfully!"));
+//        } else {
+//            FacesContext.getCurrentInstance().addMessage(null,
+//                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "Select a role and at least one entrance"));
+//        }
+//    }
 
     public List<EmployeeRole> getAssignedRoles() {
         return assignedRoles;

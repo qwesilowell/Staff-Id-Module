@@ -125,7 +125,7 @@ public class AccessControlBean implements Serializable {
         String result = "denied"; // Default
         Double verificationTime = null;
         String entranceId = null;
-
+        Employee employee = null;
         try {
             System.out.println("GHANACARD2 >>>>>>>>>>>>>> " + ghanaCardNumber);
             if (!ValidationUtil.isValidGhanaCardNumber(ghanaCardNumber)) {
@@ -203,7 +203,7 @@ public class AccessControlBean implements Serializable {
                     statusMessage = "Invalid Entrance";
                     JSF.addErrorMessage("Selected entrance not found.");
                 } else {
-                    Employee employee = employeeService.findEmployeeByGhanaCard(ghanaCardNumber);
+                    employee = employeeService.findEmployeeByGhanaCard(ghanaCardNumber);
                     if (employee == null) {
                         statusMessage = "Access Denied";
                         JSF.addErrorMessage("Employee not found.");
@@ -223,11 +223,20 @@ public class AccessControlBean implements Serializable {
             JSF.addErrorMessage("An unexpected error occurred. Please try again!");
             e.printStackTrace();
         } finally {
-            // Log every attempt
+            // Log every attempt       
+            
             entranceId = entranceId != null ? entranceId : extractEntranceId(selectedEntrance);
             System.out.println("Logging: employee=" + ghanaCardNumber + ", entrance=" + entranceId
                     + ", result=" + result + ", time=" + verificationTime);
-            AccessLog log = new AccessLog(ghanaCardNumber, entranceId, result, verificationTime);
+            
+
+            AccessLog log ;
+            
+            if (employee != null) {
+                  log  = new AccessLog(employee, entranceId, result, verificationTime);
+            }else {
+                log = new AccessLog(null, entranceId, result, verificationTime);
+            }
             accessLogService.logAccess(log);
         }
     }

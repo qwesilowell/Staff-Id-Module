@@ -4,8 +4,11 @@
  */
 package com.margins.STIM.util;
 
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
@@ -30,13 +33,17 @@ public class DateFormatter {
     }
     
     
-    
+    public static LocalTime toLocalTime(Date date) {
+        return date.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalTime();  //ignores Jan-1970
+    }
     
     public static String formatDateTime(LocalDateTime dateTime) {
         if (dateTime == null) {
             return "";
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
         return dateTime.format(formatter);
     }
 

@@ -104,6 +104,12 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     <p:submenu label="Entrance Test" expanded="true" >
                         <p:menuitem value="Entrance Access Test" outcome="/app/Entrances/accessControl?faces-redirect=true"  icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat"/>
                     </p:submenu>
+                    <p:submenu label="Monitoring and Reports" expanded="true" >
+                        <p:menuitem value="Real Live Monitoring" outcome="/app/Access/liveMonitoring?faces-redirect=true"  icon="pi pi-chart-line"/>
+                        <p:menuitem value="History Monitoring" outcome="/app/Access/historyMonitoring?faces-redirect=true"  icon="pi pi-history"/>
+                        <p:menuitem value="Reports" outcome="/app/Reports/Reports?faces-redirect=true"  icon="pi pi-book"/>
+
+                    </p:submenu>
                 </p:panelMenu>
             </h:form>
         </div>

@@ -11,12 +11,16 @@ import java.util.regex.Pattern;
  * @author PhilipManteAsare
  */
 public class ValidationUtil {
-    private static final Pattern GHANA_CARD_PATTERN = Pattern.compile("^GHA-\\d{9}-\\d$");
+    private static Pattern reg = Pattern.compile("[A-Z]{3}-\\d{9}-(-?)\\d");
+    private static Pattern regEmail = Pattern.compile("[\\w._%+-]+@.+.\\w{2,5}");
+    /// gha-726772889--7
 
     public static boolean isValidGhanaCardNumber(String ghanaCardNumber) {
         if (ghanaCardNumber == null) {
             return false;
         }
-        return GHANA_CARD_PATTERN.matcher(ghanaCardNumber).matches();
+        return reg.matcher(ghanaCardNumber).matches();
     }
+    
+    
 }

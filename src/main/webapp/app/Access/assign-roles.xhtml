@@ -61,7 +61,8 @@
 
                 <div style="margin-top: 50px;"></div>
 
-                <p:dataTable id="assignedRolesTable" value="#{assignRoleBean.assignedRoles}" var="role" style="margin-top: 10px;">
+                <p:dataTable id="assignedRolesTable" value="#{assignRoleBean.assignedRoles}" var="role" style="margin-top: 10px;" 
+                             rowIndexVar="rowIndex"  rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">  
                     <p:column headerText="Assigned Job Roles">
                         <h:outputText value="#{role.roleName}" />
                     </p:column>
@@ -426,6 +427,17 @@
                 background-color: #2196f3;
                 color: white !important;
                 padding: 6px 4px !important;
+            }
+            .white-row {
+                background-color: white !important;
+            }
+
+            .ash-row {
+                background-color: white !important;
+            }
+            .white-row:hover, .ash-row:hover {
+                background-color: #dceeff !important;
+                cursor: pointer;
             }
         </style>
 

@@ -6,7 +6,10 @@ package com.margins.STIM.Bean;
 
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.Entrances;
+import com.margins.STIM.entity.TimeAccessRule;
 import com.margins.STIM.service.Employee_Service;
+import com.margins.STIM.service.EntrancesService;
+import com.margins.STIM.service.TimeAccessRuleService;
 import java.io.Serializable;
 import java.util.List;
 import jakarta.annotation.PostConstruct;
@@ -15,7 +18,17 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -31,36 +44,60 @@ public class ManageEmployeesBean implements Serializable {
 
     private List<Employee> employees;
     private String searchTerm;
+
+    @Inject
+    private EntrancesService entrancesService;
+    @Inject
+    private Employee_Service employeeService;
+    @Inject
+    private TimeAccessRuleService timeAccessRuleService;
+
     @Getter
     @Setter
     private Employee selectedEmployee;
-
+    @Getter
+    @Setter
+    private Entrances selectedEntrance;
     @Getter
     @Setter
     private String searchQuery;
-
-    @Inject
-    private Employee_Service employeeService;
-
     @Getter
     @Setter
-    private Set<Entrances> selectedEmployeeEntrances = new HashSet<>();
-    
+    private Set<Entrances> selectedEmployeeEntrances;
     @Getter
     @Setter
-    private Set<Entrances> selectedCustomEmpEntrances = new HashSet<>();
-
+    private Set<Entrances> selectedCustomEmpEntrances;
     @Getter
     @Setter
-    private boolean showEntrances = false;
-    
+    private boolean showEntrances;
     @Getter
     @Setter
-    private boolean showCustomEntrances = false;
+    private boolean showCustomEntrances;
+    @Getter
+    @Setter
+    private boolean showCustomTimeRules;
+    @Getter
+    @Setter
+    private String selectedEntranceId;
+    @Getter
+    private List<Entrances> allEntrances;
+    @Getter
+    @Setter
+    private List<String> newRuleDays;
+    @Getter
+    @Setter
+    private TimeAccessRule newRule;
 
     @PostConstruct
     public void init() {
         employees = employeeService.findAllEmployees();
+        allEntrances = entrancesService.findAllEntrances();
+        newRuleDays = new ArrayList<>();
+        selectedEmployeeEntrances = new HashSet<>();
+        selectedCustomEmpEntrances = new HashSet<>();
+        showEntrances = false;
+        showCustomEntrances = false;
+        showCustomTimeRules = false;
     }
 
     public void findEmployee() {
@@ -84,6 +121,14 @@ public class ManageEmployeesBean implements Serializable {
 
     public void viewEmployee(String ghanaCardNumber) {
         selectedEmployee = employeeService.findEmployeeByGhanaCard(ghanaCardNumber);
+        selectedEntranceId = null;
+        selectedEntrance = null;
+        newRule = new TimeAccessRule();
+        newRuleDays = new ArrayList<>();
+        showEntrances = false;
+        showCustomEntrances = false;
+        showCustomTimeRules = true;
+
         loadEntrancesForRole();
     }
 
@@ -128,7 +173,7 @@ public class ManageEmployeesBean implements Serializable {
         return firstInitial + lastInitial;
     }
 
-    private void loadEntrancesForRole() {
+    public void loadEntrancesForRole() {
         selectedEmployeeEntrances.clear(); // clear old data first
 
         if (selectedEmployee != null && selectedEmployee.getRole() != null) {
@@ -142,8 +187,8 @@ public class ManageEmployeesBean implements Serializable {
             }
         }
     }
-    
-    public void loadCustomEntrances(){
+
+    public void loadCustomEntrances() {
         selectedCustomEmpEntrances.clear(); // Clear existing entries
         if (selectedEmployee != null) {
             List<Entrances> customEntrances = selectedEmployee.getCustomEntrances();
@@ -161,16 +206,177 @@ public class ManageEmployeesBean implements Serializable {
     public void toggleEntrances() {
         showEntrances = !showEntrances;
     }
-    
-    public void toggleCustomEntrances(){
-     showCustomEntrances = !showCustomEntrances;
+
+    public void toggleCustomEntrances() {
+        showCustomEntrances = !showCustomEntrances;
         if (showCustomEntrances) {
             loadCustomEntrances();
         }
     }
 
-    public String editEmployee(String ghanaCardNumber) {
-        return "editEmployee.xhtml?faces-redirect=true&amp;ghanaCardNumber=" + ghanaCardNumber;
+    public List<Entrances> searchEntrances(String query) {
+        return selectedEmployee.getCustomEntrances().stream()
+                .filter(e -> e.getEntrance_Name() != null
+                && e.getEntrance_Name().toLowerCase().contains(query.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
+    public void onEntranceSelect() {
+        if (selectedEntranceId != null && !selectedEntranceId.trim().isEmpty()) {
+            selectedEntrance = entrancesService.findEntranceById(selectedEntranceId);
+            if (selectedEntrance != null && selectedEmployee != null) {
+                prepareTimeRule(selectedEmployee);
+            }
+        }
+    }
+
+    public void prepareTimeRule(Employee selectedEmployee) {
+        newRule = new TimeAccessRule();
+        newRule.setEmployee(selectedEmployee);
+        this.selectedEmployee = selectedEmployee;
+        newRuleDays = new ArrayList<>();
+
+        if (selectedEntranceId != null) {
+            selectedEntrance = entrancesService.findEntranceById(selectedEntranceId);
+            newRule.setEntrance(selectedEntrance);
+            List<TimeAccessRule> existingRules = timeAccessRuleService.getTimeRulesByEmployee(selectedEmployee.getGhanaCardNumber());
+            existingRules.stream()
+                    .filter(r -> r.getEntrance().getEntrance_Device_ID().equals(selectedEntranceId))
+                    .findFirst()
+                    .ifPresent(existingRule -> {
+                        newRule = existingRule;
+                        if (existingRule.getDaysOfWeek() != null && !existingRule.getDaysOfWeek().isEmpty()) {
+                            newRuleDays = new ArrayList<>(Arrays.asList(existingRule.getDaysOfWeek().split(",")));
+                        }
+                    });
+        }
+        
+    }
+
+    public void saveTimeRule() {
+
+        if (newRule.getEntrance() == null) {
+            newRule.setEntrance(selectedEntrance);
+        }
+
+        newRule.setDaysOfWeek(String.join(",", newRuleDays));
+        timeAccessRuleService.saveTimeRule(newRule);
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", " Custom Time rule saved successfully!"));
+        resetSidebar();
+    }
+
+    public boolean validateRule() {
+        boolean isValid = true;
+
+        if (selectedEntranceId == null || selectedEmployee == null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "Select an employee and entrance"));
+            isValid = false;
+        }
+        if (newRule.getStartTime() == null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "Start time is required"));
+            isValid = false;
+        }
+        if (newRule.getEndTime() == null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "End time is required"));
+            isValid = false;
+        }
+        if (newRuleDays == null || newRuleDays.isEmpty()) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "Select at least one day"));
+            isValid = false;
+        }
+        // Proceed only if both times are set
+        if (newRule.getStartTime() != null && newRule.getEndTime() != null) {
+            Date startDate = newRule.getStartTime();
+            Date endDate = newRule.getEndTime();
+
+            LocalTime startTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
+            LocalTime endTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
+
+            if (endTime.equals(startTime)) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Validation Error",
+                                "Start and end time cannot be the same"));
+                isValid = false;
+            }
+
+            LocalDate today = LocalDate.now();
+            LocalDateTime startDateTime = LocalDateTime.of(today, startTime);
+            LocalDateTime endDateTime = LocalDateTime.of(today, endTime);
+
+            // Handle overnight time span
+            if (endTime.isBefore(startTime)) {
+                endDateTime = endDateTime.plusDays(1);
+            }
+
+            Duration duration = Duration.between(startDateTime, endDateTime);
+            if (duration.isNegative() || duration.isZero()) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Validation Error",
+                                "End time must be after start time"));
+                isValid = false;
+            }
+        }
+        return isValid;
+    }
+
+    public void resetSidebar() {
+        newRule = new TimeAccessRule();
+        newRuleDays = new ArrayList<>();
+        selectedEntranceId = null;
+        selectedEntrance = null;
+    }
+
+    public void toggleCustomTimeRules() {
+        if (selectedEmployee == null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "No employee selected"));
+            return;
+        }
+        showCustomTimeRules = !showCustomTimeRules;
+    }
+    
+    public List<TimeAccessRule> getEmployeeTimeRules(String ghanaCardNumber) {
+        return timeAccessRuleService.getTimeRulesByEmployee(ghanaCardNumber);
+    }
+    
+    public String formatTimeRule(TimeAccessRule rule) {
+        if (rule == null || rule.getEntrance() == null) {
+            return "No time rule";
+        }
+        String timeRange = formatTimeRange(rule.getStartTime(), rule.getEndTime(), rule.getDaysOfWeek());
+        return rule.getEntrance().getEntrance_Name() + ": " + timeRange;
+    }
+
+    private String formatTimeRange(Date start, Date end, String daysCsv) {
+        if (start == null || end == null) {
+            return "-";
+        }
+        SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a");
+        String formattedStart = timeFormat.format(start);
+        String formattedEnd = timeFormat.format(end);
+        String days = formatDays(daysCsv);
+        return formattedStart + " - " + formattedEnd + " (" + days + ")";
+    }
+
+    private String formatDays(String daysCsv) {
+        if (daysCsv == null || daysCsv.trim().isEmpty()) {
+            return "-";
+        }
+        Map<String, String> dayMap = Map.of(
+                "MON", "Monday", "TUE", "Tuesday", "WED", "Wednesday",
+                "THU", "Thursday", "FRI", "Friday", "SAT", "Saturday", "SUN", "Sunday"
+        );
+        return Arrays.stream(daysCsv.split(","))
+                .map(String::trim)
+                .map(code -> dayMap.getOrDefault(code, code))
+                .collect(Collectors.joining(", "));
     }
 
     // Getters and Setters

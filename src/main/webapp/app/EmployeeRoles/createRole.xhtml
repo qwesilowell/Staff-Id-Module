@@ -36,10 +36,12 @@
 
 
                 <p:dataTable id="roleTable" value="#{assignEmpRoleBean.roles}" var="role" styleClass="ui-datatable" 
+                             paginator="true" paginatorPosition="bottom" rows="10" 
                              filteredValue="#{assignEmpRoleBean.filteredRoles}"
-                             globalFilter="#{assignEmpRoleBean.globalFilter}">
-                    <f:facet name="header">
-                        <div class="p-d-flex p-jc-between p-ai-center">
+                             globalFilter="#{assignEmpRoleBean.globalFilter}"
+                             rowIndexVar="rowIndex"  rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">
+                    <f:facet name="header" >
+                        <div class="p-d-flex p-jc-between p-ai-center" style="background-color:  transparent !important;">
                             <p:inputText id="searchQuery" 
                                          value="#{assignEmpRoleBean.searchQuery}"
                                          placeholder="Search Role...."
@@ -104,6 +106,20 @@
 
             </h:form>
         </div>
+        <style>
+            .white-row {
+                background-color: white !important;
+            }
+
+            .ash-row {
+                background-color: #f0f0f0 !important;
+            }
+            .white-row:hover, .ash-row:hover {
+                background-color: #dceeff !important;
+                cursor: pointer;
+            }
+        </style>
+            
     </ui:define>
 </ui:composition>
 

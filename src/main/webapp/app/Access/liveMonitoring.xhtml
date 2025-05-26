@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>        
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:f="jakarta.faces.core">
+
+    <ui:define name ="title">Live Monitoring</ui:define>
+
+    <ui:define name="metadata">
+        <!--                <f:metadata>
+                            <f:viewAction action="#-{loginBean.checkAccess('Admin')}" />
+                        </f:metadata>-->
+    </ui:define>
+
+    <ui:define name ="content">
+        <!-- Main Content -->
+        <div class="main-content">
+            <h:form id="liveMonitorForm">
+                <p:growl id="messages"  showSummary= "true" showDetail="true"/>
+
+                <h:panelGroup id="liveMonitoringContent" layout="block" >
+                    <p:spacer height="20px"/>
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:panelGroup layout="block" 
+                                          style="display: flex; align-items: center; justify-content: space-between;">
+                                <h:outputText value="LIVE ENTRANCE ACCESS" />
+                                <img id="loadingIndicator" 
+                                     src="#{resource['images/dballloading.gif']}" 
+                                     alt="Loading..." 
+                                     style=" width: 30px; height: 30px;" />
+                            </h:panelGroup>
+                        </f:facet>
+                        <p:dataTable value="#{liveMonitoring.recentAccessAttempts}" var="log" rowIndexVar="rowIndex"  rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">                                   
+                            <p:column headerText="Employee">
+                                <h:outputText value="#{liveMonitoring.getEmployeeName((log.employee))}"/>
+                            </p:column>
+                            <p:column headerText="GhanaCard No">
+                                <h:outputText value="#{log.employee.ghanaCardNumber}"/>
+                            </p:column>
+                            <p:column headerText="Entrance">
+                                <h:outputText value="#{liveMonitoring.getEntranceName(log.entranceId)}"/>
+                            </p:column>
+                            <p:column headerText="Result">
+                                <h:outputText value="#{log.result.toUpperCase()}"
+                                              styleClass="#{log.result eq 'granted' ? 'granted-box' : 'denied-box'}" />
+
+                            </p:column>
+                            <p:column headerText="Time">
+                                <h:outputText value="#{liveMonitoring.getFormattedTimestamp(log)}">
+
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:panelGroup>
+
+                <p:poll interval="5" update="liveMonitoringContent"/>
+                <!--                        onstart="showLoading()" 
+                                        oncomplete="hideLoading()"-->  
+            </h:form>
+        </div>
+        <script>
+            function showLoading() {
+                const loader = document.getElementById('loadingIndicator');
+                if (loader) {
+                    loader.style.display = 'inline';
+                }
+            }
+
+            function hideLoading() {
+                setTimeout(() => {
+                    const loader = document.getElementById('loadingIndicator');
+                    if (loader) {
+                        loader.style.display = 'none';
+                    }
+                }, 5000);
+            }
+        </script>
+        <style>
+            .white-row {
+                background-color: white !important;
+            }
+
+            .ash-row {
+                background-color: #f0f0f0 !important;
+            }
+            .granted-box {
+                background-color: #d4edda; /* light green */
+                color: black;
+                padding: 4px 8px;
+                border-radius: 5px;
+                font-weight: bold;
+                display: inline-block;
+            }
+
+            .denied-box {
+                background-color: #dc143c ; /* red */
+                color: white;
+                padding: 4px 8px;
+                border-radius: 5px;
+                font-weight: bold;
+                display: inline-block;
+            }
+            .white-row:hover, .ash-row:hover {
+                background-color: #dceeff !important;
+                cursor: pointer;
+            }
+            /*            #loadingIndicator {
+                            position: absolute;  Position it as needed 
+                            top: 10px;  Adjust top position 
+                            right: 10px;  Adjust right position 
+                            z-index: 1000;  Ensure it appears above other content 
+                        }
+            
+                        #loadingIndicator img {
+                            width: 30px;  Adjust size 
+                            height: 30px;  Adjust size 
+                        }*/
+
+        </style>
+
+    </ui:define>
+</ui:composition>

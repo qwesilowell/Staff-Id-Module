@@ -105,7 +105,7 @@ public class EmployeeEntranceService {
     public boolean canAccessEntrance(String employeeGhanaCardNumber, String entranceDeviceId) {
         try {
             EmployeeEntrance employeeEntrance = entityManager.createQuery(
-                    "SELECT ee FROM EmployeeEntrance ee WHERE ee.employee.ghanaCardNumber = :employeeId AND ee.entrance.entrance_Device_ID = :entranceId",
+                    "SELECT ee FROM EmployeeEntrance ee WHERE ee.employee.ghanaCardNumber = :employeeId AND ee.entrance.entranceDeviceId= :entranceId",
                     EmployeeEntrance.class)
                     .setParameter("employeeId", employeeGhanaCardNumber)
                     .setParameter("entranceId", entranceDeviceId)

@@ -37,7 +37,7 @@
 
                 <!-- Employee List -->
                 <p:dataTable id="employeeTable" value="#{manageEmployeesBean.employees}" var="employee" 
-                             paginator="true" paginatorPosition="bottom" rows="10">
+                             paginator="true" paginatorPosition="bottom" rows="10"  rowIndexVar="rowIndex"  rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">
 
                     <p:column headerText="First Name">
                         <h:outputText value="#{employee.firstname}" />
@@ -58,20 +58,16 @@
                     <p:column headerText="Actions">
                         <p:commandButton value="View" icon="pi pi-eye" id="profileBtn"
                                          action="#{manageEmployeesBean.viewEmployee(employee.ghanaCardNumber)}" 
-                                         update=":employeeForm:profileModal"
+                                         update=":employeeForm:profileModal :sidebarForm"
                                          oncomplete="PF('profileDialog').show();" />
                     </p:column>
                 </p:dataTable>
                 <!-- Profile Modal -->
                 <p:dialog id="profileModal" 
-                          widgetVar="profileDialog" >
-                    <!--   
-                                              modal="true" 
-                                              showEffect="fade" 
-                                              hideEffect="fade"
-                                              resizable="false"
-                                              styleClass="profile-modal"
-                                                                        style="width: 90%; max-width: 420px; max-height: 90vh;">-->
+                          widgetVar="profileDialog"
+                          responsive="true"
+                          modal="true" 
+                          blockScroll= "true" >
 
                     <div class="modal-overlay">
                         <div class="profile-modal">
@@ -95,14 +91,17 @@
 
 
                                 <div class="profile-section">
-                                    <h3 class="section-title">Details</h3>
+                                    <div style="display: flex; align-items: center; gap: 8px">
+                                        <i class="fa-solid fa-door-open" ></i>
+                                        <h3 class="section-title" style="margin: 0;">Entrance Details</h3>
+                                    </div>
                                     <div class="profile-actions">
                                         <h:commandButton value=" Default Entrances"
                                                          action="#{manageEmployeesBean.toggleEntrances}"
                                                          styleClass="action-button">
                                             <f:ajax render="entrancesPanel" />
                                         </h:commandButton>
-                                             
+
                                     </div>
 
                                     <h:panelGroup id="entrancesPanel">
@@ -116,8 +115,8 @@
                                         </h:panelGroup>
                                     </h:panelGroup>
                                     <p:spacer height="10px"/>
-                               
-                                    
+
+
                                     <div class="profile-actions">
                                         <h:commandButton value=" Custom Entrances"
                                                          action="#{manageEmployeesBean.toggleCustomEntrances}"
@@ -126,7 +125,7 @@
                                         </h:commandButton>
 
                                     </div>
-                                    
+
                                     <h:panelGroup id="CustomEntrancesPanel">
                                         <h:panelGroup rendered="#{manageEmployeesBean.showCustomEntrances}"
                                                       styleClass="skill-tags"
@@ -134,11 +133,41 @@
                                             <ui:repeat value="#{manageEmployeesBean.selectedCustomEmpEntrances}" var="entrance">
                                                 <span class="skill-tag">#{entrance.entrance_Name}</span>
                                             </ui:repeat>
+                                            <br/>
                                             <h:outputText value="No Custom entrances assigned" rendered="#{empty manageEmployeesBean.selectedCustomEmpEntrances}" />
                                         </h:panelGroup>
                                     </h:panelGroup>
                                 </div>
+                                <div class="divider"></div>
 
+                                <!-- Time Access Info  and Customization-->
+                                <div class="profile-section">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <i class="fa-regular fa-clock"></i>
+                                        <h3 class="section-title" style="margin: 0;">Custom Time Access Details</h3>
+                                    </div>
+                                    <h:panelGroup id="customTimeAccessPanel">
+                                        <h:panelGroup  rendered="#{not empty manageEmployeesBean.getEmployeeTimeRules(manageEmployeesBean.selectedEmployee.ghanaCardNumber)}"
+                                                       styleClass="skill-tags"
+                                                       style="margin-top: 10px;">
+                                            <ui:repeat value="#{manageEmployeesBean.getEmployeeTimeRules(manageEmployeesBean.selectedEmployee.ghanaCardNumber)}" var="rule">
+                                                <span class="skill-tag">#{manageEmployeesBean.formatTimeRule(rule)}</span>                                            
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                        <br/>
+                                        <h:outputText value="No custom time rules assigned"
+                                                      rendered="#{empty manageEmployeesBean.getEmployeeTimeRules(manageEmployeesBean.selectedEmployee.ghanaCardNumber)}"
+                                                      style="font-style: italic; color: gray; font-weight: bold;" />
+                                    </h:panelGroup>
+
+                                    <div class="profile-actions">
+                                        <p:commandButton value="Create Customized Time Access"
+                                                         icon=" pi pi-cog"
+                                                         update=":sidebarForm"
+                                                         oncomplete="PF('sidebar2').show();PF('profileDialog').hide();"
+                                                         styleClass="icon-expand-btn mr-2" />
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="delete">
@@ -186,25 +215,262 @@
                     </div>
                 </p:dialog>
             </h:form>
+            <!-- Side Bar -->
+            <div class="card" >  
+                <p:sidebar widgetVar="sidebar2" position="right" style="width: 30%; background-color: #f8f9fa;"  blockScroll= "true">
+                    <h:form id ="sidebarForm">
+                        <h3>Customize Time Access</h3>
+                        <div class="same-line-container">
+                            <i class="pi pi-user p-mr-2 text-primary icon-style"></i>
+                            <p:outputLabel value="Name: " styleClass="label-style" />
+                            <h:outputText value="#{manageEmployeesBean.selectedEmployee.fullName}" styleClass="value-style" />
+                        </div>
+                        <br/>
+                        <div class="same-line-container" >
+                            <i class="fa-solid fa-address-card p-mr-2 text-primary icon-style"></i>
+                            <p:outputLabel value="Ghana Card: " styleClass="label-style" />
+                            <h:outputText value="#{manageEmployeesBean.selectedEmployee.ghanaCardNumber}" styleClass="value-style" />
+                        </div>
+                        <p:spacer height="20px"/>
+                        <div class="same-line-container">
+                            <i class="pi pi-building p-mr-2 text-success icon-style"></i>
+                            <p:outputLabel value="Entrance:" styleClass="label-style" />
+                            <h:panelGroup>
+                                <!-- Select Entrance -->
+                                <p:autoComplete id="entrance" value="#{manageEmployeesBean.selectedEntranceId}"
+                                                completeMethod="#{manageEmployeesBean.searchEntrances}" 
+                                                var="entrance" itemLabel="#{entrance.entrance_Name}" 
+                                                itemValue="#{entrance.entrance_Device_ID}"
+                                                forceSelection="true" dropdown="true"
+                                                scrollHeight="200"
+                                                placeholder="Search or Select Entrance" 
+                                                style="width: 100%;  overflow: hidden">
+                                    <p:ajax event="itemSelect" listener="#{manageEmployeesBean.onEntranceSelect}" update="timeSettings" />     
+                                </p:autoComplete>
+                            </h:panelGroup>
+                        </div>
+
+                        <p:outputPanel id="timeSettings" >
+                            <p:spacer height="30px"/>
+                            <div class="dialog-section">
+                                <h3 class="section-title">Time Settings</h3>
+                                <!-- Start Time -->
+                                <div class="same-line-container">
+                                    <i class="pi pi-clock" style="margin-right:4px;color:#6366F1;" />
+                                    <p:outputLabel value="Start Time:" styleClass="label-style"/>          
+                                    <p:datePicker id="startTime"
+                                                  value="#{manageEmployeesBean.newRule.startTime}"
+                                                  timeOnly="true"
+                                                  placeholder="HH:MM" 
+                                                  pattern="HH:mm"
+                                                  hourFormat="12"
+                                                  showIcon="true"
+                                                  showTime="true"
+                                                  stepMinute="1"
+                                                  style="width: 100%;" />
+                                </div>
+                                <div style="height: 30px"/>
+                                <!-- End Time -->
+                                <div class="same-line-container">
+                                    <i class="pi pi-clock" style="margin-right:4px;color:#EF4444;" />
+                                    <p:outputLabel value="End Time:" styleClass="label-style">                                          
+                                    </p:outputLabel>                                      
+                                    <p:datePicker id="endTime"
+                                                  value="#{manageEmployeesBean.newRule.endTime}"                                                      
+                                                  timeOnly="true"
+                                                  placeholder="HH:MM" 
+                                                  pattern="HH:mm"
+                                                  hourFormat="12"
+                                                  showIcon="true"
+                                                  showTime="true"
+                                                  stepMinute="1"
+                                                  style="width: 100%;" />
+                                </div>
+                            </div>
+
+                            <div class="dialog-section">
+                                <h3 class="section-title">
+                                    <i class="pi pi-calendar" style="margin-right:8px;color:#22C55E;" />
+                                    Allowed Days
+                                </h3>
+                                <div class="days-container">
+                                    <p:selectManyCheckbox value="#{manageEmployeesBean.newRuleDays}" layout="grid" 
+                                                          columns="4" styleClass="days-checkboxes">
+                                        <f:selectItem itemLabel="Mon" itemValue="MON" />
+                                        <f:selectItem itemLabel="Tue" itemValue="TUE" />
+                                        <f:selectItem itemLabel="Wed" itemValue="WED" />
+                                        <f:selectItem itemLabel="Thu" itemValue="THU" />
+                                        <f:selectItem itemLabel="Fri" itemValue="FRI" />
+                                        <f:selectItem itemLabel="Sat" itemValue="SAT" />
+                                        <f:selectItem itemLabel="Sun" itemValue="SUN" />
+                                    </p:selectManyCheckbox>
+                                </div>
+                            </div>
+                        </p:outputPanel>
+
+                        <div class="dialog-footer">
+                            <p:commandButton value="Save Rule" icon="pi pi-save" 
+                                             action="#{manageEmployeesBean.saveTimeRule}"
+                                             update="employeeForm messages" 
+                                             oncomplete="PF('sidebar2').hide()" 
+                                             styleClass="save" />
+                        </div>
+                    </h:form>
+                </p:sidebar> 
+            </div>
+
         </div>
 
         <script>
-            // Simulating the modal opening behavior
-            document.getElementById('profileBtn').addEventListener('click', function () {
-                document.getElementById('profileModal').style.display = 'flex';
-            });
+            
+            //<![CDATA[
+            // Wait for DOM to be fully loaded
+            document.addEventListener('DOMContentLoaded', function () {
+                // Safely attach event listeners only if elements exist
+                var profileBtn = document.getElementById('profileBtn');
+                var profileModal = document.getElementById('profileModal');
+                var closeModal = document.getElementById('closeModal');
 
-            document.getElementById('closeModal').addEventListener('click', function () {
-                document.getElementById('profileModal').style.display = 'none';
-            });
+                if (profileBtn && profileModal) {
+                    profileBtn.addEventListener('click', function () {
+                        profileModal.style.display = 'flex';
+                    });
+                }
 
-            // Close modal when clicking outside
-            document.getElementById('profileModal').addEventListener('click', function (e) {
-                if (e.target === this) {
-                    this.style.display = 'none';
+                if (closeModal && profileModal) {
+                    closeModal.addEventListener('click', function () {
+                        profileModal.style.display = 'none';
+                    });
+                }
+
+                if (profileModal) {
+                    profileModal.addEventListener('click', function (e) {
+                        if (e.target === this) {
+                            this.style.display = 'none';
+                        }
+                    });
                 }
             });
+            //]]>
         </script>
+
+        <style>
+            .labelColumn {
+                font-weight: 600;
+                vertical-align: middle;
+                padding-right: 15px;
+                width: 35%;
+                color: #374151;
+            }
+            .same-line-container {
+                display: flex;
+                align-items: center; /* Vertically align items in the container */
+                gap: 10px; /* Adjust the spacing between the elements as needed */
+            }
+
+            .icon-style {
+                font-size: 1.2rem; /* Apply the font size to all icons */
+                margin-right: 0.5rem; /* Add a little space to the right of each icon */
+                color:#644d12;
+                ;
+            }
+
+            .label-style {
+                font-weight: 600; /* Make the labels bold */
+                color: #374151; /* Apply the label color */
+            }
+
+            .value-style {
+                color: #111827; /* Apply the value color */
+            }
+
+            .days-container {
+                background: #F9FAFB;
+                border-radius: 8px;
+                padding: 15px 10px 10px;
+            }
+
+            .days-checkboxes {
+                width: 100%;
+            }
+
+            .days-checkboxes .ui-selectmanycheckbox label {
+                margin-right: 8px;
+                padding: 6px 0;
+                font-weight: 500;
+            }
+
+            .days-checkboxes .ui-chkbox-box {
+                border-radius: 4px;
+            }
+
+            /* Footer */
+            .dialog-footer {
+                background: #fafaf8;
+                padding: 16px;
+                display: flex;
+                justify-content: flex-end;
+                border-top: 1px solid #E5E7EB;
+            }
+
+            .p-dialog .ui-panelgrid td {
+                padding: 10px 4px;
+            }
+
+            .custom-panelgrid {
+                width: 100%;
+            }
+
+            .save {
+                background-color: #2196f3;
+                color: white !important;
+                padding: 6px 4px !important;
+            }
+
+            .icon-expand-btn {
+                overflow: hidden;
+                white-space: nowrap;
+                width: 40px; /* Show only the icon initially */
+                transition: all 0.3s ease;
+                padding-left: 5px;
+                padding-right: 12px;
+                color: #374151 !important;
+                background-color: white !important ;
+                border: none !important;
+            }
+
+            .icon-expand-btn .ui-button-text {
+                opacity: 0;
+                width: 0;
+                display: inline-block;
+                transition: opacity 0.3s ease, width 0.3s ease;
+            }
+
+
+            /* On hover, expand the button */
+            .icon-expand-btn:hover {
+                width: 290px; /* Adjust width as needed for text */
+                background-color:#E5E7EB !important;
+            }
+
+            /* Fade in the text */
+            .icon-expand-btn:hover .ui-button-text {
+                opacity: 1;
+                width: auto;
+                margin-left: 5px;
+            }
+            .white-row {
+                background-color: white !important;
+            }
+
+            .ash-row {
+                background-color: #f0f0f0 !important;
+            }
+            .white-row:hover, .ash-row:hover {
+                background-color: #dceeff !important;
+                cursor: pointer;
+            }
+        </style>
 
     </ui:define>
 </ui:composition>

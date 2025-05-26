@@ -110,10 +110,6 @@ public class DashboardBean implements Serializable {
         LocalDateTime endOfDay = LocalDateTime.now();
         LocalDateTime endofMonth = endOfDay.minusDays(30);
         
-        employeeNameMap = new HashMap<>();
-        for (Employee e : employeeService.findAllEmployees()) {
-            employeeNameMap.put(e.getGhanaCardNumber(), e.getFullName());
-        }
 
         // Admin metrics
         if ("Admin".equals(userRole)) {
@@ -406,9 +402,13 @@ public class DashboardBean implements Serializable {
         return entrance != null ? entrance.getEntrance_Name() : entranceId;
     }
 
-    public String getEmployeeNameFromMap(String ghanaCardNumber) {
-        return employeeNameMap.getOrDefault(ghanaCardNumber, "Unknown Employee");
+    public String getEmployeeNameFromMap(Employee employee) {
+        if (employee == null) {
+            return "Unknown Employee";
+        }
+        return employee.getFullName();
     }
+
 
     public void logout() throws IOException {
         ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();

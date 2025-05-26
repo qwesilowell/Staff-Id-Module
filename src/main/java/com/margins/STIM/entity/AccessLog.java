@@ -6,9 +6,12 @@ package com.margins.STIM.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -29,8 +32,9 @@ public class AccessLog implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "employee_id")
-    private String employeeId; // Ghana Card number
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id", referencedColumnName = "GHANA_CARD_NUMBER")
+    private Employee employee; // Ghana Card number
 
     @Column(name = "entrance_id")
     private String entranceId; // entrance_Device_ID
@@ -47,8 +51,8 @@ public class AccessLog implements Serializable {
     public AccessLog() {
     }
 
-    public AccessLog(String employeeId, String entranceId, String result, Double verificationTime) {
-        this.employeeId = employeeId;
+    public AccessLog(Employee employee, String entranceId, String result, Double verificationTime) {
+        this.employee = employee;
         this.entranceId = entranceId;
         this.timestamp = LocalDateTime.now();
         this.result = result;

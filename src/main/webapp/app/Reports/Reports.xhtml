@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
--->
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <title>Report Page</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    </head>
-    <body>
-        <div>DRAFTING ALL NEEDED REPORTS</div>
-    </body>
-</html>
+<!DOCTYPE html>        
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:f="jakarta.faces.core">
+
+    <ui:define name ="title">Reports</ui:define>
+
+    <ui:define name="metadata">
+        <!--                <f:metadata>
+                            <f:viewAction action="#-{loginBean.checkAccess('Admin')}" />
+                        </f:metadata>-->
+    </ui:define>
+
+    <ui:define name ="content">
+        <!-- Main Content -->
+        <div class="main-content">
+            
+        </div>
+    </ui:define>
+</ui:composition>
