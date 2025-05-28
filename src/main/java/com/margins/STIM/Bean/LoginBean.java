@@ -11,6 +11,7 @@ package com.margins.STIM.Bean;
 import com.google.gson.Gson;
 import com.margins.STIM.entity.ActivityLog;
 import com.margins.STIM.entity.Users;
+import com.margins.STIM.entity.enums.UserType;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.entity.websocket.FingerCaptured;
@@ -135,15 +136,32 @@ public class LoginBean implements Serializable {
         return socketData;
     }
 
-    public void checkAccess(String requiredRole) {
-        String sessionRole = (String) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("userRole");
-        if (sessionRole == null || !sessionRole.equals(requiredRole)) {
-            try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/login.xhtml");
+    public void checkAccess(UserType requiredRole) {
+        String sessionRoleStr = (String) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("userRole");
+        if (sessionRoleStr == null) {
+            redirectToLogin();
+            return;
+        }
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        UserType sessionRole;
+        try {
+            sessionRole = UserType.valueOf(sessionRoleStr);
+        } catch (IllegalArgumentException e) {
+            // Invalid role string in session
+            redirectToLogin();
+            return;
+        }
+
+        if (!sessionRole.equals(requiredRole)) {
+            redirectToLogin();
+        }
+    }
+    private void redirectToLogin() {
+        try {
+            FacesContext.getCurrentInstance().getExternalContext()
+                    .redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/login.xhtml");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -248,7 +266,7 @@ public class LoginBean implements Serializable {
                     username = forenames + " " + surname;
                     ghanaCardNumber = callBack.data.person.nationalId;
 
-                    userRole = foundUser.getUserRole();
+                    userRole = foundUser.getUserType().name();
 
                     FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("username", username);
                     FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("userRole", userRole);
@@ -348,7 +366,7 @@ public class LoginBean implements Serializable {
                     username = forenames + " " + surname;
                     ghanaCardNumber = callBack.data.person.nationalId;
 
-                    userRole = foundUser.getUserRole();
+                    userRole = foundUser.getUserType().name();
 
                     FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("username", username);
                     FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("userRole", userRole);
@@ -478,7 +496,7 @@ public class LoginBean implements Serializable {
                         return;
                     }
 
-                    userRole = foundUser.getUserRole();
+                    userRole = foundUser.getUserType().name();
 
                     FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("username", username);
                     FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("userRole", userRole);

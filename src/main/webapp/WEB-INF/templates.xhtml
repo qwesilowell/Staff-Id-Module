@@ -47,7 +47,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     <p:menu overlay="true" trigger="userMenu" my="left top" at="left bottom">
                         <p:submenu label="#{sessionScope.username}">
                             <p:menuitem value="Profile" url="profile.xhtml" icon="pi pi-user" />
-                            <p:menuitem value="Reports" url="settings.xhtml" icon="pi pi-book" />
+                            <p:menuitem value="Settings" url="settings.xhtml" icon="pi pi-cog" />
                             <p:separator />
                             <p:menuitem value="Logout" action="#{dashboard2.logout()}" icon="pi pi-sign-out" />
                         </p:submenu>
@@ -79,33 +79,33 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
 
                     <!-- Employee Menu -->
                     <p:submenu label="Employee" expanded="true">
-                        <p:menuitem value="Onboard Employee" outcome="/app/OnboardEmployee/onboardEmployee.xhtml?faces-redirect=true" icon="fa-solid fa-user-large"/>
+                        <p:menuitem value="Onboard Employee" outcome="/app/OnboardEmployee/onboardEmployee?faces-redirect=true" icon="fa-solid fa-user-large"/>
                         <p:menuitem value="Employee Profiles" outcome="/app/employeeList?faces-redirect=true" icon="pi pi-pencil"/>
                     </p:submenu>
 
                     <p:submenu label="Employee Roles" expanded="true">
                         <p:menuitem value="Update Employee Role"  outcome="/app/EmployeeRoles/assignRole?faces-redirect=true" icon="pi pi-upload"/>
-                        <p:menuitem value="Create Employee Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" icon="fa-regular fa-pen-to-square fa-flip-vertical" style="color: black;" rendered="#{sessionScope.userRole eq 'Admin'}"/>
-                        <p:menuitem value="Add Employee Status" outcome="/app/OnboardEmployee/empStatusPage?faces-redirect=true" icon="fa-regular fa-plus-square" style="color: black;" rendered="#{sessionScope.userRole eq 'Admin'}"/>
+                        <p:menuitem value="Create Employee Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" icon="fa-regular fa-pen-to-square fa-flip-vertical" style="color: black;" rendered="#{sessionScope.userRole eq 'ADMIN'}"/>
+                        <p:menuitem value="Add Employee Status" outcome="/app/OnboardEmployee/empStatusPage?faces-redirect=true" icon="fa-regular fa-plus-square" style="color: black;" rendered="#{sessionScope.userRole eq 'ADMIN'}"/>
 
                     </p:submenu>
 
-                    <p:submenu label="Assign Access" expanded="true" rendered="#{sessionScope.userRole eq 'Admin'}">
+                    <p:submenu label="Assign Access" expanded="true" rendered="#{sessionScope.userRole eq 'ADMIN'}">
                         <p:menuitem value="Assign Roles to Entrances" outcome="/app/Access/assign-roles?facess-redirect=true" icon="fa-solid fa-building-user" />
                         <p:menuitem value="Assign Custom Entrance " outcome="/app/Access/assignEntrance?faces-redirect=true" icon="fa-solid fa-door-closed"/>
                     </p:submenu>
 
-                    <p:submenu label="Entrances" expanded="true" rendered="#{sessionScope.userRole eq 'Admin'}">
+                    <p:submenu label="Entrances" expanded="true" rendered="#{sessionScope.userRole eq 'ADMIN'}">
                         <p:menuitem value="Manage Entrances" outcome="/app/Entrances/manageEntrances?faces-redirect=true" icon="fa-solid fa-door-open"/>
                     </p:submenu>
-                    <p:submenu label="Users" expanded="true" rendered="#{sessionScope.userRole eq 'Admin'}">
-                        <p:menuitem value="Create New User" outcome="/newuser?faces-redirect=true" icon="pi pi-user-plus"/>
+                    <p:submenu label="Users" expanded="true" rendered="#{sessionScope.userRole eq 'ADMIN'}">
+                        <p:menuitem value="Create New User" outcome="/app/Settings/newuser?faces-redirect=true" icon="pi pi-user-plus"/>
                     </p:submenu>
                     <p:submenu label="Entrance Test" expanded="true" >
                         <p:menuitem value="Entrance Access Test" outcome="/app/Entrances/accessControl?faces-redirect=true"  icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat"/>
                     </p:submenu>
                     <p:submenu label="Monitoring and Reports" expanded="true" >
-                        <p:menuitem value="Real Live Monitoring" outcome="/app/Access/liveMonitoring?faces-redirect=true"  icon="pi pi-chart-line"/>
+                        <p:menuitem value="Real Time Monitoring" outcome="/app/Access/liveMonitoring?faces-redirect=true"  icon="pi pi-chart-line"/>
                         <p:menuitem value="History Monitoring" outcome="/app/Access/historyMonitoring?faces-redirect=true"  icon="pi pi-history"/>
                         <p:menuitem value="Reports" outcome="/app/Reports/Reports?faces-redirect=true"  icon="pi pi-book"/>
 

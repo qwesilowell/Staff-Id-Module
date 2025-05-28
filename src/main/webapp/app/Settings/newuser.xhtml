@@ -10,7 +10,7 @@
 
     <ui:define name="metadata">
         <f:metadata>
-            <f:viewAction action="#{loginBean.checkAccess('Admin')}" />
+            <f:viewAction action="#{loginBean.checkAccess('ADMIN')}" />
         </f:metadata>
     </ui:define>
 
@@ -287,9 +287,9 @@
 
                             <h:outputLabel for="userRole" value="Role:" />
                             <p:selectOneMenu id="userRole" value="#{userBean.userRole}" >
-                                <f:selectItem itemLabel="Select Role" itemValue="" />
-                                <f:selectItem itemValue="Admin" itemLabel="Admin" />
-                                <f:selectItem itemValue="User" itemLabel="User" />
+                                <f:selectItem itemLabel="Select Role" itemValue="" noSelectionOption="true" />
+                                <f:selectItems value="#{userBean.availableRoles}" var="r"
+                                               itemLabel="#{r}" itemValue="#{r}" />
                             </p:selectOneMenu>
                             <p:message for="userRole" />
 

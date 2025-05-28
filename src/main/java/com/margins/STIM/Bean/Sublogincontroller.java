@@ -44,7 +44,7 @@ public class Sublogincontroller implements Serializable {
     public String login() {
         if ("GHA-726682342-4".equals(ghanaCardNumber) && "admin123".equals(password)) {
             String username = "Philip Mante Asare"; // Hardcoded full name  
-            String userRole = "Admin"; // Hardcoded role  
+            String userRole = "ADMIN"; // Hardcoded role  
 
             // Store session values  
             FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("username", username);
@@ -59,6 +59,7 @@ public class Sublogincontroller implements Serializable {
             log.setDetails("User logged in successfully"); 
             activityLogService.logActivity(log);
             try {
+                System.out.println(FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("userRole"));
                 FacesContext.getCurrentInstance().getExternalContext().redirect("app/dashboard2.xhtml");
             } catch (IOException e) {
                 e.printStackTrace();

@@ -17,123 +17,82 @@
 
             <h1> Dashboard Content </h1>
             <h:form id="dashboardForm" prependId="false">
-                <p:tabView activeIndex="#{sessionScope.userRole == 'Admin' ? 0 : 1}">
+                <p:tabView >
                     <!-- Admin Dashboard -->
-                    <p:tab title="Admin Dashboard" rendered="#{sessionScope.userRole == 'Admin'}">
-                        <p:panelGrid columns="1" styleClass="ui-panelgrid">
-                            <ul class="insights">
-                                <li>
-                                    <i class='bx pi pi-users !text-[30px]'></i>
-                                    <span class="info">
-                                        <h3 class="!text-left">#{dashboard2.totalEmployees}</h3>
-                                        <p>Total Employees</p>
-                                    </span>
-                                </li>
-                                <li>
-                                    <i class='bx fa fa-user-tie !text-[30px]'></i>
-                                    <span class="info">
-                                        <h3 class="!text-left">#{dashboard2.totalRoles}</h3>
-                                        <p>Total Roles</p>
-                                    </span>
-                                </li>
-                                <li>
-                                    <i class='bx fa-solid fa-door-open !text-[30px]'></i>
-                                    <span class="info">
-                                        <h3 class="!text-left">#{dashboard2.totalEntrances}</h3>
-                                        <p>Total Entrances</p>
-                                    </span>
-                                </li>
-                                <li>
-                                    <i class='bx fa-regular fa-calendar !text-[30px]'></i>
-                                    <span class="info">
-                                        <h3 class="!text-left">#{dashboard2.employeesOnboardedMonth}</h3>
-                                        <p>Onboarded This Month</p>
-                                    </span>
-                                </li>
-                                <li>
-                                    <i class='bx fa-regular fa-circle-check !text-[30px]'></i>
-                                    <span class="info">
-                                        <h3 class="!text-left">#{dashboard2.successfulLoginsToday}</h3>
-                                        <p>Successful logins Today</p>
-                                    </span>
-                                </li>
-                                <!--                            <li>
-                                                                <i class='bx pi pi-dollar !text-[30px]'></i>
-                                                                <span class="info">
-                                                                    <h3 class="!text-left">#{dashboard2.employeesOnboardedToday}</h3>
-                                                                    <p>Onboarded Today</p>
-                                                                </span>
-                                                            </li>
-                                                            
-                                                            <li>
-                                                                <i class='bx pi pi-dollar !text-[30px]'></i>
-                                                                <span class="info">
-                                                                    <h3 class="!text-left">#{dashboard2.employeesOnboardedWeek}</h3>
-                                                                    <p>Onboarded This Week</p>
-                                                                </span>
-                                                            </li>
-                                                         
-                                                        
-                                                            <li>
-                                                                <i class='bx pi pi-dollar !text-[30px]'></i>
-                                                                <span class="info">
-                                                                    <h3 class="!text-left">#{dashboard2.verificationSuccessRate}%</h3>
-                                                                    <p>Verification Success Rate</p>
-                                                                </span>
-                                                            </li>                    -->
-                                <!--                            <li>
-                                                                <i class='bx pi pi-dollar !text-[30px]'></i>
-                                                                <span class="info">
-                                                                    <h3 class="!text-left">#{dashboard2.accessSuccessRate}%</h3>
-                                                                    <p>Entrance Access Success Rate</p>
-                                                                </span>
-                                                            </li>-->
+                    <p:tab id="adminTab" title="Admin Dashboard" rendered="#{sessionScope.userRole == 'ADMIN'}">
 
-                            </ul>
-                        </p:panelGrid>
-                        <!--
+                        <div class="dashboard">
+                            <div class="cards-container">
+                                <!-- Card 1 -->
+                                <div class="card blue">
+                                    <h:link outcome="/app/employeeList?faces-redirect=true" styleClass="no-style" >
+                                        <div class="card-content">                                       
+                                            <div class="card-title">Total Employees</div>
+                                            <div class="card-value">#{dashboard2.totalEmployees}</div>
+                                        </div>
+                                        <div class="card-icon">
+                                            <i class=" pi pi-users"></i>
+                                        </div>
+                                    </h:link>
+                                </div>
+
+                                <!-- Card 2 -->
+                                <div class="card green">
+                                    <h:link outcome="/app/EmployeeRoles/createRole?faces-redirect=true" styleClass="no-style" >
+                                        <div class="card-content">
+                                            <div class="card-title">Total Roles</div>
+                                            <div class="card-value">#{dashboard2.totalRoles}</div>
+                                        </div>
+                                        <div class="card-icon">
+                                            <i class="fa fa-user-tie"></i>
+                                        </div>
+                                    </h:link>
+                                </div>
+
+                                <!-- Card 3 -->
+                                <div class="card orange">
+                                    <h:link outcome="/app/Entrances/manageEntrances?faces-redirect=true" styleClass="no-style" >
+                                        <div class="card-content">
+                                            <div class="card-title">Total Entrances</div>
+                                            <div class="card-value">#{dashboard2.totalEntrances}</div>
+                                        </div>
+                                        <div class="card-icon">
+                                            <i class="fa-solid fa-door-open"></i>
+                                        </div>
+                                    </h:link>
+                                </div>
+
+
+                                <!-- Card 4 -->
+                                <div class="card red">
+                                    <h:link styleClass="no-style" > <!-- Reports filter for this month -->
+                                        <div class="card-content">
+                                            <div class="card-title">Onboarded This Month</div>
+                                            <div class="card-value">#{dashboard2.employeesOnboardedMonth}</div>
+                                        </div>
+                                        <div class="card-icon">
+                                            <i class="fa-regular fa-calendar"></i>
+                                        </div>
+                                    </h:link>
+                                </div>
+
+                                <!-- Card 5 -->
+                                <div class="card purple">
+                                    <h:link  styleClass="no-style" > <!-- Settings Recent logins -->
+                                        <div class="card-content">
+                                            <div class="card-title">Successful Logins Today</div>
+                                            <div class="card-value">#{dashboard2.successfulLoginsToday}</div>
+                                        </div>
+                                        <div class="card-icon">
+                                            <i class="fa-regular fa-circle-check"></i>
+                                        </div>
+                                    </h:link>
+                                </div>
+                            </div>
+                        </div>
                         
-                        <p:panelGrid columns="3" styleClass="ui-panelgrid">
-                            <p:panel styleClass="dashboard-card">
-                                <h:outputText value="Total Employees" styleClass="card-title"/>
-                                <h:outputText value="#{dashboard2.totalEmployees}" styleClass="card-value"/>
-                            </p:panel>
-                            <p:panel styleClass="dashboard-card">
-                                <h:outputText value="Total Roles" styleClass="card-title"/>
-                                <h:outputText value="#{dashboard2.totalRoles}" styleClass="card-value"/>
-                            </p:panel>
-                            <p:panel styleClass="dashboard-card">
-                                <h:outputText value="Total Entrances" styleClass="card-title"/>
-                                <h:outputText value="#{dashboard2.totalEntrances}" styleClass="card-value"/>
-                            </p:panel>
-                            <p:panel styleClass="dashboard-card">
-                                <h:outputText value="Onboarded Today" styleClass="card-title"/>
-                                <h:outputText value="#{dashboard2.employeesOnboardedToday}" styleClass="card-value"/>
-                            </p:panel>
-                            <p:panel styleClass="dashboard-card">
-                                <h:outputText value="Onboarded This Week" styleClass="card-title"/>
-                                <h:outputText value="#{dashboard2.employeesOnboardedWeek}" styleClass="card-value"/>
-                            </p:panel>
-                            <p:panel styleClass="dashboard-card">
-                                <h:outputText value="Onboarded This Month" styleClass="card-title"/>
-                                <h:outputText value="#{dashboard2.employeesOnboardedMonth}" styleClass="card-value"/>
-                            </p:panel>
-                            <p:panel styleClass="dashboard-card">
-                                <h:outputText value="Successful Logins Today" styleClass="card-title"/>
-                                <h:outputText value="#{dashboard2.successfulLoginsToday}" styleClass="card-value"/>
-                            </p:panel>
-                            <p:panel styleClass="dashboard-card">
-                                <h:outputText value="Verification Success Rate" styleClass="card-title"/>
-                                <h:outputText value="#{dashboard2.verificationSuccessRate}%"/>
-                            </p:panel>
-                            <p:panel styleClass="dashboard-card">
-                                <h:outputText value="Access Success Rate" styleClass="card-title"/>
-                                <h:outputText value="#{dashboard2.accessSuccessRate}%"/>
-                            </p:panel>
-                        </p:panelGrid>-->
-
-                        <!--                        <p:panel styleClass="filter-container" style="bor">-->
-
+                        <p:spacer height="50px"/>
+                        
                         <h:outputText value="Filter by Entrance: "/>
                         <p:selectOneMenu value="#{dashboard2.selectedEntranceId}">
                             <f:selectItem itemLabel="All Entrances" itemValue="#{null}"/>
@@ -143,10 +102,20 @@
 
                         <h:panelGroup id="dashboardContent" layout="block">
                             <p:spacer height="20px"/>
-                            <p:panel header="Recent Entrance Access Attempts">
+                            <p:panel header="">
+                                <f:facet name="header">
+                                    <h:panelGroup layout="block" 
+                                                  style="display: flex; align-items: center; justify-content: space-between;">
+                                        <h:outputText value="Recent Entrance Access Attempts"/>
+                                        <p:button icon="pi pi-arrow-circle-right" styleClass="rounded-button " style="color: white!important;" 
+                                                  outcome="/app/Access/historyMonitoring?faces-redirect=true"
+                                                  title="See More Details"
+                                                  />
+                                    </h:panelGroup>
+                                </f:facet>
                                 <p:dataTable value="#{dashboard2.recentAccessAttempts}" var="log" rowIndexVar="rowIndex"  rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">  
                                     <p:column headerText="Employee">
-                                        <h:outputText value="#{dashboard2.getEmployeeNameFromMap(log.employee)}"/>
+                                        <h:outputText value="#{dashboard2.getEmployeeName(log.employee)}"/>
                                     </p:column>
                                     <p:column headerText="GhanaCard No">
                                         <h:outputText value="#{log.employee.ghanaCardNumber}"/>
@@ -168,8 +137,41 @@
                             </p:panel>
                         </h:panelGroup>
 
-                        <!--                        </p:panel>-->
-                        <p:panelGrid columns="2"> 
+                        <!--                            <li>
+                                                        <i class='bx pi pi-dollar !text-[30px]'></i>
+                                                        <span class="info">
+                                                            <h3 class="!text-left">#{dashboard2.employeesOnboardedToday}</h3>
+                                                            <p>Onboarded Today</p>
+                                                        </span>
+                                                    </li>
+                                                    
+                                                    <li>
+                                                        <i class='bx pi pi-dollar !text-[30px]'></i>
+                                                        <span class="info">
+                                                            <h3 class="!text-left">#{dashboard2.employeesOnboardedWeek}</h3>
+                                                            <p>Onboarded This Week</p>
+                                                        </span>
+                                                    </li>
+                                                 
+                                                
+                                                    <li>
+                                                        <i class='bx pi pi-dollar !text-[30px]'></i>
+                                                        <span class="info">
+                                                            <h3 class="!text-left">#{dashboard2.verificationSuccessRate}%</h3>
+                                                            <p>Verification Success Rate</p>
+                                                        </span>
+                                                    </li>                    -->
+                        <!--                            <li>
+                                                        <i class='bx pi pi-dollar !text-[30px]'></i>
+                                                        <span class="info">
+                                                            <h3 class="!text-left">#{dashboard2.accessSuccessRate}%</h3>
+                                                            <p>Entrance Access Success Rate</p>
+                                                        </span>
+                                                    </li>-->
+
+                        <p:spacer height="30px"/>
+
+                        <p:panelGrid columns="2" style="margin-right: 10px!important"> 
                             <p:panel header="Roles With Most Employees">
                                 <p:pieChart model="#{dashboard2.rolePieChartModel}" style="height: 400px;" />
                             </p:panel>
@@ -205,49 +207,39 @@
 
                         <p:spacer height="10px"/>
 
-                        <p:panel id="dashboardContent2">
+                        <p:panel header="Recent Employees Added">
+                            <p:dataTable value="#{dashboard2.recentEmployees}" var="emp">
+                                <p:column headerText="Name"><h:outputText value="#{emp.firstname} #{emp.lastname}"/></p:column>
+                                <p:column headerText="Onboarded">
+                                    <h:outputText value="#{emp.createdAt}">
+                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss"/>
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
+                        <p:spacer height="30px"/>
 
 
-                            <p:panel header="Recent Employees Added">
-                                <p:dataTable value="#{dashboard2.recentEmployees}" var="emp">
-                                    <p:column headerText="Name"><h:outputText value="#{emp.firstname} #{emp.lastname}"/></p:column>
-                                    <p:column headerText="Onboarded">
-                                        <h:outputText value="#{emp.createdAt}">
-                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss"/>
-                                        </h:outputText>
-                                    </p:column>
-                                </p:dataTable>
-                            </p:panel>
+                        <p:panel header="Roles with Most Employees">
+                            <p:dataTable value="#{dashboard2.rolesWithMostEmployees}" var="role">
+                                <p:column headerText="Role"><h:outputText value="#{role.roleName}"/></p:column>
+                                <p:column headerText="Employees"><h:outputText value="#{role.count}"/></p:column>
+                            </p:dataTable>
+                        </p:panel>
 
-                            <p:spacer height="30px"/>
-
-
-                            <p:panel header="Roles with Most Employees">
-                                <p:dataTable value="#{dashboard2.rolesWithMostEmployees}" var="role">
-                                    <p:column headerText="Role"><h:outputText value="#{role.roleName}"/></p:column>
-                                    <p:column headerText="Employees"><h:outputText value="#{role.count}"/></p:column>
-                                </p:dataTable>
-                            </p:panel>
-
-                            <p:spacer height="30px"/>
-                            <p:panel header="Recent Successful Logins">
-                                <p:dataTable value="#{dashboard2.recentLogins}" var="log">
-                                    <p:column headerText="User"><h:outputText value="#{log.userId}"/></p:column>
-                                    <p:column headerText="Time"><h:outputText value="#{dashboard2.getFormattedActivityLogTimestamp(log)}"/></p:column>
-                                    <p:column headerText="Details"><h:outputText value="#{log.details}"/></p:column>
-                                </p:dataTable>
-                            </p:panel>
-
-
-                            <p:spacer height="30px"/>
-
-
-
+                        <p:spacer height="30px"/>
+                        <p:panel header="Recent Successful Logins">
+                            <p:dataTable value="#{dashboard2.recentLogins}" var="log">
+                                <p:column headerText="User"><h:outputText value="#{log.userId}"/></p:column>
+                                <p:column headerText="Time"><h:outputText value="#{dashboard2.getFormattedActivityLogTimestamp(log)}"/></p:column>
+                                <p:column headerText="Details"><h:outputText value="#{log.details}"/></p:column>
+                            </p:dataTable>
                         </p:panel>
                     </p:tab>
 
                     <!-- User Dashboard -->
-                    <p:tab title="User Dashboard">
+                    <p:tab id="userTab" title="User Dashboard">
                         <p:panelGrid columns="1" styleClass="ui-panelgrid">
                             <ul class="insights">
                                 <li>
@@ -306,7 +298,7 @@
                             <p:panel header="Recent Entrance Access Attempts">
                                 <p:dataTable value="#{dashboard2.recentAccessAttempts}" var="log" rowIndexVar="rowIndex"  rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">  
                                     <p:column headerText="Employee">
-                                        <h:outputText value="#{dashboard2.getEmployeeNameFromMap(log.employee)}"/>
+                                        <h:outputText value="#{dashboard2.getEmployeeName(log.employee)}"/>
                                     </p:column>
                                     <p:column headerText="GhanaCard No">
                                         <h:outputText value="#{log.employee.ghanaCardNumber}"/>
@@ -400,6 +392,7 @@
                 grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
                 grid-gap: 24px;
                 margin-top: 36px;
+                padding: 0px;
             }
 
             .insights li{
@@ -496,11 +489,116 @@
             }
 
             .ash-row {
-                background-color: #f0f0f0 !important; 
+                background-color: #f0f0f0 !important;
             }
             .white-row:hover, .ash-row:hover {
                 background-color: #dceeff !important;
                 cursor: pointer;
+            }
+            .no-style{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-decoration: none !important;
+                color: inherit !important;
+                width: 100%;
+                height: 100%;
+            }
+
+            .dashboard {
+                max-width: 1200px;
+                margin-right: 10px;
+            }
+            .cards-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 20px;
+            }
+
+            .card {
+                background-color: white;
+                border-radius: 10px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                padding: 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                height: 120px;
+            }
+
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+            }
+
+            .card-content {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .card-title {
+                font-size: 14px;
+                color: #666;
+                margin-bottom: 8px;
+                font-weight: 500;
+            }
+
+            .card-value {
+                font-size: 28px;
+                font-weight: bold;
+                color: #333;
+            }
+
+            .card-icon {
+                font-size: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+            }
+
+            /* Card color variations */
+            .card.blue .card-icon {
+                color: #4c84ff;
+                background-color: rgba(76, 132, 255, 0.1);
+            }
+
+            .card.green .card-icon {
+                color: #2ed47a;
+                background-color: rgba(46, 212, 122, 0.1);
+            }
+
+            .card.orange .card-icon {
+                color: #ff8c00;
+                background-color: rgba(255, 140, 0, 0.1);
+            }
+
+            .card.red .card-icon {
+                color: #f95062;
+                background-color: rgba(249, 80, 98, 0.1);
+            }
+
+            .card.purple .card-icon {
+                color: #8e44ad;
+                background-color: rgba(142, 68, 173, 0.1);
+            }
+
+            .card.teal .card-icon {
+                color: #00a8a8;
+                background-color: rgba(0, 168, 168, 0.1);
+            }
+
+            .card.pink .card-icon {
+                color: #ff4f81;
+                background-color: rgba(255, 79, 129, 0.1);
+            }
+
+            .card.yellow .card-icon {
+                color: #ffa800;
+                background-color: rgba(255, 168, 0, 0.1);
             }
         </style>
     </ui:define>

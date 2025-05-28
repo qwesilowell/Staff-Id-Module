@@ -15,6 +15,7 @@
     <class>com.margins.STIM.entity.Entrances</class>
     <class>com.margins.STIM.entity.AccessLog</class>
     <class>com.margins.STIM.entity.ActivityLog</class>
+    <class>com.margins.STIM.entity.RoleTimeAccess</class>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <!--      <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>-->

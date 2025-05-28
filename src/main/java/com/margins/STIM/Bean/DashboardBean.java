@@ -33,6 +33,7 @@ import jakarta.inject.Named;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
@@ -72,7 +73,7 @@ public class DashboardBean implements Serializable {
     private List<ActivityLog> recentLogins;
     private List<Employee> recentEmployees;
     private List<AccessLog> recentAccessAttempts;
-    private List<RoleCount> rolesWithMostEmployees; 
+    private List<RoleCount> rolesWithMostEmployees = new ArrayList<>();
     private Map<String, String> employeeNameMap;
 
     // User metrics
@@ -81,7 +82,7 @@ public class DashboardBean implements Serializable {
     private List<Entrances> userAssignedEntrances;
     private List<Employee> userRecentEmployees;
     private List<AccessLog> userRecentAccessAttempts;
-    
+
     @Getter
     private int employeesUserOnboardedToday;
 
@@ -92,12 +93,10 @@ public class DashboardBean implements Serializable {
 
     // Charts
     private PieChartModel rolePieChartModel;
-    
 
     private BarChartModel barChartModelEntrance;
     private LineChartModel topEntrancesChartModel;
-    
-    
+
     private String verificationChartData;
 
     @PostConstruct
@@ -105,14 +104,13 @@ public class DashboardBean implements Serializable {
         String userRole = (String) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("userRole");
         String username = (String) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("username");
         LocalDate today = LocalDate.now();
-        
+
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = LocalDateTime.now();
         LocalDateTime endofMonth = endOfDay.minusDays(30);
-        
 
         // Admin metrics
-        if ("Admin".equals(userRole)) {
+        if ("ADMIN".equals(userRole)) {
             totalEmployees = employeeService.getTotalEmployees();
             totalRoles = roleService.getTotalRoles();
             totalEntrances = entrancesService.getTotalEntrances();
@@ -138,7 +136,25 @@ public class DashboardBean implements Serializable {
         userAssignedEntrances = entrancesService.getEntrancesForUser(username);
         userRecentEmployees = employeeService.getRecentEmployeesByUser(username, 5);
         userRecentAccessAttempts = accessLogService.getRecentAccessAttemptsByUser(username, 5);
-        employeesUserOnboardedToday= activityLogService.countEmployeesOnboardedByLoggedInUserInDay(today);
+        employeesUserOnboardedToday = activityLogService.countEmployeesOnboardedByLoggedInUserInDay(today);
+
+        totalEmployees = employeeService.getTotalEmployees();
+        totalRoles = roleService.getTotalRoles();
+        totalEntrances = entrancesService.getTotalEntrances();
+        employeesOnboardedToday = employeeService.countEmployeesOnboarded(startOfDay, endOfDay);
+        employeesOnboardedWeek = employeeService.countEmployeesOnboarded(today.minusDays(6).atStartOfDay(), endOfDay);
+        employeesOnboardedMonth = employeeService.countEmployeesOnboarded(today.withDayOfMonth(1).atStartOfDay(), endOfDay);
+        employeesOnboardedYear = employeeService.countEmployeesOnboarded(today.withDayOfYear(1).atStartOfDay(), endOfDay);
+        successfulLoginsToday = activityLogService.countByActionAndResultInPeriod(
+                List.of("login"), "Success", startOfDay, endOfDay);
+        verificationSuccessRate = calculateVerificationSuccessRate(startOfDay, endOfDay);
+        accessSuccessRate = calculateAccessSuccessRate(endofMonth, endOfDay);
+        recentLogins = activityLogService.getRecentActivities("login", 5);
+        recentEmployees = employeeService.getRecentEmployees(5);
+        recentAccessAttempts = accessLogService.getRecentAccessAttempts(5);
+        rolesWithMostEmployees = roleService.getTopRolesByEmployeeCount(5);
+        allEntrances = entrancesService.findAllEntrances();
+
         // Initialize charts
         initVerificationPieChart();
 //        initTop5EntrancesLineChart();
@@ -147,11 +163,9 @@ public class DashboardBean implements Serializable {
         LocalDateTime end = LocalDateTime.now();
 //       LocalDateTime start = end.minusDays(30);
         topEntrancesChartModel = BaseLineChart.generateChart(accessLogService.getTop5RecentEntrancesByGrantedAccess(endofMonth, end));
-        
-//       System.out.println("Map>>>>" + accessLogService.getTop5RecentEntrancesByGrantedAccess(start, end));
-        
-        barChartModelEntrance = EntranceAccessBarChart.generateChart(accessLogService.countAccessResultsForAllEntrances(startOfDay, endOfDay));
 
+//       System.out.println("Map>>>>" + accessLogService.getTop5RecentEntrancesByGrantedAccess(start, end));
+        barChartModelEntrance = EntranceAccessBarChart.generateChart(accessLogService.countAccessResultsForAllEntrances(startOfDay, endOfDay));
 
 //        initLoginTrendChart();
     }
@@ -189,7 +203,7 @@ public class DashboardBean implements Serializable {
     public String getVerificationChartData() {
         return verificationChartData;
     }
-    
+
 //    private void initTop5EntrancesLineChart() {
 //        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
 //        LocalDateTime endOfDay = LocalDate.now().atTime(23, 59, 59);
@@ -209,10 +223,6 @@ public class DashboardBean implements Serializable {
 //
 //        topEntrancesChartModel = BaseLineChart.generateChart(chartData);
 //    }
-    
-    
-    
-
 // Format AccessLog timestamp
     public String getFormattedTimestamp(AccessLog log) {
         return DateFormatter.formatDateTime(log.getTimestamp());
@@ -222,7 +232,6 @@ public class DashboardBean implements Serializable {
     public String getFormattedActivityLogTimestamp(ActivityLog log) {
         return DateFormatter.formatDateTime(log.getTimestamp());
     }
-
 
     private double calculateVerificationSuccessRate(LocalDateTime start, LocalDateTime end) {
         int success = activityLogService.countByActionAndResultInPeriod(
@@ -234,140 +243,12 @@ public class DashboardBean implements Serializable {
 
     private double calculateAccessSuccessRate(LocalDateTime endofMonth, LocalDateTime end) {
         int success = accessLogService.countByResultInPeriod("granted", endofMonth, end);
-        int total = success + accessLogService.countByResultInPeriod("denied", endofMonth, end); 
-        
-        double rtotal = total == 0 ? 0 : (success * 100.0) / total;
-        return Math.round(rtotal);      
-    }
-    
-    
+        int total = success + accessLogService.countByResultInPeriod("denied", endofMonth, end);
 
-//    private void initVerificationPieChart() {
-//
-//        verificationPieModel = new PieChart()
-//                .setData(new PieData()
-//                        .addDataset(new PieDataset()
-//                                .setData(
-//                                        BigDecimal.valueOf(activityLogService.countByActionAndResultInPeriod(
-//                                                List.of("verify_single_finger", "verify_multi_finger", "verify_face"),
-//                                                "success",
-//                                                LocalDate.now().atStartOfDay(),
-//                                                LocalDate.now().atTime(23, 59, 59))),
-//                                        BigDecimal.valueOf(activityLogService.countByActionAndResultInPeriod(
-//                                                List.of("verify_single_finger", "verify_multi_finger", "verify_face"),
-//                                                "fail",
-//                                                LocalDate.now().atStartOfDay(),
-//                                                LocalDate.now().atTime(23, 59, 59)))
-//                                )
-//                                .setLabel("Verification Outcomes")
-//                                .addBackgroundColors(
-//                                        new Color(54, 162, 235, 0.8),
-//                                        new Color(255, 99, 132, 0.8)
-//                                ))
-//                        .setLabels("Successful", "Failed"))
-//                .setOptions(new PieOptions()
-//                        .setPlugins(new Plugins()
-//                                .setTitle(new Title()
-//                                        .setDisplay(true)
-//                                        .setText("Verification Summary"))
-//                                .setLegend(new Legend()
-//                                        .setPosition(Position.LEFT))
-//                        )
-//                );
-//    }
-//    private void initOnboardedBarChart() {
-//        onboardedBarChart = new BarChartModel();
-//        ChartData data = new ChartData();
-//
-//        BarChartDataSet dataSet = new BarChartDataSet();
-//        dataSet.setLabel("Employees Onboarded");
-//
-//        LocalDate today = LocalDate.now();
-//        List<String> labels = new java.util.ArrayList<>();
-//        List<Number> values = new java.util.ArrayList<>();
-//        for (int i = 6; i >= 0; i--) {
-//            LocalDate date = today.minusDays(i);
-//            LocalDateTime start = date.atStartOfDay();
-//            LocalDateTime end = date.atTime(23, 59, 59);
-//            int count = employeeService.countEmployeesOnboarded(start, end);
-//            labels.add(date.format(java.time.format.DateTimeFormatter.ofPattern("MMM dd")));
-//            values.add(count);
-//        }
-//
-//        dataSet.setData(values);
-//        dataSet.setBackgroundColor("rgb(75, 192, 192)"); // Teal
-//        data.setLabels(labels);
-//        data.addChartDataSet(dataSet);
-//
-//        onboardedBarChart.setData(data);
-//
-//        // Chart options
-//        ChartOptions options = new ChartOptions();
-//        Title title = new Title();
-//        title.setDisplay(true);
-//        title.setText("Employees Onboarded This Week");
-//        options.setTitle(title);
-//
-//        org.primefaces.model.chart.Axes axes = new org.primefaces.model.chart.Axes();
-//        org.primefaces.model.chart.Axis xAxis = new org.primefaces.model.chart.Axis();
-//        xAxis.setLabel("Date");
-//        axes.setXAxis(xAxis);
-//        org.primefaces.model.chart.Axis yAxis = new org.primefaces.model.chart.Axis();
-//        yAxis.setLabel("Count");
-//        yAxis.setMin(0);
-//        axes.setYAxis(yAxis);
-//        options.setAxes(axes);
-//
-//        onboardedBarChart.setOptions(options);
-//    }
-//
-//    private void initLoginTrendChart() {
-//        loginTrendChart = new LineChartModel();
-//        ChartData data = new ChartData();
-//
-//        LineChartDataSet dataSet = new LineChartDataSet();
-//        dataSet.setLabel("Successful Logins");
-//
-//        LocalDate today = LocalDate.now();
-//        List<String> labels = new java.util.ArrayList<>();
-//        List<Number> values = new java.util.ArrayList<>();
-//        for (int i = 6; i >= 0; i--) {
-//            LocalDate date = today.minusDays(i);
-//            LocalDateTime start = date.atStartOfDay();
-//            LocalDateTime end = date.atTime(23, 59, 59);
-//            int count = activityLogService.countByActionAndResultInPeriod(
-//                    List.of("login"), "success", start, end);
-//            labels.add(date.format(java.time.format.DateTimeFormatter.ofPattern("MMM dd")));
-//            values.add(count);
-//        }
-//
-//        dataSet.setData(values);
-//        dataSet.setFill(false);
-//        dataSet.setBorderColor("rgb(54, 162, 235)"); // Blue
-//        data.setLabels(labels);
-//        data.addChartDataSet(dataSet);
-//
-//        loginTrendChart.setData(data);
-//
-//        // Chart options
-//        ChartOptions options = new ChartOptions();
-//        Title title = new Title();
-//        title.setDisplay(true);
-//        title.setText("Successful Logins (Last 7 Days)");
-//        options.setTitle(title);
-//
-//        org.primefaces.model.chart.Axes axes = new org.primefaces.model.chart.Axes();
-//        org.primefaces.model.chart.Axis xAxis = new org.primefaces.model.chart.Axis();
-//        xAxis.setLabel("Date");
-//        axes.setXAxis(xAxis);
-//        org.primefaces.model.chart.Axis yAxis = new org.primefaces.model.chart.Axis();
-//        yAxis.setLabel("Count");
-//        yAxis.setMin(0);
-//        axes.setYAxis(yAxis);
-//        options.setAxes(axes);
-//
-//        loginTrendChart.setOptions(options);
-//    }
+        double rtotal = total == 0 ? 0 : (success * 100.0) / total;
+        return Math.round(rtotal);
+    }
+
     public void updateStats() {
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime endOfDay = LocalDate.now().atTime(23, 59, 59);
@@ -380,9 +261,8 @@ public class DashboardBean implements Serializable {
             recentAccessAttempts = accessLogService.getRecentAccessAttempts(5);
         }
     }
-    
-    
-    public void entranceaccessupdate(){
+
+    public void entranceaccessupdate() {
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime endOfDay = LocalDate.now().atTime(23, 59, 59);
 
@@ -402,13 +282,12 @@ public class DashboardBean implements Serializable {
         return entrance != null ? entrance.getEntrance_Name() : entranceId;
     }
 
-    public String getEmployeeNameFromMap(Employee employee) {
+    public String getEmployeeName(Employee employee) {
         if (employee == null) {
             return "Unknown Employee";
         }
         return employee.getFullName();
     }
-
 
     public void logout() throws IOException {
         ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();

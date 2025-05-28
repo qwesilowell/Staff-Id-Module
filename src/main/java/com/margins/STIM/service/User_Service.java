@@ -43,7 +43,7 @@ public class User_Service {
         Users existingUser = entityManager.find(Users.class, ghanaCardNumber);
         if (existingUser != null) {
             existingUser.setUsername(updatedUser.getUsername());
-            existingUser.setUserRole(updatedUser.getUserRole());
+            existingUser.setUserType(updatedUser.getUserType());
             entityManager.merge(existingUser);
             return existingUser;
         }

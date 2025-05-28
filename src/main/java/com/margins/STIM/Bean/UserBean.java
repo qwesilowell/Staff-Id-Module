@@ -8,6 +8,7 @@ import java.io.Serializable;
 import jakarta.ejb.EJB;
 import com.margins.STIM.service.User_Service;
 import com.margins.STIM.entity.Users;
+import com.margins.STIM.entity.enums.UserType;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.entity.websocket.FingerCaptured;
@@ -26,6 +27,7 @@ import java.net.http.HttpResponse;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.net.ssl.SSLContext;
@@ -46,6 +48,7 @@ public class UserBean implements Serializable {
 
     @EJB
     private User_Service userService;
+
 
     @Getter
     @Setter
@@ -123,7 +126,8 @@ public class UserBean implements Serializable {
     @Setter
     private String faceImageData;
 
-//    @NotEmpty(message = "Please select a Role")
+    @Getter
+    @Setter
     private String userRole;
 
     @Getter
@@ -152,12 +156,8 @@ public class UserBean implements Serializable {
         this.username = username;
     }
 
-    public String getUserRole() {
-        return userRole;
-    }
-
-    public void setUserRole(String userRole) {
-        this.userRole = userRole;
+    public List<UserType> getAvailableRoles() {
+        return Arrays.asList(UserType.values());
     }
 
     // Step Navigation
@@ -454,7 +454,7 @@ public class UserBean implements Serializable {
             Users newUser = new Users();
             newUser.setGhanaCardNumber(ghanaCardNumber);
             newUser.setUsername(username);  
-            newUser.setUserRole(userRole);
+            newUser.setUserType(UserType.valueOf(userRole));
 
             // Save user to database
             userService.createUser(newUser);

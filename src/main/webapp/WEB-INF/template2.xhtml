@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+    <ui:insert name="metadata" />
+
+    <h:head>
+        <f:facet name="first">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+            <h:outputStylesheet library="css" name="template.css"/>
+        </f:facet>
+
+        <ui:insert name="head"/>
+        <title><ui:insert name="title"/></title>
+        <h:outputScript library="js" name="template.js" target="body" />
+      
+    </h:head>
+    <h:body>
+        <!-- Sidebar Toggle Button -->
+        <button class="toggle-btn" onclick="toggleSidebar()"><i class="pi pi-bars"></i></button>
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <p:spacer height="20px"/>
+
+            <div class="logo-container">
+                <div class="logo-img-container">
+                    <img src="#{resource['images/mlogo.png']}" alt="Welcome" class="logo-img"/>
+                </div>
+                <div class="logo">
+                    <div class="logo-text">
+                        STAFF ID_MODULE<br/>
+                        <span><strong>#{sessionScope.userRole}</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <h:link outcome="/app/dashboard2" styleClass="active">
+                📊 <span>Dashboard</span>
+                <f:param name="faces-redirect" value="true" />
+            </h:link>
+
+            <h2>EMPLOYEE</h2>
+            <h:link outcome="/app/OnboardEmployee/onboardEmployee?faces-redirect=true" >
+                &#129489;&#8205;&#128188;<span>Onboard Employee</span>    
+            </h:link>
+
+            <h:link outcome="/app/employeeList?faces-redirect=true">
+                <i class="fa-solid fa-users" style="color: buttonface;"></i> <span style="padding-left: 5px;"> Employee Profiles</span>
+            </h:link>
+
+            <h2>Employee Roles</h2>
+            <h:link outcome="/app/EmployeeRoles/assignRole?faces-redirect=true">
+                <i class="fa-regular fa-pen-to-square" style="color: #f29326;"></i><span style="padding-left: 5px;">Update Employee Role</span>
+            </h:link>
+            <h:link outcome="/app/EmployeeRoles/createRole?faces-redirect=true">
+                ✍ <span style="padding-left: 5px;">Create Employee Role</span>
+            </h:link>
+            <h:link outcome="/app/OnboardEmployee/empStatusPage?faces-redirect=true">
+                <i class="fa-solid fa-square-plus" style="color: #e3be35;"></i> <span style="padding-left: 5px;"> Add Employee Status</span>
+            </h:link>
+
+            <h2>Assign Access</h2>
+            <h:link outcome="/app/Access/assign-roles?facess-redirect=true">
+                <i class="fa-solid fa-door-open" style="color: #EA580C;"></i> <span style="padding-left: 5px;" >Assign Roles to Entrances</span>
+            </h:link>
+            <h:link outcome="/app/Access/assignEntrance?faces-redirect=true">
+                <i class="fa-solid fa-building-user" style="color: buttonhighlight;"></i> <span style="padding-left: 5px;">Assign Custom Entrance</span>
+            </h:link>
+
+            <h2>Entrances</h2>
+            <h:link outcome="/app/Entrances/manageEntrances?faces-redirect=true">
+                <i class="fa-solid fa-door-closed" style="color:#67e8f9;"></i><span style="padding-left: 5px;">Manage Entrances</span>
+            </h:link>
+            <h:link outcome="/app/Entrances/accessControl?faces-redirect=true">
+                <i class="fa-sharp-duotone fa-solid fa-fingerprint fa-beat"></i><span style="padding-left: 5px;">Entrance Access Test</span>
+            </h:link>
+
+            <h2>Monitoring and Reports</h2>
+            <h:link outcome="/app/Access/liveMonitoring?faces-redirect=true">
+                <i class="fa-solid fa-chart-line" id="liveMonitoringIcon" style="color: #ef1f68;"></i><span style="padding-left: 5px;">Real Live Monitoring</span>
+            </h:link>
+            <h:link outcome="/app/Access/historyMonitoring?faces-redirect=true">
+                <i class="fa-solid fa-clock-rotate-left"></i> <span style="padding-left: 5px;">History Monitoring</span>
+            </h:link>
+            <h:link outcome="/app/Reports/Reports?faces-redirect=true">📜 <span> Reports</span>
+            </h:link>
+            
+            <a href="#">⚙️ <span>Settings</span></a>
+        </div>
+        <!-- Topbar -->
+        <div class="topbar" id="topbar">
+            <div class="avatar">
+                <h:form>
+                    <div class="header-right">
+                        <p:menu overlay="true" trigger="userMenu" my="left top" at="left bottom">
+                            <p:submenu label="#{sessionScope.username}">
+                                <p:menuitem value="Profile" url="profile.xhtml" icon="pi pi-user" />
+                                <p:menuitem value="Settings" url="settings.xhtml" icon="pi pi-cog" />
+                                <p:separator />
+                                <p:menuitem value="Logout" action="#{dashboard2.logout()}" icon="pi pi-sign-out" />
+                            </p:submenu>
+                        </p:menu>
+                        <p:commandButton id="userMenu" type="button" value="#{loginBean.userInitials}" class="initials-button" />
+                    </div>
+                </h:form>
+            </div>
+        </div>
+        <!-- Main Content -->
+        <div class="content" id="main-content">
+            <ui:insert name="content">
+                <h1> Dashboard Content </h1>
+                <p>This is the main content area.</p>
+            </ui:insert>
+        </div>
+
+        <!--Footer-->
+        <div class="layout-footer"> 
+            <div class="footer-content"> <span>Version 1.0.0</span> 
+            </div> 
+        </div>
+
+
+    </h:body>
+</html>

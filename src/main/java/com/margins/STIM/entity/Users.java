@@ -5,17 +5,21 @@
 package com.margins.STIM.entity;
 
 //import com.margins.STIM.enums.EntityModel;
+import com.margins.STIM.entity.enums.UserType;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  *
  * @author PhilipManteAsare
  */
-
+@Getter
+@Setter
 @Entity
-@Table(name = "ADMIN_USER")
+@Table(name = "SYSTEM_USER")
 @Cacheable(false)
 public class Users /*extends EntityModel*/ implements Serializable {
 
@@ -26,50 +30,17 @@ public class Users /*extends EntityModel*/ implements Serializable {
     @Column(name = "USERNAME", nullable = false, unique = true)
     private String username;
 
-    @Column(name = "USER_ROLE", nullable = false)
-    private String userRole;
-
-
-  
-    
-
-    // Getters and Setters
-    
-    public String getGhanaCardNumber() {
-        return ghanaCardNumber;
-    }
-
-    public void setGhanaCardNumber(String ghanaCardNumber) {
-        this.ghanaCardNumber = ghanaCardNumber;
-    }
-    
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getUserRole() {
-        return userRole;
-    }
-
-    public void setUserRole(String userRole) {
-        this.userRole = userRole;
-    }
-
-
-
+    @Enumerated(EnumType.STRING)
+    @Column(name = "USER_ROLE")
+    private UserType userType;
 
     // Constructors
     public Users() {
     }
-
-    
-    public Users(String ghanaCardNumber,String username, String userRole, String password, LocalDateTime createdAt) {
+  
+    public Users(String ghanaCardNumber,String username, String password, LocalDateTime createdAt, UserType userType) {
         this.username = username;
-        this.userRole = userRole;
         this.ghanaCardNumber = ghanaCardNumber;
+        this.userType = userType;
     }
 }

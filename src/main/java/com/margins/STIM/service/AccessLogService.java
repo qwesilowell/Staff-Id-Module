@@ -20,7 +20,12 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Period;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -346,7 +351,7 @@ public class AccessLogService {
 
         }
 
-        if (ghanacardnumber != null&& !ghanacardnumber.isBlank()) {
+        if (ghanacardnumber != null && !ghanacardnumber.isBlank()) {
 
             queryBuilder.append("AND a.employee.ghanaCardNumber LIKE :ghanacardnumber ");
 
@@ -356,15 +361,15 @@ public class AccessLogService {
 
         if (employeeName != null && !employeeName.isBlank()) {
 
-            queryBuilder.append("AND (a.employee.firstname LIKE :employeeName OR a.employee.lastname LIKE :employeeName) " );
+            queryBuilder.append("AND (a.employee.firstname LIKE :employeeName OR a.employee.lastname LIKE :employeeName) ");
 
             params.put("employeeName", "%" + employeeName.toUpperCase() + "%");
 
         }
-        
+
         if (result != null && !result.isBlank()) {
 
-            queryBuilder.append("AND a.result = :result " );
+            queryBuilder.append("AND a.result = :result ");
 
             params.put("result", result);
 
@@ -380,5 +385,4 @@ public class AccessLogService {
 
     }
 
-    
 }
