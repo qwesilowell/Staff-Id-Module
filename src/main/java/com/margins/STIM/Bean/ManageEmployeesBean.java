@@ -4,6 +4,7 @@
  */
 package com.margins.STIM.Bean;
 
+import com.margins.STIM.entity.CustomTimeAccess;
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.Entrances;
 import com.margins.STIM.entity.TimeAccessRule;
@@ -27,12 +28,14 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
+import org.primefaces.event.SelectEvent;
 
 /**
  *
@@ -87,6 +90,19 @@ public class ManageEmployeesBean implements Serializable {
     @Getter
     @Setter
     private TimeAccessRule newRule;
+    @Getter
+    @Setter
+    private CustomTimeAccess customRule;
+
+    @Getter
+    @Setter
+    private List<String> selectedDays = new ArrayList<>();
+    @Getter
+    @Setter
+    private Map<String, LocalTime> startTimes = new HashMap<>();
+    @Getter
+    @Setter
+    private Map<String, LocalTime> endTimes = new HashMap<>();
 
     @PostConstruct
     public void init() {
@@ -221,6 +237,12 @@ public class ManageEmployeesBean implements Serializable {
                 .collect(Collectors.toList());
     }
 
+    public List<Entrances> searchAllEntrances(String query) {
+        return allEntrances.stream()
+                .filter(e -> e.getEntrance_Name().toLowerCase().contains(query.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
     public void onEntranceSelect() {
         if (selectedEntranceId != null && !selectedEntranceId.trim().isEmpty()) {
             selectedEntrance = entrancesService.findEntranceById(selectedEntranceId);
@@ -250,10 +272,23 @@ public class ManageEmployeesBean implements Serializable {
                         }
                     });
         }
-        
+
     }
 
-    public void saveTimeRule() {
+    public void prepareCustomTimeRules(SelectEvent<String> event) {
+        String entranceId = event.getObject();
+        this.selectedEntranceId = entranceId;
+        this.selectedEntrance = entrancesService.findEntranceById(entranceId);
+
+        if (selectedEmployee != null) {
+            customRule = new CustomTimeAccess();
+            customRule.setEmployee(selectedEmployee);
+            customRule.setEntrances(selectedEntrance);
+        }
+    }
+
+
+public void saveTimeRule() {
 
         if (newRule.getEntrance() == null) {
             newRule.setEntrance(selectedEntrance);
@@ -377,6 +412,30 @@ public class ManageEmployeesBean implements Serializable {
                 .map(String::trim)
                 .map(code -> dayMap.getOrDefault(code, code))
                 .collect(Collectors.joining(", "));
+    }
+    
+    public void loadDayTimeInputs() {
+        startTimes.clear();
+        endTimes.clear();
+        if (selectedDays != null) {
+            for (String day : selectedDays) {
+                startTimes.putIfAbsent(day, null);
+                endTimes.putIfAbsent(day, null);
+            }
+
+            System.out.println("Selected Days>>>>>>" + selectedDays);
+        }
+    }
+    
+    public void saveDayTimeRules() {
+        if (selectedEmployee != null && selectedEntrance != null && selectedDays != null) {
+            timeAccessRuleService.saveOrUpdateCustomTimeAccess(selectedEmployee, selectedEntrance, startTimes, endTimes, selectedDays);
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Saved", "Day time access rules saved successfully."));
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Missing role, entrance, or selected days."));
+        }
     }
 
     // Getters and Setters

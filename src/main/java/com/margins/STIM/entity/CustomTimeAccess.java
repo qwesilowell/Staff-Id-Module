@@ -25,30 +25,28 @@ import lombok.Setter;
  * @author PhilipManteAsare
  */
 @Entity
-@Table(name = "Role_Time_Access")
+@Table (name = "CUSTOM_TIME_ACCESS")
 @Getter
 @Setter
-public class RoleTimeAccess extends EntityModel implements Serializable {
-
-    @ManyToOne (fetch = FetchType.LAZY)
-    @JoinColumn(name = "ROLE_ID", referencedColumnName = "id"  ,nullable = false)
-    private EmployeeRole employeeRole;
+public class CustomTimeAccess extends EntityModel implements Serializable {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "EMPLOYEE_ID", referencedColumnName = "GHANA_CARD_NUMBER", nullable = false)
+    private Employee employee;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ENTRANCE_ID",referencedColumnName = "ENTRANCE_DEVICE_ID", nullable = false)
+    @JoinColumn(name = "ENTRANCE_ID", referencedColumnName = "ENTRANCE_DEVICE_ID", nullable = false )
     private Entrances entrances;
-
+    
     @Column(name = "START_TIME")
     @Temporal(TemporalType.TIME)
     private Date startTime;
-
+    
     @Column(name = "END_TIME")
     @Temporal(TemporalType.TIME)
-    private Date endTime;
-
+    private Date endTime;   
+    
     @Column(name = "DAY_OF_WEEK")
     @Enumerated(EnumType.STRING)
     private DayOfWeek dayOfWeek;
-
+    
 }
-

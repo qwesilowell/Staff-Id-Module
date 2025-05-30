@@ -11,7 +11,6 @@ import jakarta.persistence.Entity;
  *
  * @author PhilipManteAsare
  */
-
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -27,11 +26,11 @@ public class Employee implements Serializable {
     @Id
     @Column(name = "GHANA_CARD_NUMBER", nullable = false, unique = true, length = 15)
     private String ghanaCardNumber;
-    
-    @Column(name = "FIRST_NAME",nullable = false)
+
+    @Column(name = "FIRST_NAME", nullable = false)
     private String firstname;
 
-    @Column(name = "LAST_NAME",nullable = false)
+    @Column(name = "LAST_NAME", nullable = false)
     private String lastname;
 
     @Column(name = "DATE_OF_BIRTH", nullable = false)
@@ -42,29 +41,27 @@ public class Employee implements Serializable {
 
     @Column(name = "ADDRESS", nullable = false)
     private String address;
-    
-    @Column(name = "EMAIL" ) 
+
+    @Column(name = "EMAIL")
     private String email;
-    
-   
-    @Setter @Getter
+
+    @Setter
+    @Getter
     @ManyToOne
     @JoinColumn(name = "EMPLOYMENT_STATUS_ID")
     private EmploymentStatus employmentStatus;
- 
 
 //    @ManyToOne
 //    @JoinColumn(name = "department_id", nullable = false)
 //    private Department department;
 //
-    @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL) 
+    @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL)
     private BiometricData biometricData;
 
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = true)
     private EmployeeRole role;
-    
-    
+
 //    @ManyToMany
 //    @JoinTable(
 //            name = "employee_roles_mapping",
@@ -72,8 +69,6 @@ public class Employee implements Serializable {
 //            inverseJoinColumns = @JoinColumn(name = "role_id")
 //    )
 //    private List<EmployeeRole> roles;
-    
-    
     @Getter
     @Setter
     @ManyToMany
@@ -83,7 +78,6 @@ public class Employee implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "entrance_device_id")
     )
     private List<Entrances> customEntrances = new ArrayList<>();
-    
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", nullable = false)
@@ -91,7 +85,8 @@ public class Employee implements Serializable {
 //
 //    @ManyToOne
 //    @JoinColumn(name = "UsersGhana_card_number", nullable = false)
-////    private Users user;
+
+    ////    private Users user;
 //
 //    @ManyToOne
 //    @JoinColumn(name = "office_id", nullable = false)
@@ -126,7 +121,6 @@ public class Employee implements Serializable {
         this.lastname = lastname;
     }
 
-    
     public LocalDate getDateOfBirth() {
         return dateOfBirth;
     }
@@ -150,7 +144,6 @@ public class Employee implements Serializable {
     public void setAddress(String address) {
         this.address = address;
     }
-    
 
 //    public Department getDepartment() {
 //        return department;
@@ -172,10 +165,11 @@ public class Employee implements Serializable {
         return biometricData;
     }
 //
+
     public void setBiometricData(BiometricData biometricData) {
         this.biometricData = biometricData;
     }
-    
+
 //    public List<EmployeeRole> getRoles() {
 //        return roles;
 //    }
@@ -190,15 +184,14 @@ public class Employee implements Serializable {
     public void setRole(EmployeeRole role) {
         this.role = role;
     }
-    
 
     public Date getCreatedAt() {
         return createdAt;
     }
 
     @PrePersist
-    public  void setCreatedAt() {
-        Date newDate= new Date();
+    public void setCreatedAt() {
+        Date newDate = new Date();
         this.createdAt = newDate;
     }
 
@@ -217,7 +210,6 @@ public class Employee implements Serializable {
 //    public void setOffice(Office office) {
 //        this.office = office;
 //    }
-
     public String getEmail() {
         return email;
     }
@@ -225,9 +217,8 @@ public class Employee implements Serializable {
     public void setEmail(String email) {
         this.email = email;
     }
-    
 
-    public Employee() {}
-    
-    
+    public Employee() {
+    }
+
 }

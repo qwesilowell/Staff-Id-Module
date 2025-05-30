@@ -217,7 +217,7 @@
             </h:form>
             <!-- Side Bar -->
             <div class="card" >  
-                <p:sidebar widgetVar="sidebar2" position="right" style="width: 30%; background-color: #f8f9fa;"  blockScroll= "true">
+                <p:sidebar widgetVar="sidebar2" position="right" style="width: 30%; background-color: #f8f9fa; overflow:scroll "  blockScroll= "true">
                     <h:form id ="sidebarForm">
                         <h3>Customize Time Access</h3>
                         <div class="same-line-container">
@@ -238,79 +238,87 @@
                             <h:panelGroup>
                                 <!-- Select Entrance -->
                                 <p:autoComplete id="entrance" value="#{manageEmployeesBean.selectedEntranceId}"
-                                                completeMethod="#{manageEmployeesBean.searchEntrances}" 
+                                                completeMethod="#{manageEmployeesBean.searchAllEntrances}" 
                                                 var="entrance" itemLabel="#{entrance.entrance_Name}" 
                                                 itemValue="#{entrance.entrance_Device_ID}"
                                                 forceSelection="true" dropdown="true"
                                                 scrollHeight="200"
                                                 placeholder="Search or Select Entrance" 
                                                 style="width: 100%;  overflow: hidden">
-                                    <p:ajax event="itemSelect" listener="#{manageEmployeesBean.onEntranceSelect}" update="timeSettings" />     
+                                    <p:ajax event="itemSelect" listener="#{manageEmployeesBean.prepareCustomTimeRules}" update="timeSettings" />     
                                 </p:autoComplete>
                             </h:panelGroup>
                         </div>
 
-                        <p:outputPanel id="timeSettings" >
-                            <p:spacer height="30px"/>
-                            <div class="dialog-section">
-                                <h3 class="section-title">Time Settings</h3>
-                                <!-- Start Time -->
-                                <div class="same-line-container">
-                                    <i class="pi pi-clock" style="margin-right:4px;color:#6366F1;" />
-                                    <p:outputLabel value="Start Time:" styleClass="label-style"/>          
-                                    <p:datePicker id="startTime"
-                                                  value="#{manageEmployeesBean.newRule.startTime}"
-                                                  timeOnly="true"
-                                                  placeholder="HH:MM" 
-                                                  pattern="HH:mm"
-                                                  hourFormat="12"
-                                                  showIcon="true"
-                                                  showTime="true"
-                                                  stepMinute="1"
-                                                  style="width: 100%;" />
-                                </div>
-                                <div style="height: 30px"/>
-                                <!-- End Time -->
-                                <div class="same-line-container">
-                                    <i class="pi pi-clock" style="margin-right:4px;color:#EF4444;" />
-                                    <p:outputLabel value="End Time:" styleClass="label-style">                                          
-                                    </p:outputLabel>                                      
-                                    <p:datePicker id="endTime"
-                                                  value="#{manageEmployeesBean.newRule.endTime}"                                                      
-                                                  timeOnly="true"
-                                                  placeholder="HH:MM" 
-                                                  pattern="HH:mm"
-                                                  hourFormat="12"
-                                                  showIcon="true"
-                                                  showTime="true"
-                                                  stepMinute="1"
-                                                  style="width: 100%;" />
-                                </div>
-                            </div>
+                        <p:separator/>
+                        <p:spacer height="30px"/>
+                        <h:outputLabel value="Select Days" styleClass="day-title"/>
+                        <p:outputPanel id="timeSettings">
+                            <p:selectManyCheckbox value="#{manageEmployeesBean.selectedDays}" layout="grid" columns="3" id="daysCheckbox">
+                                <f:selectItem itemLabel="Monday" itemValue="MONDAY" />
+                                <f:selectItem itemLabel="Tuesday" itemValue="TUESDAY" />
+                                <f:selectItem itemLabel="Wednesday" itemValue="Wednesday" />
+                                <f:selectItem itemLabel="Thursday" itemValue="THURSDAY" />
+                                <f:selectItem itemLabel="Friday" itemValue="FRIDAY" />
+                                <f:selectItem itemLabel="Saturday" itemValue="SATURDAY" />
+                                <f:selectItem itemLabel="Sunday" itemValue="SUNDAY" />
+                                <p:ajax event="valueChange"
+                                        listener="#{manageEmployeesBean.loadDayTimeInputs}"
+                                        update="dayTimeInputs"
+                                        process="@this" />
+                            </p:selectManyCheckbox>
 
-                            <div class="dialog-section">
+
+                            <p:spacer height="10px"/>
+
+                            <h:panelGroup id="dayTimeInputs" layout="block">
                                 <h3 class="section-title">
                                     <i class="pi pi-calendar" style="margin-right:8px;color:#22C55E;" />
-                                    Allowed Days
+                                    Assign CUSTOM Time Range For Days
                                 </h3>
-                                <div class="days-container">
-                                    <p:selectManyCheckbox value="#{manageEmployeesBean.newRuleDays}" layout="grid" 
-                                                          columns="4" styleClass="days-checkboxes">
-                                        <f:selectItem itemLabel="Mon" itemValue="MON" />
-                                        <f:selectItem itemLabel="Tue" itemValue="TUE" />
-                                        <f:selectItem itemLabel="Wed" itemValue="WED" />
-                                        <f:selectItem itemLabel="Thu" itemValue="THU" />
-                                        <f:selectItem itemLabel="Fri" itemValue="FRI" />
-                                        <f:selectItem itemLabel="Sat" itemValue="SAT" />
-                                        <f:selectItem itemLabel="Sun" itemValue="SUN" />
-                                    </p:selectManyCheckbox>
-                                </div>
-                            </div>
+                                <ui:repeat value="#{manageEmployeesBean.selectedDays}" var="day">
+                                    <div class="day-time-block">
+                                        <!-- Day label -->
+                                        <h:outputText value="#{day}" styleClass="day-title" />
+                                        <div class="time-row">
+                                            <div class="time-group">
+                                                <i class="pi pi-clock" style="color:#6366F1;" />
+                                                <p:outputLabel value="Start:" styleClass="label-style" />
+                                                <p:datePicker id="startTime"
+                                                              value="#{manageEmployeesBean.startTimes[day]}"
+                                                              timeOnly="true"
+                                                              placeholder="HH:MM"
+                                                              pattern="HH:mm"
+                                                              hourFormat="12"
+                                                              showTime="true"
+                                                              showIcon="false"
+                                                              stepMinute="1"
+                                                              styleClass="small-time-picker" />
+                                            </div>
+                                            <div class="time-group">
+                                                <i class="pi pi-clock" style="color:#EF4444;" />
+                                                <p:outputLabel value="End:" styleClass="label-style" />
+                                                <p:datePicker id="endTime"
+                                                              value="#{manageEmployeesBean.endTimes[day]}"
+                                                              timeOnly="true"
+                                                              placeholder="HH:MM"
+                                                              pattern="HH:mm"
+                                                              hourFormat="12"
+                                                              showTime="true"
+                                                              showIcon="false"
+                                                              stepMinute="1"
+                                                              styleClass="small-time-picker" />
+                                            </div>
+                                        </div>
+                                    </div><p:separator />
+                                    <p:spacer height="10px"/>
+                                </ui:repeat>
+                            </h:panelGroup>
                         </p:outputPanel>
 
                         <div class="dialog-footer">
                             <p:commandButton value="Save Rule" icon="pi pi-save" 
-                                             action="#{manageEmployeesBean.saveTimeRule}"
+                                             action="#{manageEmployeesBean.saveDayTimeRules()}"
                                              update="employeeForm messages" 
                                              oncomplete="PF('sidebar2').hide()" 
                                              styleClass="save" />
@@ -322,7 +330,7 @@
         </div>
 
         <script>
-            
+
             //<![CDATA[
             // Wait for DOM to be fully loaded
             document.addEventListener('DOMContentLoaded', function () {
@@ -469,6 +477,55 @@
             .white-row:hover, .ash-row:hover {
                 background-color: #dceeff !important;
                 cursor: pointer;
+            }
+
+
+            .day-row {
+                margin-bottom: 20px; /* Space between days */
+            }
+            .day-title {
+                font-weight: bold;
+                font-size: 1.2em;
+                margin-bottom: 8px;
+                color: #333;
+            }
+
+            .time-row {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                flex-wrap: wrap;
+                margin-top: 6px;
+            }
+
+            /* Align label, icon, and input within each group */
+            .time-group {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            /* Make the time input smaller and tighter */
+            .small-time-picker .ui-inputfield {
+                width: 100% !important;
+                font-size: 0.75rem !important;
+                padding: 4px 6px !important;
+            }
+
+            /* Optional: reduce margin around output labels */
+            .label-style {
+                font-size: 0.75rem;
+                margin: 0;
+                font-style: italic;
+            }
+            @media (max-width: 600px) {
+                .time-row {
+                    flex-direction: column; /* Stack vertically on small screens */
+                    align-items: flex-start;
+                }
+                .time-group .p-datepicker {
+                    width: 100%; /* Full width on mobile */
+                }
             }
         </style>
 

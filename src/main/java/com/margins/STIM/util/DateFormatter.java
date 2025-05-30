@@ -4,8 +4,8 @@
  */
 package com.margins.STIM.util;
 
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -57,5 +57,14 @@ public class DateFormatter {
             case 3: return "rd";
             default: return "th";
         }
+    }
+    
+    public static Date toDate(LocalTime localTime) {
+        if (localTime == null) {
+            return null;
+        }
+        LocalDate today = LocalDate.now();
+        LocalDateTime ldt = LocalDateTime.of(today, localTime);
+        return Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
     }
 }

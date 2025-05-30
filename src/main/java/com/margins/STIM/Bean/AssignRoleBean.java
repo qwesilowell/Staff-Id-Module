@@ -6,6 +6,7 @@ package com.margins.STIM.Bean;
 
 import com.margins.STIM.entity.EmployeeRole;
 import com.margins.STIM.entity.Entrances;
+import com.margins.STIM.entity.RoleTimeAccess;
 
 import com.margins.STIM.entity.TimeAccessRule;
 import com.margins.STIM.service.EmployeeRole_Service;
@@ -31,7 +32,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
@@ -72,6 +75,9 @@ public class AssignRoleBean implements Serializable {
     private TimeAccessRule newRule;
     @Getter
     @Setter
+    private RoleTimeAccess dayRule;
+    @Getter
+    @Setter
     private List<String> newRuleDays;
     @Getter
     @Setter
@@ -79,7 +85,18 @@ public class AssignRoleBean implements Serializable {
     @Getter
     @Setter
     private EmployeeRole currentRole;
+    
+    @Getter
+    @Setter
+    private List<String> selectedDays = new ArrayList<>();
+    @Getter
+    @Setter
+    private Map<String, LocalTime> startTimes = new HashMap<>();
+    @Getter
+    @Setter
+    private Map<String, LocalTime> endTimes = new HashMap<>();
 
+    
     @PostConstruct
     public void init() {
         allRoles = getAllRoles();
@@ -244,7 +261,40 @@ public class AssignRoleBean implements Serializable {
         }
         newRule.setEntrance(selectedEntrance);
     }
-
+    
+    public void prepareDayTimeRules(EmployeeRole role){
+        dayRule = new RoleTimeAccess();
+        dayRule.setEmployeeRole(role);
+        this.currentRole = role;
+        
+        if (selectedEntrance == null && selectedEntranceId != null) {
+            selectedEntrance = entrancesService.findEntranceById(selectedEntranceId);
+        }
+        dayRule.setEntrances(selectedEntrance);
+    }
+    
+    public void loadDayTimeInputs() {
+        if (selectedDays != null) {
+            for (String day : selectedDays) {
+                startTimes.putIfAbsent(day, null);
+                endTimes.putIfAbsent(day, null);
+            }
+            
+            System.out.println("Selected Days>>>>>>"+ selectedDays);
+        }
+    }
+    
+    public void saveDayTimeRules() {
+        if (currentRole != null && selectedEntrance != null && selectedDays != null) {
+            timeAccessRuleService.saveOrUpdateRoleTimeAccess(currentRole, selectedEntrance, startTimes, endTimes, selectedDays);
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Saved", "Day time access rules saved successfully."));
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Missing role, entrance, or selected days."));
+        }
+    }
+    
     public void saveTimeRule() {
         // Validate inputs
         if (validateTimeRule()) {
@@ -273,6 +323,7 @@ public class AssignRoleBean implements Serializable {
             }
         }
     }
+    
 
     private boolean validateTimeRule() {
         FacesContext context = FacesContext.getCurrentInstance();
