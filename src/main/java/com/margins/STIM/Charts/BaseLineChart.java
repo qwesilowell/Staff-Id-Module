@@ -37,8 +37,8 @@ public class BaseLineChart {
 
         dataSet.setData(values);
         dataSet.setFill(false);
-        dataSet.setLabel("Remove");
-        dataSet.setBorderColor(ChartColor.TEAL.toString());
+        dataSet.setLabel("Number of Granted Accesses");
+        dataSet.setBorderColor(ChartColor.BLUE.toString());
         dataSet.setTension(0.1);
         data.addChartDataSet(dataSet);
         data.setLabels(labels);

@@ -60,7 +60,7 @@ public class OnboardEmployeeController implements Serializable {
     @Getter
     @Setter
     private String ghanaCardNumber;
-    
+
     @Getter
     @Setter
     private String ghanaCardNumberDisplay;
@@ -72,30 +72,29 @@ public class OnboardEmployeeController implements Serializable {
     @Getter
     @Setter
     private String capturedFinger;
-    
+
     @Getter
     @Setter
     private CapturedFinger capturedMultiFinger = new CapturedFinger();
-    
+
     List<FingerCaptured> capturedFingers = new ArrayList<>();
 
     @Getter
     @Setter
     private String fingerPosition;
 
-//    @Getter
-//    @Setter
-//    private String errorMessage;
+    @Inject
+    private BreadcrumbBean breadcrumbBean;
 
     @Getter
     @Setter
     VerificationResultData callBack = new VerificationResultData();
-    
+
     private byte[] fingerData;
-    
+
     @Setter
     private String socketData;
-    
+
     @Getter
     private StreamedContent fingerImage;
 
@@ -118,7 +117,7 @@ public class OnboardEmployeeController implements Serializable {
     @Getter
     @Setter
     private String employeeName;
-    
+
     @Getter
     @Setter
     private Date empDOB;
@@ -146,53 +145,61 @@ public class OnboardEmployeeController implements Serializable {
     @Getter
     @Setter
     private String address;
-    
+
     @Getter
     @Setter
     private String email;
-    
-    @Getter 
+
+    @Getter
     @Setter
     private String faceImageData;
-    
+
     @Inject
     private EmployeeRole_Service roleService;
-    
+
     @Getter
     @Setter
     private Employee newEmployee = new Employee();
     @Getter
     @Setter
     private Integer selectedRoleId;
-    
-    @Getter @Setter
-    private int selectedEmploymentStatusId;
-    
+
     @Getter
     @Setter
-    private List<EmployeeRole> availableRoles; 
-    
+    private int selectedEmploymentStatusId;
+
+    @Getter
+    @Setter
+    private List<EmployeeRole> availableRoles;
+
     @Getter
     @Setter
     private String assignedRoleName;
-    
+
     @Getter
     @Setter
     private Employee selectedEmployee;
-    
-    @Getter @Setter
-    private List<EmploymentStatus> availableStatuses;
 
-    
+    @Getter
+    @Setter
+    private List<EmploymentStatus> availableStatuses;
+    @Getter
+    @Setter
+    private String primaryPhone;
+    @Getter
+    @Setter
+    private String secondaryPhone;
+
     @PostConstruct
     public void init() {
         // Load available roles from database
         availableRoles = roleService.findAllEmployeeRoles();
         availableStatuses = employeeService.findAllEmploymentStatuses();
     }
-    
-    
-    
+
+    public void setupBreadcrumb() {
+        breadcrumbBean.setOnboardEmployeeBreadCrumb();
+    }
 
     // Step Navigation
     public int getCurrentStep() {
@@ -237,15 +244,15 @@ public class OnboardEmployeeController implements Serializable {
 //        System.out.println("Selected Finger Position: " + fingerPosition);
 //        System.out.println("Captured Fingerprint Data: " + capturedFinger);
 //    }
-
     // Reset Fingerprint Selection
     public void reset() {
         capturedFinger = null;
         fingerPosition = null;
 
     }
-    
-    public void resetMulti(){}
+
+    public void resetMulti() {
+    }
 
     public String getSocketData() {
         reload();
@@ -311,19 +318,19 @@ public class OnboardEmployeeController implements Serializable {
             Gson g = new Gson();
             callBack = g.fromJson(res, VerificationResultData.class);
             System.out.println("Response from API: " + res);
-            
+
             String userId = (String) FacesContext.getCurrentInstance()
                     .getExternalContext().getSessionMap().get("username");
-            if (userId == null)
+            if (userId == null) {
                 userId = "unknown";
-            
+            }
+
             if (response.statusCode() == 200 && callBack != null) {
                 if ("TRUE".equals(callBack.getData().getVerified())) {
                     JSF.addSuccessMessage("Single Finger Verification Successful!");
-                    
 
                     verificationSuccess = true;
-                    result= "Success";
+                    result = "Success";
                     currentStep++;
 
                     empImage = "data:image/png;base64," + callBack.data.person.biometricFeed.face.data;
@@ -335,9 +342,8 @@ public class OnboardEmployeeController implements Serializable {
                     empDOB = callBack.data.person.birthDate;
                     nationality = callBack.data.person.nationality;
                     gender = callBack.data.person.gender;
-                    
-                    PrimeFaces.current().ajax().update("wizardForm");
 
+                    PrimeFaces.current().ajax().update("wizardForm");
 
 //                    FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "signup.xhtml");
                 } else {
@@ -356,7 +362,7 @@ public class OnboardEmployeeController implements Serializable {
             JSF.addErrorMessage("An unexpected error occurred. Please try again!");
             System.out.println("ERROR 3");
             e.printStackTrace(); // Log the error for debugging
-            
+
             // Log exception
             String userId = (String) FacesContext.getCurrentInstance()
                     .getExternalContext().getSessionMap().get("username");
@@ -372,7 +378,7 @@ public class OnboardEmployeeController implements Serializable {
         }
 
     }
-    
+
 //    <for multi finger>
     public String requestData(List<FingerCaptured> fingersesList) throws IOException {
         JSONObject data = new JSONObject();
@@ -380,6 +386,7 @@ public class OnboardEmployeeController implements Serializable {
         data.put("merchantCode", "69af98f5-39fb-44e6-81c7-5e496328cc59");
         return data.toString();
     }
+
     public void sendForVerification() throws IOException {
         try {
 
@@ -477,7 +484,7 @@ public class OnboardEmployeeController implements Serializable {
                     gender = callBack.data.person.gender;
 
                     PrimeFaces.current().ajax().update("wizardForm");
-                    
+
                 } else {
                     verificationSuccess = false;
                     JSF.addErrorMessage("Verification Failed: " + message);
@@ -499,19 +506,17 @@ public class OnboardEmployeeController implements Serializable {
     @Getter
     @Setter
     private Integer assignedRoleId;
-    
-
 
     public void assignRole() {
-        
+
         System.out.println("SELECTED ROLE ID>>>>>>>>>>>" + selectedRoleId);
-        
+
         if (selectedRoleId != null) {
-            
-             selectedRole = roleService.findEmployeeRoleById(selectedRoleId);
-             
-             System.out.println("ROLE NAME>>>>>>" + selectedRole.getRoleName());
-            
+
+            selectedRole = roleService.findEmployeeRoleById(selectedRoleId);
+
+            System.out.println("ROLE NAME>>>>>>" + selectedRole.getRoleName());
+
             assignedRoleName = selectedRole.getRoleName(); // Store role name for display
             newEmployee.setRole(selectedRole); // Set the role for the new employee
 
@@ -526,13 +531,13 @@ public class OnboardEmployeeController implements Serializable {
                             "No Role Selected", "Please select a role"));
         }
     }
+
     private EmploymentStatus findEmploymentStatusById(int id) {
         return availableStatuses.stream()
                 .filter(status -> status.getId() == id)
                 .findFirst()
                 .orElse(null);
     }
-    
 
     public void saveEmployeeToDatabase() {
         String result = "fail";
@@ -546,8 +551,23 @@ public class OnboardEmployeeController implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Please assign a role", null));
             return;
         }
-
-
+        if (address == null || address.isBlank()) {
+            JSF.addErrorMessage("Enter Employee address");
+            return;
+        }
+        if (selectedEmploymentStatusId == 0) {
+            JSF.addErrorMessage("Select Employment Status");
+            return;
+        }
+        if (email == null || email.isBlank()) {
+            JSF.addErrorMessage("Enter Employee Email");
+            return;
+        }
+        if (primaryPhone == null || primaryPhone.isBlank()) {
+            JSF.addErrorMessage("Enter Employee's Phone number");
+            return;
+        }
+  
         try {
             Employee newEmployee = new Employee();
             newEmployee.setGhanaCardNumber(ghanaCardNumber);
@@ -555,16 +575,18 @@ public class OnboardEmployeeController implements Serializable {
             newEmployee.setLastname(surname);
             newEmployee.setDateOfBirth(empDOB.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
             newEmployee.setGender(gender);
-            newEmployee.setAddress(address); 
+            newEmployee.setAddress(address);
             newEmployee.setEmail(email);
-            newEmployee.setRole(selectedRole); 
+            newEmployee.setRole(selectedRole);
+            newEmployee.setPrimaryPhone(primaryPhone);
+            if (secondaryPhone != null && !secondaryPhone.isBlank()) {
+                newEmployee.setSecondaryPhone(secondaryPhone);
+            }
             EmploymentStatus status = findEmploymentStatusById(selectedEmploymentStatusId);
             newEmployee.setEmploymentStatus(status);
 
-            
-
             employeeService.saveEmployee(newEmployee); //
-            
+
             String userId = (String) FacesContext.getCurrentInstance()
                     .getExternalContext()
                     .getSessionMap()
@@ -579,20 +601,19 @@ public class OnboardEmployeeController implements Serializable {
             ActivityLog log = new ActivityLog(userId, action, targetId, result, details);
             activityLogService.logActivity(log);
             System.out.println("Logging activity: " + details);
-            resetWizard();
             
+
             FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_INFO, "Employee " + forenames + " created successfully!", null));
 
-           
-            
             FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "app/employeeList.xhtml");
-
+            resetWizard();
+            
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Employee Already exists in system: " + "Onboarding Aborted", null));
-            
+
             String userId = (String) FacesContext.getCurrentInstance()
                     .getExternalContext()
                     .getSessionMap()
@@ -609,17 +630,14 @@ public class OnboardEmployeeController implements Serializable {
             resetWizard();
             e.printStackTrace();
         }
-        
+
     }
-    
-    public void verifyFace(){
-     try {
+
+    public void verifyFace() {
+        try {
             VerificationRequest request = new VerificationRequest();
             request.setImage(faceImageData);
             request.setPinNumber(ghanaCardNumber);
-
-
-         
 
             SSLContext sslContext = SSLContext.getInstance("TLS");
             X509TrustManager trustManager = new X509TrustManager() {
@@ -662,8 +680,6 @@ public class OnboardEmployeeController implements Serializable {
                 if ("TRUE".equals(callBack.getData().getVerified())) {
                     verificationSuccess = true;
                     JSF.addSuccessMessage("Facial Verification Successful!");
-                
- 
 
 //                    verificationSuccess = true;
                     currentStep++;
@@ -693,10 +709,9 @@ public class OnboardEmployeeController implements Serializable {
             System.out.println("ERROR 3");
             e.printStackTrace(); // Log the error for debugging
         }
-                   
-    } 
-    
-    
+
+    }
+
     public void resetWizard() {
         currentStep = 0;
         verificationType = null;
@@ -729,13 +744,10 @@ public class OnboardEmployeeController implements Serializable {
         PrimeFaces.current().ajax().update("wizardForm");
     }
 
-    
-    
     private void reload() {
         if (socketData != null) {
             // Fetch data from database with socketData and populate captured fingers.
         }
     }
-
 
 }

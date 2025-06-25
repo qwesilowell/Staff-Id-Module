@@ -5,11 +5,14 @@
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets">
+    
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{employmentStatusBean.setupBreadcrumb}" />
+        </f:metadata>
+    </ui:define>
 
     <ui:define name="title">Employment Status Management</ui:define>
-
-
-
 
     <ui:define name ="content">
         <!-- Main Content -->
@@ -51,12 +54,6 @@
                         <f:facet name="header">
                             <div class="flex justify-content-between align-items-center">
                                 <span>Employment Status List</span>
-                                <!--                            <span class="filter-container ui-input-icon-left">
-                                                                <i class="pi pi-search"></i>
-                                                                <p:inputText id="globalFilter" 
-                                                                             onkeyup="PF('employmentStatusTable').filter()" 
-                                                                             placeholder="Search" />
-                                                            </span>-->
                             </div>
                         </f:facet>
                         <p:column headerText="ID" 

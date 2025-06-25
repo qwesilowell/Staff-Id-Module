@@ -48,6 +48,24 @@ public class Employee_Service {
         throw new EntityNotFoundException("Employee does not exist with Ghana Card number: " + ghanaCardNumber);
     }
     
+    public Employee updateEmployeeD(String ghanaCardNumber, Employee updatedEmployee) {
+        Employee existing = findEmployeeByGhanaCard(ghanaCardNumber);
+        if (existing != null) {
+            // Only update the fields you intend to change
+            existing.setFirstname(updatedEmployee.getFirstname());
+            existing.setLastname(updatedEmployee.getLastname());
+            existing.setEmail(updatedEmployee.getEmail());
+            existing.setAddress(updatedEmployee.getAddress());
+            existing.setEmploymentStatus(updatedEmployee.getEmploymentStatus());
+
+            // Optional: update phone, role, etc.
+            // existing.setPhone(updatedEmployee.getPhone());
+            return entityManager.merge(existing);
+        }
+        throw new EntityNotFoundException("Employee does not exist");
+    }
+
+    
     public Employee updateEmployeeEnt(String ghanaCardNumber, Employee employee) {
         System.out.println("Starting update for employee: " + ghanaCardNumber);
         Employee existingEmployee = findEmployeeByGhanaCard(ghanaCardNumber);

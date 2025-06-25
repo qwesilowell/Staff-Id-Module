@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
+    
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{empReportController.setupBreadcrumb}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="title">Employee Reports</ui:define>
+
+    <ui:define name ="content">
+        <!--Main Content --> 
+        <div class="main-content">
+            <p:growl id="messages" showSummary= "true" showDetail="true" life="3000" />
+            <h3>EMPLOYEE REPORT</h3>
+            <h:form id="employeeForm">
+                <p:panel toggleable="true" header="Filters">
+
+                    <p:panelGrid columns="4">
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter by Employee name</p:outputLabel>
+                            <p:inputText value="#{empReportController.employeeName}"
+                                         placeholder="Search by Name"
+                                         styleClass="search-box"
+                                         style="width: 100%;">
+                            </p:inputText>
+                        </p:outputPanel>
+
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter by Ghana Card Number</p:outputLabel>
+                            <p:inputText  value="#{empReportController.ghanaCardNumber}"
+                                          placeholder="Search by GhanaCard"
+                                          styleClass="search-box"
+                                          style="width: 100%;">
+                            </p:inputText>
+                        </p:outputPanel>
+
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter by Role</p:outputLabel>
+                            <p:autoComplete value="#{empReportController.selectedRole}"
+                                            completeMethod="#{empReportController.searchRoles}"
+                                            var="role" itemLabel="#{role.roleName}" itemValue="#{role}"
+                                            converter="employeeRoleConverter"
+                                            forceSelection="true" dropdown="true"
+                                            placeholder="Search or Select Entrance" panelStyle="max-height: 200px; overflow-y:auto;"/>
+                        </p:outputPanel>
+
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter by date Onboarded</p:outputLabel>
+                            <p:datePicker selectionMode="range" monthNavigator="true" yearNavigator="true" showButtonBar="true" value="#{empReportController.timeRange}"/>
+                        </p:outputPanel>
+                    </p:panelGrid>
+
+                    <div style="display: flex; justify-content: space-between;">
+                        <p:commandButton value="Reset" action="#{empReportController.reset()}" update="@form" 
+                                         icon="pi pi-spinner-dotted" iconPos="left" 
+                                         styleClass="ui-button-raised ui-button-danger" style="margin-left: 1%"/>
+                        <p:commandButton value="Generate Search Criteria" action="#{empReportController.fetchCriteria()}"
+                                         icon="pi pi-search" iconPos="left" 
+                                         update="@form" styleClass="ui-button-raised ui-button-success" style="margin-right: 1%"/>
+                    </div>
+                </p:panel>
+
+                <p:spacer height="30px"/>
+
+
+                <!-- Employee List -->
+                <p:dataTable id="employeeTable" value="#{empReportController.employees}" var="employee"
+                             paginator="true" paginatorPosition="bottom" rows="10"  rowIndexVar="rowIndex" rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">
+
+                    <p:column headerText="Employee Name" style="width: 300px;" >
+                        <p:commandLink value="#{employee.firstname} #{employee.lastname}"
+                                       action="#{empReportController.navigateToHistoryName(employee.fullName)}"
+                                       style="color: black" ajax="false" />    
+                    </p:column>
+
+                    <p:column headerText="Ghana Card Number">
+                        <p:commandLink value="#{employee.ghanaCardNumber}"
+                                       action="#{empReportController.navigateToHistory(employee.ghanaCardNumber)}"
+                                       style="color: black" ajax="false" />   
+                    </p:column>
+
+                    <p:column headerText="Employee Role">
+                        <h:outputText value="#{employee.role}"/>
+                    </p:column>
+
+                    <p:column headerText="Email" style="width: 200px;">
+                        <h:outputText value="#{employee.email}" /> 
+                    </p:column>
+
+                    <p:column headerText="Date Onboarded">
+                        <h:outputText value="#{empReportController.formatEmpDate(employee)}" />
+                    </p:column>
+
+                    <p:column headerText="Accesible Entrances" style="width: 100px;">
+                        <p:commandButton value="Entrances"  styleClass="ui-button-flat"
+                                         action="#{empReportController.viewEntrances(employee)}"
+                                         update=":employeeForm:entrancesDialog"
+                                         oncomplete="PF('entrancesDialog').show()"/>
+                    </p:column>
+                </p:dataTable>
+
+
+                <p:dialog id="entrancesDialog" widgetVar="entrancesDialog" modal="true" closable="false" class="custom-dialog">
+                    <f:facet name="header">
+                        <h:panelGroup layout="block" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                            <h:outputText value="Accessible Entrances" style="font-weight: bold; font-size: 1.1rem;" />
+                            <div>
+                                <!-- Download icon button -->
+                                <p:commandButton icon="pi pi-download" title="Download" action="#{empReportController.downloadEntrances}" styleClass="rounded-button ui-button-flat p-button-sm" />
+
+                                <p:commandButton icon="pi pi-times" onclick="PF('entrancesDialog').hide()" styleClass="rounded-button ui-button-flat p-button-sm" style="color: black;" /> 
+                            </div>
+                        </h:panelGroup>
+                    </f:facet>
+
+                    <div class="same-line-container" style="margin-top: 1rem;">
+                        <i class="pi pi-user p-mr-2 text-primary icon-style"></i>
+                        <p:outputLabel value="Name: " styleClass="label-style" />
+                        <h:outputText value="#{empReportController.selectedEmployee.fullName}" styleClass="value-style" />
+                    </div>
+
+                    <div class="same-line-container" style="margin-top: 0.5rem;">
+                        <i class="fa fa-user-tie p-mr-2 text-success icon-style"></i>
+                        <p:outputLabel value="Role: " styleClass="label-style" />
+                        <h:outputText value="#{empReportController.selectedEmployee.role.roleName}" styleClass="value-style" />
+                    </div>
+
+                    <p:separator style="margin-top: 1rem; margin-bottom: 1rem;" />
+
+                    <!-- Default Entrances -->
+                    <div style="margin-bottom: 1rem;">
+                        <strong>• Default Entrances:</strong>
+                        <br/><br/>
+
+                        <ui:repeat value="#{empReportController.selectedEmployeeEntrances}" var="entrance">
+                            <span class="skill-tag">• #{entrance.entrance_Name}</span>
+                        </ui:repeat>
+                    </div>
+                    <br/>
+
+                    <!-- Custom Entrances -->
+                    <h:panelGroup rendered="#{!empty empReportController.selectedEmployeeCustomEntrances}">
+                    <div>
+                        <strong>• Custom Entrances:</strong>
+                        <br/><br/>
+                        <ui:repeat value="#{empReportController.selectedEmployeeCustomEntrances}" var="entrance">
+                            <span class="skill-tag">• #{entrance.entrance_Name}</span>
+                        </ui:repeat>
+                    </div>
+                    </h:panelGroup>
+                </p:dialog>
+
+            </h:form>
+        </div>
+
+        <style>
+            .custom-dialog .ui-dialog-titlebar {
+                background-color: #f4f4f4 !important;
+                border-bottom: 1px solid #ccc;
+            }
+            .custom-dialog{
+                width: 50% !important;
+                overflow: hidden;
+                height: 70%;
+            }
+            .label-style {
+                font-size: 0.75rem;
+                margin: 0;
+                font-weight: bold;
+            }
+            .same-line-container {
+                display: flex;
+                align-items: center; /* Vertically align items in the container */
+                gap: 10px; /* Adjust the spacing between the elements as needed */
+            }
+            .icon-style {
+                font-size: 1.2rem; /* Apply the font size to all icons */
+                margin-right: 0.5rem; /* Add a little space to the right of each icon */
+                color:#644d12;
+            }
+            .skill-tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                opacity: 0;
+                transform: translateY(10px);
+                animation: fadeInUp 0.5s ease forwards;
+            }
+            .skill-tag {
+                background-color: #e0f7fa;
+                color: #006064;
+                padding: 5px 10px;
+                margin: 5px;
+                border-radius: 20px;
+                display: inline-block;
+                font-size: 14px;
+            }
+            .white-row {
+                background-color: white !important;
+            }
+
+            .ash-row {
+                background-color: #f0f0f0 !important;
+            }
+            .white-row:hover, .ash-row:hover {
+                background-color: #dceeff !important;
+                cursor: pointer;
+            }
+            
+        </style>
+    </ui:define>
+</ui:composition>
+

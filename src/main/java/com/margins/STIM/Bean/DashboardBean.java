@@ -38,9 +38,17 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
+import org.primefaces.event.ItemSelectEvent;
+import org.primefaces.model.charts.ChartData;
 import org.primefaces.model.charts.bar.BarChartModel;
+import org.primefaces.model.charts.line.LineChartDataSet;
 import org.primefaces.model.charts.line.LineChartModel;
+import org.primefaces.model.charts.line.LineChartOptions;
+import org.primefaces.model.charts.optionconfig.legend.Legend;
+import org.primefaces.model.charts.pie.PieChartDataSet;
 import org.primefaces.model.charts.pie.PieChartModel;
+import org.primefaces.model.charts.pie.PieChartOptions;
+//import software.xdev.chartjs.model.options.Legend;
 
 @Named("dashboard2")
 @ViewScoped
@@ -73,7 +81,9 @@ public class DashboardBean implements Serializable {
     private List<ActivityLog> recentLogins;
     private List<Employee> recentEmployees;
     private List<AccessLog> recentAccessAttempts;
+    private List<RoleCount> rolesWithMostEmployeesLimit = new ArrayList<>();
     private List<RoleCount> rolesWithMostEmployees = new ArrayList<>();
+
     private Map<String, String> employeeNameMap;
 
     // User metrics
@@ -93,9 +103,10 @@ public class DashboardBean implements Serializable {
 
     // Charts
     private PieChartModel rolePieChartModel;
-
+    private PieChartModel rolePieChartModelS;
     private BarChartModel barChartModelEntrance;
     private LineChartModel topEntrancesChartModel;
+    private LineChartModel lineChartModel;
 
     private String verificationChartData;
 
@@ -125,8 +136,14 @@ public class DashboardBean implements Serializable {
             recentLogins = activityLogService.getRecentActivities("login", 5);
             recentEmployees = employeeService.getRecentEmployees(5);
             recentAccessAttempts = accessLogService.getRecentAccessAttempts(5);
-            rolesWithMostEmployees = roleService.getTopRolesByEmployeeCount(5);
+            rolesWithMostEmployeesLimit = roleService.getTopRolesByEmployeeCount(5);
+
             allEntrances = entrancesService.findAllEntrances();
+
+            //G'S IMPLEMENTATIO 
+            rolesWithMostEmployees = roleService.getAllRolesWithEmployeeCount();
+            createRolePieChart();
+            lineChartModel = buildGrantedDeniedLineChart(endofMonth, endOfDay);
         }
 
         // User metrics
@@ -152,7 +169,7 @@ public class DashboardBean implements Serializable {
         recentLogins = activityLogService.getRecentActivities("login", 5);
         recentEmployees = employeeService.getRecentEmployees(5);
         recentAccessAttempts = accessLogService.getRecentAccessAttempts(5);
-        rolesWithMostEmployees = roleService.getTopRolesByEmployeeCount(5);
+        rolesWithMostEmployeesLimit = roleService.getTopRolesByEmployeeCount(5);
         allEntrances = entrancesService.findAllEntrances();
 
         // Initialize charts
@@ -168,6 +185,155 @@ public class DashboardBean implements Serializable {
         barChartModelEntrance = EntranceAccessBarChart.generateChart(accessLogService.countAccessResultsForAllEntrances(startOfDay, endOfDay));
 
 //        initLoginTrendChart();
+    }
+
+    public void createRolePieChart() {
+        rolePieChartModelS = new PieChartModel();
+        ChartData data = new ChartData();
+        PieChartDataSet dataSet = new PieChartDataSet();
+
+        // Extract data from RoleCount objects
+        List<Number> values = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
+
+        for (RoleCount roleCount : rolesWithMostEmployees) {
+            labels.add(roleCount.getRoleName());
+            values.add(roleCount.getCount());
+        }
+
+        dataSet.setData(values);
+
+        // Generate colors dynamically for potentially 100+ roles
+        List<String> colors = generateColors(rolesWithMostEmployees.size());
+        dataSet.setBackgroundColor(colors);
+
+        data.addChartDataSet(dataSet);
+        data.setLabels(labels);
+
+        rolePieChartModelS.setData(data);
+
+        PieChartOptions options = new PieChartOptions();
+        Legend legend = new Legend();
+        legend.setDisplay(true);
+        legend.setPosition("right");
+        options.setLegend(legend);
+
+        // Make chart responsive
+        options.setResponsive(true);
+        options.setMaintainAspectRatio(false);
+
+        rolePieChartModelS.setOptions(options);
+    }
+
+    public LineChartModel buildGrantedDeniedLineChart(LocalDateTime start, LocalDateTime end) {
+        LineChartModel model = new LineChartModel();
+        ChartData data = new ChartData();
+
+        // Fetch structured access log data
+        Map<String, Map<String, Integer>> accessData = accessLogService.getTop5RecentEntrancesByAccessResult(start, end);
+        if (accessData == null || accessData.isEmpty()) {
+            System.out.println("No access data returned.");
+            return new LineChartModel(); // still return an empty model
+
+        } else {
+            System.out.println("ACCESS DATA FOUND>>>>>>>>>>>>>>>>>> ");
+        }
+
+        List<String> labels = new ArrayList<>(accessData.keySet());
+        List<Object> grantedCounts = new ArrayList<>();
+        List<Object> deniedCounts = new ArrayList<>();
+
+        for (String entrance : labels) {
+            Map<String, Integer> resultCounts = accessData.get(entrance);
+            grantedCounts.add(resultCounts.getOrDefault("granted", 0));
+            deniedCounts.add(resultCounts.getOrDefault("denied", 0));
+        }
+
+        // Dataset for Granted
+        LineChartDataSet grantedSet = new LineChartDataSet();
+        grantedSet.setLabel("Granted");
+        grantedSet.setData(grantedCounts);
+        grantedSet.setBorderColor("#4CAF50"); // green
+        grantedSet.setFill(false);
+
+        // Dataset for Denied
+        LineChartDataSet deniedSet = new LineChartDataSet();
+        deniedSet.setLabel("Denied");
+        deniedSet.setData(deniedCounts);
+        deniedSet.setBorderColor("#F44336"); // red
+        deniedSet.setFill(false);
+
+        data.setLabels(labels);
+        data.addChartDataSet(grantedSet);
+        data.addChartDataSet(deniedSet);
+
+        model.setData(data);
+
+        // Options
+        LineChartOptions options = new LineChartOptions();
+        options.setResponsive(true);
+        options.setMaintainAspectRatio(false);
+        Legend legend = new Legend();
+        legend.setDisplay(true);
+        legend.setPosition("right");
+        options.setLegend(legend);
+
+        model.setOptions(options);
+        return model;
+    }
+
+    public void onChartItemSelect(ItemSelectEvent event) {
+        try {
+            System.out.println("ItemSelected>>>>>>>>>>>>>>>>>> " + event.getDataSetIndex());
+            System.out.println("ItemSelected>>>>>>>>>>>>>>>>>> " + event.getItemIndex());
+            System.out.println("ItemSelected>>>>>>>>>>>>>>>>>> " + event.getSource());
+            
+            org.primefaces.component.linechart.LineChart chart = (org.primefaces.component.linechart.LineChart) event.getSource();
+           
+                    // > org.primefaces.component.linechart.LineChart@6f99863e|
+            
+//            LineChartModel model = (LineChartModel) lineChartModel;
+//            ChartData data = model.getData();
+//
+//            String clickedEntrance = ((List<String>) data.getLabels()).get(event.getItemIndex()); // x-axis label
+//            String resultClicked = ((List<ChartDataSet>) data.getDataSet()).get(event.getDataSetIndex()).getLabel().toLowerCase();
+//
+//            // Store in Flash
+//            Flash flash = FacesContext.getCurrentInstance().getExternalContext().getFlash();
+//            flash.put("selectedEntranceName", clickedEntrance);
+//            flash.put("result", resultClicked);
+//            flash.put("timeRange", Arrays.asList(endofMonth, endOfDay)); // assuming you used those when building the chart
+//
+//            flash.setKeepMessages(true); // Optional: if you want to show a FacesMessage
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private List<String> generateColors(int count) {
+        List<String> colors = new ArrayList<>();
+
+        // Base color palette - you can customize these
+        String[] baseColors = {
+            "#FF6384", "#FFECA1", "9C27B0", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF",
+            "#FF6384", "#FF9F40", "#4BC0C0", "#C9CBCF", "#FF6384",
+            "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40",
+            "#42A5F5", "#66BB6A", "#FFA726", "#AB47BC", "#26C6DA",
+            "#EC407A", "#8BC34A", "#FF7043", "#DFC57B", "#00BCD4"
+        };
+
+        // If we need more colors than our base palette, generate them
+        for (int i = 0; i < count; i++) {
+            if (i < baseColors.length) {
+                colors.add(baseColors[i]);
+            } else {
+                // Generate additional colors using HSL
+                float hue = (i * 137.508f) % 360; // Golden angle approximation
+                String color = String.format("hsl(%.1f, 70%%, 50%%)", hue);
+                colors.add(color);
+            }
+        }
+        return colors;
     }
 
     private void initVerificationPieChart() {
@@ -204,26 +370,6 @@ public class DashboardBean implements Serializable {
         return verificationChartData;
     }
 
-//    private void initTop5EntrancesLineChart() {
-//        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
-//        LocalDateTime endOfDay = LocalDate.now().atTime(23, 59, 59);
-//
-//        List<Object[]> results = accessLogService.getTop5RecentEntrancesByGrantedAccess(startOfDay, endOfDay);
-//
-//        Map<String, Integer> chartData = new LinkedHashMap<>();
-//        for (Object[] row : results) {
-//            String entranceId = (String) row[0];
-//            Long count = (Long) row[1];
-//
-//            // Get entrance name (optional)
-//            String entranceName = entrancesService.findEntranceById(entranceId).getEntrance_Name();
-//
-//            chartData.put(entranceName, count.intValue());
-//        }
-//
-//        topEntrancesChartModel = BaseLineChart.generateChart(chartData);
-//    }
-// Format AccessLog timestamp
     public String getFormattedTimestamp(AccessLog log) {
         return DateFormatter.formatDateTime(log.getTimestamp());
     }

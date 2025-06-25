@@ -27,6 +27,8 @@ public class EmploymentStatusBean implements Serializable {
 
     private List<EmploymentStatus> employmentStatuses;
     private EmploymentStatus selectedEmploymentStatus;
+    @Inject
+    private BreadcrumbBean breadcrumbBean;
 
     @Inject
     private Employee_Service employeeService;
@@ -35,7 +37,12 @@ public class EmploymentStatusBean implements Serializable {
     public void init() {
         refreshEmploymentStatuses();
     }
+    
+    public void setupBreadcrumb() {
+        breadcrumbBean.setEmployeeStatusBreadcrumb();
+    }
 
+    
     public void prepareNewEmploymentStatus(ActionEvent event) {
         selectedEmploymentStatus = new EmploymentStatus();
     }

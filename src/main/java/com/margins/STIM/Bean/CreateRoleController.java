@@ -28,13 +28,15 @@ import org.primefaces.PrimeFaces;
  */
 @Named("assignEmpRoleBean")
 @ViewScoped
-public class CreateRole implements Serializable {
+public class CreateRoleController implements Serializable {
 
     @Inject
     private Employee_Service employeeService;
 
     @Inject
     private EmployeeRole_Service roleService;
+    @Inject 
+    private BreadcrumbBean breadcrumbBean;
 
     private List<Employee> employees;
     private List<EmployeeRole> roles;
@@ -55,7 +57,9 @@ private String globalFilter;
         roles = roleService.findAllEmployeeRoles();
     }
 
-
+    public void setupBreadcrumb() {
+        breadcrumbBean.setCreateRoleBreadcrumb();
+    }
 
 
     public void addNewRole() {

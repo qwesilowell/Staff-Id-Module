@@ -4,7 +4,8 @@
  */
 package com.margins.STIM.util;
 
-import java.io.Serializable;
+import com.margins.STIM.entity.EmployeeRole;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,13 +15,11 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class RoleCount implements Serializable {
-
-    private String roleName;
+@AllArgsConstructor
+public class RoleCountDTO {
+    
+    private EmployeeRole role;
     private int count;
-
-    public RoleCount(String roleName, int count) {
-        this.roleName = roleName;
-        this.count = count;
-    }
+    private int entCount;
+    
 }

@@ -40,7 +40,8 @@ body {
 /* Main Content Section */
 .main-content {
     margin-left: 130px; /* Ensure it doesn't overlap the sidebar */
-    padding: 20px;
+    padding: 10px;
+    margin-bottom:1px !important;
 /*    position: relative; */
     min-height: calc(100vh - 55px - 50px); /* Adjust to fit the screen excluding topbar and footer */
     overflow-x: hidden;
@@ -146,6 +147,69 @@ body {
     margin-right: 10px !Important;
 }
 
+/*.breadcrumb-container {
+    background-color: ;
+   
+    border-bottom: 1px solid #dee2e6;
+    margin-left: 250px;  Adjust based on your sidebar width 
+    transition: margin-left 0.3s ease;
+}
+.breadcrumb-container {
+    border: 2px dashed red !important;
+}*/
+
+.breadcrumb-container {
+    background-color: #f8f9fa !important;
+    border-bottom: 1px solid #dee2e6 !important;
+    padding: 10px 10px !important; 
+    margin-bottom: 0 !important; 
+    margin-left: 280px !important;
+    margin-top: 55px !important;
+    transition: margin-left 0.3s ease;
+
+    
+}
+
+.custom-breadcrumb {
+    background: none !important; 
+    border: none !important;
+    padding: 0 !important;
+}
+
+.custom-breadcrumb .ui-breadcrumb {
+    background: transparent;
+    border: none !important;
+    padding: 0;
+}
+
+.custom-breadcrumb .ui-breadcrumb ul {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.custom-breadcrumb .ui-breadcrumb ul li {
+    font-size: 14px;
+}
+
+.custom-breadcrumb .ui-breadcrumb ul li a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.custom-breadcrumb .ui-breadcrumb ul li a:hover {
+    text-decoration: underline;
+}
+
+.custom-breadcrumb .ui-breadcrumb ul li.ui-breadcrumb-chevron {
+    color: #6c757d;
+}
+
+
+
+
+
 /* Responsive Design (For Smaller Screens) */
 @media (max-width: 900px) {
     .toggle-button {
@@ -171,4 +235,9 @@ body {
         width: 100%;
         left: 0;
     }
+    /* Responsive - hide breadcrumb container when sidebar is collapsed */
+
+    .breadcrumb-container {
+        margin-left: 0;
+}
 }

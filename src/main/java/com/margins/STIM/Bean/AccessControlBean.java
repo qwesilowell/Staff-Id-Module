@@ -23,6 +23,7 @@ import com.margins.STIM.util.ValidationUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.Serializable;
 import java.net.URI;
@@ -51,6 +52,9 @@ public class AccessControlBean implements Serializable {
 
     @EJB
     private EntrancesService entrancesService;
+    
+    @Inject 
+    private BreadcrumbBean breadcrumbBean;
 
     @EJB
     private Employee_Service employeeService;
@@ -83,6 +87,10 @@ public class AccessControlBean implements Serializable {
     
     public List<Entrances> getAllEntrances() {
         return entrancesService.findAllEntrances(); // Fetch from DB once
+    }
+    
+    public void setupBreadcrumb() {
+        breadcrumbBean.setAccessControlBreadcrumb();
     }
 
     public List<String> completeEntrances(String query) {
@@ -207,7 +215,7 @@ public class AccessControlBean implements Serializable {
                     if (employee == null) {
                         statusMessage = "Access Denied";
                         JSF.addErrorMessage("Employee not found.");
-                    } else if (accessLogService.hasAccess(ghanaCardNumber, entranceId)) {
+                    } else if (accessLogService.hasAccess(employee, entrance)) {
                         statusMessage = "Access Granted";
                         result = "granted"; // Update result on success
                         JSF.addSuccessMessage("Access granted to " + entrance.getEntrance_Name());

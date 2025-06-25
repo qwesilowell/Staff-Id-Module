@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
+
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{roleReportController.setupBreadcrumb}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="title">Role Report</ui:define>
+
+    <ui:define name ="content">
+        <h:outputStylesheet library="css" name= "roleReport.css"/>
+        <!--Main Content --> 
+        <div class="main-content">
+            <h:form id="roleForm">
+                <p:growl id="messages" showSummary= "true" showDetail="true" life="3000" />
+                <h3>ROLES REPORT</h3>
+
+                <h:outputLabel styleClass="LABEL">ROLES OVERVIEW</h:outputLabel>
+                <br/><br/>
+                <p:panel header="Number of Employees per Role" style="margin-bottom:2em;" toggleable="true" >
+                    <p:barChart model="#{roleReportController.employeeCountBarModel}" style="height: 400px;"
+                                widgetVar="roleChart" >
+                        <p:ajax event="itemSelect"
+                                listener="#{roleReportController.onChartItemSelect}"
+                                update="roleForm:roleTable"
+                                oncomplete="scrollToSelectedRow()" /> <!--PF('roleTable').filter();-->
+                    </p:barChart>                
+                </p:panel>
+
+                <p:panel header="Accessible Entrances per Role" style="margin-bottom:2em;" toggleable="true">
+                    <p:barChart model="#{roleReportController.entranceCountBarModel}"  style="height: 400px;">
+                        <p:ajax event="itemSelect"
+                                listener="#{roleReportController.onChartItemSelect}"
+                                update="roleForm:roleTable"
+                                oncomplete="scrollToSelectedRow()" />
+                    </p:barChart>
+                </p:panel>
+
+                <p:dataTable id="roleTable" widgetVar="roleTable" value="#{roleReportController.allRoles}" var="rc" styleClass="ui-datatable" 
+                             paginator="true" paginatorPosition="bottom"  
+                             rowIndexVar="rowIndex"   rows="10" rowKey="#{rc.role.id}"
+                             rowStyleClass="#{rc.role.roleName eq roleReportController.selectedRoleName ? 'highlighted-row scroll-target' : (rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row')}"
+                             filteredValue="#{roleReportController.filteredRoles}">
+
+                    <f:attribute name="selectedRoleId" value="#{rc.role.roleName}" />
+
+
+                    <p:column headerText="Role Name" 
+                              filterBy="#{rc.role.roleName}" 
+                              filterMatchMode="contains">
+                        <h:outputText value="#{rc.role.roleName}" style="font-weight: bold" />
+                    </p:column>
+                    <p:column headerText="Number Of Employees" width="15%">
+                        <p:commandButton  styleClass="ui-button-flat"
+                                          value="#{rc.count}"
+                                          action="#{roleReportController.viewEmployee(rc.role.id)}"
+                                          oncomplete="PF('employeesDialog').show()"
+                                          update=":roleForm:employeesDialog"/>
+                    </p:column>
+                    <p:column headerText="Number of Accessible Entrances" width="15%">
+                        <p:commandButton  styleClass="ui-button-flat"
+                                          value="#{rc.entCount}"
+                                          action="#{roleReportController.viewEntrances(rc.role.id)}"
+                                          oncomplete="PF('entranceDialog').show()"
+                                          update=":roleForm:entranceDialog"/>
+                    </p:column>
+
+                    <p:column headerText="Date Created">
+                        <h:outputText value="#{roleReportController.formatEmpDate(rc.role)}"/>
+                    </p:column>
+
+                    <p:column headerText="View All">
+                        <p:commandButton icon="pi pi-eye" 
+                                         title="View All"
+                                         styleClass="ui-button-rounded ui-button-secondary"
+                                         action="#{roleReportController.loadSummary(rc.role.id)}"
+                                         update=":roleForm:summaryDialog"
+                                         oncomplete="PF('summaryDialog').show()" />
+
+                    </p:column>
+
+                    <p:column headerText="View Accesses for this Role">
+                        <p:commandButton icon="fa fa-chart-line"
+                                         action="#{roleReportController.navigateToHistory(rc.role)}"
+                                         styleClass="ui-button-rounded ui-button-warning"
+                                         ajax="false" />                          
+                    </p:column>
+                </p:dataTable>
+
+                <p:dialog header="EMPLOYEES IN THIS ROLE" widgetVar="employeesDialog" id="employeesDialog" modal="true" class="custom-dialog">
+
+                    <div class="same-line-container" style="margin-top: 0.5rem;">
+                        <div class="left-side">
+                            <i class="fa fa-user-tie p-mr-2 text-success icon-style"></i>
+                            <p:outputLabel value="Role: " styleClass="label-style" />
+                            <h:outputText value="#{roleReportController.selectedRole.roleName}" styleClass="value-style" />
+                        </div>
+                        <br/>
+                        <div class="right-side">
+                            <p:outputLabel value="Total Count:" styleClass="label-style" />
+                            <h:outputText value="#{roleReportController.selectedRoleEmployee.size()}" styleClass="value-style" />
+                        </div>
+                    </div>
+                    <br/>
+
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Employees :</strong>
+                        <br/><br/>
+
+                        <ui:repeat value="#{roleReportController.selectedRoleEmployee}" var="employee">
+                            <span class="skill-tag">• #{employee.getFullName()}</span>
+                        </ui:repeat>
+                    </div>
+                    <br/>
+                </p:dialog>
+
+                <p:dialog header="ACCESSIBLE ENTRANCES" widgetVar="entranceDialog" id="entranceDialog" modal="true" class="custom-dialog">
+                    <div class="same-line-container" style="margin-top: 0.5rem;">
+                        <div class="left-side">
+                            <i class="fa fa-user-tie p-mr-2 text-success icon-style"></i>
+                            <p:outputLabel value="Role: " styleClass="label-style" />
+                            <h:outputText value="#{roleReportController.selectedRole.roleName}" styleClass="value-style" />
+                        </div>
+                        <br/>
+                        <div class="right-side">
+                            <p:outputLabel value="Total Count:" styleClass="label-style" />
+                            <h:outputText value="#{roleReportController.selectedEntranceEmployee.size()}" styleClass="value-style" />
+                        </div>
+                    </div>
+                    <br/>
+
+                    <div style="margin-bottom: 1rem;">
+                        <strong>ENTRANCES :</strong>
+                        <br/><br/>
+
+                        <ui:repeat value="#{roleReportController.selectedEntranceEmployee}" var="entrances">
+                            <span class="skill-tag">• #{entrances.entrance_Name}</span>
+                        </ui:repeat>
+                    </div>
+                    <br/>
+                </p:dialog>
+
+
+                <p:dialog id="summaryDialog" widgetVar="summaryDialog" header="Role Summary" modal="true" class="custom-dialog" >
+                    <div class="summary-dialog-content">
+                        <div class="summary-section">                           
+                            <p:outputLabel value="Role: #{roleReportController.selectedRole.roleName}" styleClass="label-style"/>
+                            <br/>
+                            <h4><i class="pi pi-users text-success"></i> Employees</h4>
+                            <p:outputLabel value="Total Employees: #{roleReportController.selectedRoleEmployee.size()}" styleClass="value-style" />
+                            <ul>
+                                <ui:repeat value="#{roleReportController.selectedRoleEmployee}" var="emp">
+                                    <li>#{emp.getFullName()}</li>
+                                </ui:repeat>
+                            </ul>
+                        </div>
+
+                        <hr style="margin: 1rem 0;" />
+
+                        <div class="summary-section">
+                            <h4><i class="pi pi-lock text-info"></i> Accessible Entrances</h4>
+                            <p:outputLabel value="Total Entrances: #{roleReportController.selectedEntranceEmployee.size()}" styleClass="value-style" />
+                            <ul>
+                                <ui:repeat value="#{roleReportController.selectedEntranceEmployee}" var="entrance">
+                                    <li>#{entrance.entrance_Name}</li>
+                                </ui:repeat>
+                            </ul>
+                        </div>
+                    </div>
+                </p:dialog>
+
+                <h:outputScript>
+                    function scrollToSelectedRow() {
+                    setTimeout(function() {
+                    let row = document.querySelector('.scroll-target');
+                    if (row) {
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    }, 300);
+                    }
+                </h:outputScript>
+            </h:form>
+        </div>
+    </ui:define>
+</ui:composition>

@@ -19,9 +19,9 @@ import jakarta.persistence.*;
 public class BiometricData extends EntityModel implements Serializable {
 
 
-    @OneToOne
-    @JoinColumn(name = "employee_biometric_data_fk", nullable = false) 
-    private Employee employee;
+//    @OneToOne
+//    @JoinColumn(name = "employee_biometric_data_fk", nullable = false) 
+//    private Employee employee;
 
     @Lob
     @Column(name = "fingerprint_data", nullable = false, columnDefinition = "CLOB")
@@ -35,13 +35,13 @@ public class BiometricData extends EntityModel implements Serializable {
 //    private LocalDateTime createdAt;
 
     // Getters and Setters
-    public Employee getEmployee() {
-        return employee;
-    }
-
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
-    }
+//    public Employee getEmployee() {
+//        return employee;
+//    }
+//
+//    public void setEmployee(Employee employee) {
+//        this.employee = employee;
+//    }
 
     public String getFingerprintData() {
         return fingerprintData;
@@ -63,7 +63,7 @@ public class BiometricData extends EntityModel implements Serializable {
 
 
     public BiometricData(Long biometricDataId, Employee employee, String fingerprintData, String facialRecognitionData, LocalDateTime createdAt) {
-        this.employee = employee;
+//        this.employee = employee;
         this.fingerprintData = fingerprintData;
 //        this.facialRecognitionData = facialRecognitionData;
     }

@@ -244,10 +244,6 @@ public class LoginBean implements Serializable {
                     .build();
             HttpResponse<String> response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
-//            HttpResponse<String> response = Unirest.post("https://cscdc.online/apis/test-api.php")
-//                    .header("Content-Type", "application/json")
-//                    .body(request)
-//                    .asString();
             System.out.println("Response Status: " + response.statusCode());
             System.out.println("Response Body: " + response.body());
 
@@ -259,7 +255,7 @@ public class LoginBean implements Serializable {
                 if ("TRUE".equals(callBack.getData().getVerified())) {
                     FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
                     FacesContext.getCurrentInstance().addMessage(null,
-                            new FacesMessage(FacesMessage.SEVERITY_INFO, "Login Successful!", null));
+                            new FacesMessage(FacesMessage.SEVERITY_INFO,"Single Finger Login", "Successful!"));
 
                     String forenames = callBack.data.person.forenames;
                     String surname = callBack.data.person.surname;
@@ -358,8 +354,9 @@ public class LoginBean implements Serializable {
                     verificationSuccess = true;
 
                     FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+                    
                     FacesContext.getCurrentInstance().addMessage(null,
-                            new FacesMessage(FacesMessage.SEVERITY_INFO, "Login Successful!", null));
+                            new FacesMessage(FacesMessage.SEVERITY_INFO, "Facial Login", "Successful!"));
 
                     String forenames = callBack.data.person.forenames;
                     String surname = callBack.data.person.surname;
@@ -483,7 +480,7 @@ public class LoginBean implements Serializable {
 
                     FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
                     FacesContext.getCurrentInstance().addMessage(null,
-                            new FacesMessage(FacesMessage.SEVERITY_INFO, "Login Successful!", null));
+                            new FacesMessage(FacesMessage.SEVERITY_INFO, "No GhanCard Login", "Successful!"));
 
                     String forenames = callBack.data.person.forenames;
                     String surname = callBack.data.person.surname;

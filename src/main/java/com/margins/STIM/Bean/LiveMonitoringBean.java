@@ -19,6 +19,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import java.io.Serializable;
 import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.util.List;
 import lombok.Getter;
@@ -36,14 +37,21 @@ public class LiveMonitoringBean implements Serializable {
     private EntrancesService entrancesService;
     @EJB
     private Employee_Service employeeService;
+    
+    @Inject
+    private BreadcrumbBean breadcrumbBean;
 
     @PostConstruct
     public void init() {
-        
+
     }
 
     public List<AccessLog> getRecentAccessAttempts() {
         return accessLogService.getRecentAccessAttempts(20);
+    }
+
+    public void setupBreadcrumb() {
+        breadcrumbBean.setLiveMonitoringBreadcrumb();
     }
 
     public String getEmployeeName(Employee employee) {

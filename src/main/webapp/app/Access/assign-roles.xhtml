@@ -7,6 +7,13 @@
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets">
+    
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{assignRoleBean.setupBreadcrumb}" />
+        </f:metadata>
+    </ui:define>
+    
     <ui:define name="title">Assign Roles to Entrance</ui:define>
 
     <ui:define name="metadata">             
@@ -19,7 +26,7 @@
     <ui:define name ="content">
         <!--Main Content --> 
         <div class="main-content">
-            <p:growl id="messages" showSummary= "true" showDetail="true" life="3000" />
+            <p:growl id="messages" showSummary= "true" showDetail="true" life="6000" />
 
             <h:form id="mainForm">
                 <p:panel header="Assign Roles to Entrance" style="margin-top:20px;">
@@ -35,7 +42,7 @@
                                             placeholder="Search or Select Entrance" 
                                             style="width: 100%; ">
                                 <!-- Automatically load assigned roles when an entrance is selected -->
-                                <p:ajax event="itemSelect" listener="#{assignRoleBean.loadAssignedRoles}" update="assignedRolesTable" />
+                                <p:ajax event="itemSelect" listener="#{assignRoleBean.loadAssignedRoles}" update="assignedRolesTable roles" />
                             </p:autoComplete>
                         </h:panelGroup>
 
@@ -44,7 +51,7 @@
                             <p:outputLabel for="roles" value="Select Roles: " />
                             <p:selectCheckboxMenu id="roles" value="#{assignRoleBean.selectedRolesIds}" multiple="true"
                                                   filter="true" panelStyle="width: 250px">
-                                <f:selectItems value="#{assignRoleBean.allRoles}" var="role"
+                                <f:selectItems value="#{assignRoleBean.availableRolesForSelection}" var="role"
                                                itemLabel="#{role.roleName}" itemValue="#{role.id}" />
                             </p:selectCheckboxMenu>
                         </h:panelGroup>
@@ -67,102 +74,70 @@
                         <h:outputText value="#{role.roleName}" />
                     </p:column>
                     <p:column headerText="Time Rules">
-                        <h:outputText value="#{assignRoleBean.getTimeRulesForRoleAndEntrance(role.id)}"  style="font-family: Times New Roman, serif; font-weight: bold" />
+                        <!-- Show status when role has time rules -->
+                        <h:panelGroup rendered="#{assignRoleBean.hasTimeRules(role)}">
+                            <span style="color: #28a745; font-family: Times New Roman, serif; font-weight: bold;">
+                                <i class="fa fa-check-circle" style="margin-right: 5px;"></i>
+                                Role time access created
+                            </span>
+                        </h:panelGroup>
+
+                        <!-- Show status when role has no time rules -->
+                        <h:panelGroup rendered="#{!assignRoleBean.hasTimeRules(role)}">
+                            <span style="color: #993333; font-family: Times New Roman, serif; font-weight: bold;">
+                                <i class="fa fa-exclamation-triangle" style="margin-right: 5px;"></i>
+                                No time access configured
+                            </span>
+                        </h:panelGroup>
                     </p:column>
-                    <p:column headerText="Assign Time Rule">
-                        <p:commandButton  class="rounded-button ui-button-info ui-button-outlined"  icon="fa-solid fa-business-time" action="#{assignRoleBean.prepareTimeRule(role)}"
-                                          update=":mainForm:timeRuleDialog" oncomplete="PF('timeRuleDialog').show()" />
-                        <p:commandButton  class="rounded-button ui-button-warning ui-button-outlined"  icon="fa-solid fa-business-time" action="#{assignRoleBean.prepareDayTimeRules(role)}"
-                                          update=":mainForm:sidebar2" oncomplete="PF('sidebar2').show()" />
+
+                    <p:column headerText="Assign Time Rule">    
+                        <p:commandButton  class="rounded-button ui-button-info ui-button-outlined"  icon="fa-solid fa-business-time" action="#{assignRoleBean.prepareDayTimeRules(role)}"
+                                          update=":mainForm:sidebar2" oncomplete="PF('sidebar2').show()" process="@this" />
                     </p:column>
                     <p:column headerText="Remove">
                         <p:commandButton class="rounded-button ui-button-danger ui-button-outlined" 
-                                         icon="pi pi-trash"  action="#{assignRoleBean.removeRoleFromEntrance(role.id)}"
-                                         update="assignedRolesTable messages" />
+                                         icon="pi pi-trash"                                        
+                                         process="@this"
+                                         actionListener="#{assignRoleBean.setCurrentRole(role)}"
+                                         oncomplete="PF('confirmDialog').show()"
+                                         update=":mainForm:confirmDialog"/>
+
+
                     </p:column>
+
                 </p:dataTable>
-                <p:dialog id="timeRuleDialog" header="Assign Access Time Rule" widgetVar="timeRuleDialog" 
-                          modal="true" responsive="true" styleClass="time-rule-dialog" 
-                          style="width: 500px;">
-                    <p:panel styleClass="p-card">
-                        <div class="p-grid p-fluid">
-                            <div class="p-col-12">
-                                <div class="same-line-container">
-                                    <i class="pi pi-user p-mr-2 text-primary icon-style"></i>
-                                    <p:outputLabel value="Role:" styleClass="label-style" />
-                                    <h:outputText value="#{assignRoleBean.newRule.role.roleName}" styleClass="value-style" />
-                                </div>
-                                <br/>
-                                <div class="same-line-container">
-                                    <i class="pi pi-map-marker p-mr-2 text-success icon-style"></i>
-                                    <p:outputLabel value="Entrance:" styleClass="label-style" />
-                                    <h:outputText value="#{assignRoleBean.selectedEntrance.entrance_Name}" styleClass="value-style" />
-                                </div>
-                                <p:separator/>
-                                <div class="dialog-section">
-                                    <h3 class="section-title">Time Settings</h3>
-                                    <!-- Start Time -->
-                                    <div class="same-line-container">
-                                        <i class="pi pi-clock" style="margin-right:4px;color:#6366F1;" />
-                                        <p:outputLabel value="Start Time:" styleClass="label-style"/>          
-                                        <p:datePicker id="startTime"
-                                                      value="#{assignRoleBean.newRule.startTime}"
-                                                      timeOnly="true"
-                                                      placeholder="HH:MM" 
-                                                      pattern="HH:mm"
-                                                      hourFormat="12"
-                                                      showIcon="true"
-                                                      showTime="true"
-                                                      stepMinute="1"
-                                                      style="width: 100%;" />
-                                    </div>
-                                    <div style="height: 30px"/>
-                                    <!-- End Time -->
-                                    <div class="same-line-container">
-                                        <i class="pi pi-clock" style="margin-right:4px;color:#EF4444;" />
-                                        <p:outputLabel value="End Time:" styleClass="label-style">                                          
-                                        </p:outputLabel>                                      
-                                        <p:datePicker id="endTime"
-                                                      value="#{assignRoleBean.newRule.endTime}"                                                      
-                                                      timeOnly="true"
-                                                      placeholder="HH:MM" 
-                                                      pattern="HH:mm"
-                                                      hourFormat="12"
-                                                      showIcon="true"
-                                                      showTime="true"
-                                                      stepMinute="1"
-                                                      style="width: 100%;" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="dialog-section">
-                                <h3 class="section-title">
-                                    <i class="pi pi-calendar" style="margin-right:8px;color:#22C55E;" />
-                                    Allowed Days
-                                </h3>
-                                <div class="days-container">
-                                    <p:selectManyCheckbox value="#{assignRoleBean.newRuleDays}" layout="grid" 
-                                                          columns="4" styleClass="days-checkboxes">
-                                        <f:selectItem itemLabel="Mon" itemValue="MON" />
-                                        <f:selectItem itemLabel="Tue" itemValue="TUE" />
-                                        <f:selectItem itemLabel="Wed" itemValue="WED" />
-                                        <f:selectItem itemLabel="Thu" itemValue="THU" />
-                                        <f:selectItem itemLabel="Fri" itemValue="FRI" />
-                                        <f:selectItem itemLabel="Sat" itemValue="SAT" />
-                                        <f:selectItem itemLabel="Sun" itemValue="SUN" />
-                                    </p:selectManyCheckbox>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="dialog-footer">
-                            <p:commandButton value="Save Rule" icon="pi pi-save" 
-                                             action="#{assignRoleBean.saveTimeRule}" 
-                                             update="assignedRolesTable messages" 
-                                             oncomplete="PF('timeRuleDialog').hide()" 
-                                             styleClass="save" />
-                        </div>
-                    </p:panel>
+                <p:dialog id="confirmDialog"
+                          widgetVar="confirmDialog" 
+                          showEffect="fade" 
+                          width="300"
+                          hideEffect="fade" 
+                          header="Confirm"
+                          modal="true">
+
+                    <div class="confirm-message">
+                        <span>Delete role </span>
+                        <span class="role-name">#{assignRoleBean.currentRole.roleName}</span>
+                        <span> and all time access to this entrance?</span>
+                    </div>                    <br/><br/>
+                    <div style="display:flex; flex-direction: row; justify-content: flex-end; gap: 10px;">
+                        <p:commandButton value="Yes" 
+                                         icon="pi pi-check" 
+                                         actionListener="#{assignRoleBean.removeRole()}"
+                                         process="@this" 
+                                         oncomplete="PF('confirmDialog').hide()"
+                                         update="assignedRolesTable messages"
+                                         styleClass="rounded-button"
+                                         style="padding: 1px 3px !important;"
+                                         />
+                        <p:commandButton value="No" 
+                                         type="button" 
+                                         styleClass="ui-button-secondary rounded-button" 
+                                         icon="pi pi-times"
+                                         onclick="PF('confirmDialog').hide()" />
+                    </div>
                 </p:dialog>
+
 
                 <div class="card"> 
                     <p:sidebar id ="sidebar2" widgetVar="sidebar2" position="right" style="width: 30%; background-color: #f8f9fa;overflow:scroll "  blockScroll= "true" >
@@ -185,13 +160,13 @@
                         <p:selectManyCheckbox value="#{assignRoleBean.selectedDays}" layout="grid" columns="3" id="daysCheckbox">
                             <f:selectItem itemLabel="Monday" itemValue="MONDAY" />
                             <f:selectItem itemLabel="Tuesday" itemValue="TUESDAY" />
-                            <f:selectItem itemLabel="Wednesday" itemValue="Wednesday" />
+                            <f:selectItem itemLabel="Wednesday" itemValue="WEDNESDAY" />
                             <f:selectItem itemLabel="Thursday" itemValue="THURSDAY" />
                             <f:selectItem itemLabel="Friday" itemValue="FRIDAY" />
                             <f:selectItem itemLabel="Saturday" itemValue="SATURDAY" />
                             <f:selectItem itemLabel="Sunday" itemValue="SUNDAY" />
                             <p:ajax event="valueChange"
-                                    listener="#{manageEmployeesBean.loadDayTimeInputs}"
+                                    listener="#{assignRoleBean.loadDayTimeInputs}"
                                     update="dayTimeInputs"
                                     process="@this" />
                         </p:selectManyCheckbox>
@@ -242,12 +217,11 @@
                             </ui:repeat>
                         </h:panelGroup>
 
-
                         <div class="dialog-footer">
                             <p:commandButton value="Save Rule" icon="pi pi-save" 
                                              action="#{assignRoleBean.saveDayTimeRules}" 
                                              update="assignedRolesTable messages" 
-                                             oncomplete="PF('sidebar2').hide()" 
+                                             oncomplete="if (#{assignRoleBean.timeRuleValid})PF('sidebar2').hide()" 
                                              styleClass="save" />
                         </div>
                     </p:sidebar>
@@ -255,10 +229,17 @@
             </h:form>
         </div>
         <style>
+            .confirm-message {
+                line-height: 1.5;
+            }
+            .role-name {
+                font-weight: bold;
+                color: #2563eb; /* Optional: adds a blue color to make it stand out more */
+            }
             .left-column {
                 width: 50%;
                 padding-right: 20px;
-            }
+            }            
 
             .right-column {
                 width: 50%;
@@ -267,7 +248,7 @@
 
             .ui-button {
                 border-radius: 8px;
-                padding: 10px;
+/*                padding: 10px;*/
                 font-weight: bold;
             }
             .ui-autocomplete .ui-autocomplete-dropdown {

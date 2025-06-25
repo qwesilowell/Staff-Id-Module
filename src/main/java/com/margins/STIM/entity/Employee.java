@@ -44,31 +44,31 @@ public class Employee implements Serializable {
 
     @Column(name = "EMAIL")
     private String email;
+    
+    @Getter
+    @Setter
+    @Column(name = "PRIMARY_PHONE", nullable = false)
+    private String primaryPhone;
 
+    @Getter
+    @Setter
+    @Column(name = "SECONDARY_PHONE")
+    private String secondaryPhone;
+    
+    
     @Setter
     @Getter
     @ManyToOne
     @JoinColumn(name = "EMPLOYMENT_STATUS_ID")
     private EmploymentStatus employmentStatus;
 
-//    @ManyToOne
-//    @JoinColumn(name = "department_id", nullable = false)
-//    private Department department;
-//
-    @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL)
-    private BiometricData biometricData;
+//    @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL)
+//    private BiometricData biometricData;
 
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = true)
     private EmployeeRole role;
 
-//    @ManyToMany
-//    @JoinTable(
-//            name = "employee_roles_mapping",
-//            joinColumns = @JoinColumn(name = "employee_id"),
-//            inverseJoinColumns = @JoinColumn(name = "role_id")
-//    )
-//    private List<EmployeeRole> roles;
     @Getter
     @Setter
     @ManyToMany
@@ -82,15 +82,7 @@ public class Employee implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", nullable = false)
     private Date createdAt;
-//
-//    @ManyToOne
-//    @JoinColumn(name = "UsersGhana_card_number", nullable = false)
 
-    ////    private Users user;
-//
-//    @ManyToOne
-//    @JoinColumn(name = "office_id", nullable = false)
-//    private Office office;
     
     public String getFullName() {
         return firstname + " " + lastname;
@@ -145,38 +137,14 @@ public class Employee implements Serializable {
         this.address = address;
     }
 
-//    public Department getDepartment() {
-//        return department;
+//    public BiometricData getBiometricData() {
+//        return biometricData;
 //    }
 //
-//    public void setDepartment(Department department) {
-//        this.department = department;
+//    public void setBiometricData(BiometricData biometricData) {
+//        this.biometricData = biometricData;
 //    }
-//
-//    public byte[] getEmployeePhoto() {
-//        return employeePhoto;
-//    }
-//
-//    public void setEmployeePhoto(byte[] employeePhoto) {
-//        this.employeePhoto = employeePhoto;
-//    }
-//
-    public BiometricData getBiometricData() {
-        return biometricData;
-    }
-//
 
-    public void setBiometricData(BiometricData biometricData) {
-        this.biometricData = biometricData;
-    }
-
-//    public List<EmployeeRole> getRoles() {
-//        return roles;
-//    }
-//
-//    public void setRoles(List<EmployeeRole> roles) {
-//        this.roles = roles;
-//    }
     public EmployeeRole getRole() {
         return role;
     }
@@ -195,21 +163,6 @@ public class Employee implements Serializable {
         this.createdAt = newDate;
     }
 
-//    public Users getUser() {
-//        return user;
-//    }
-//
-//    public void setUser(Users user) {
-//        this.user = user;
-//    }
-//
-//    public Office getOffice() {
-//        return office;
-//    }
-//
-//    public void setOffice(Office office) {
-//        this.office = office;
-//    }
     public String getEmail() {
         return email;
     }

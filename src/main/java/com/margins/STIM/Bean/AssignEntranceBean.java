@@ -9,6 +9,7 @@ import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityNotFoundException;
 import java.io.Serializable;
@@ -29,6 +30,9 @@ public class AssignEntranceBean implements Serializable {
 
     @EJB
     private EntrancesService entrancesService;
+    
+    @Inject
+    private BreadcrumbBean breadcrumbBean;
 
     private String searchQuery;
     private List<Employee> employees;
@@ -56,6 +60,11 @@ public class AssignEntranceBean implements Serializable {
             showMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to initialize data.");
         }
     }
+    
+    public void setupBreadcrumb() {
+        breadcrumbBean.setAssignCustomEntranceBreadcrumb();
+    }
+
 
     public List<Entrances> getAllEntrances() {
         return entrancesService.findAllEntrances(); // Fetch from DB once

@@ -29,6 +29,9 @@ public class EntranceBean implements Serializable {
     @Inject
     private EntrancesService entranceService;
 
+    @Inject
+    private BreadcrumbBean breadcrumbBean;
+    
     private List<Entrances> entrances;
     private Entrances selectedEntrance;
     private String searchQuery;
@@ -44,6 +47,10 @@ public class EntranceBean implements Serializable {
         entrances = entranceService.findAllEntrances();
     }
 
+    public void setupBreadcrumb() {
+        breadcrumbBean.setManageEntrancesBreadcrumb();
+    }
+    
     public void searchEntrances() {
         if (searchQuery != null && !searchQuery.isEmpty()) {
             entrances = entranceService.searchEntrances(searchQuery);

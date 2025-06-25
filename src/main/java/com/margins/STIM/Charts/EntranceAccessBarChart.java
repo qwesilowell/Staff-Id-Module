@@ -28,7 +28,7 @@ public class EntranceAccessBarChart {
         BarChartDataSet barDataSet = new BarChartDataSet();
         barDataSet.setLabel("VERIFICATION OUTCOMES ");
 
-        List<Object> values = new ArrayList<>();
+        List<Number> values = new ArrayList<>();
         List<String> bgColor = new ArrayList<>();
         List<String> borderColor = new ArrayList<>();
         List<String> labels = new ArrayList<>();

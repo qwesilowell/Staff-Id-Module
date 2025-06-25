@@ -24,7 +24,7 @@
                         <div class="dashboard">
                             <div class="cards-container">
                                 <!-- Card 1 -->
-                                <div class="card blue">
+                                <div class="card blue" style="border-left: 6px solid #2BBDD0;">
                                     <h:link outcome="/app/employeeList?faces-redirect=true" styleClass="no-style" >
                                         <div class="card-content">                                       
                                             <div class="card-title">Total Employees</div>
@@ -37,7 +37,7 @@
                                 </div>
 
                                 <!-- Card 2 -->
-                                <div class="card green">
+                                <div class="card green" style="border-left: 6px solid greenyellow;">
                                     <h:link outcome="/app/EmployeeRoles/createRole?faces-redirect=true" styleClass="no-style" >
                                         <div class="card-content">
                                             <div class="card-title">Total Roles</div>
@@ -50,7 +50,7 @@
                                 </div>
 
                                 <!-- Card 3 -->
-                                <div class="card orange">
+                                <div class="card orange" style="border-left: 6px solid #E6B262;">
                                     <h:link outcome="/app/Entrances/manageEntrances?faces-redirect=true" styleClass="no-style" >
                                         <div class="card-content">
                                             <div class="card-title">Total Entrances</div>
@@ -64,8 +64,8 @@
 
 
                                 <!-- Card 4 -->
-                                <div class="card red">
-                                    <h:link styleClass="no-style" > <!-- Reports filter for this month -->
+                                <div class="card red" style="border-left: 6px solid #EA5455;">
+                                    <h:link  outcome="/app/Reports/employeeReport?faces-redirect=true"  styleClass="no-style" > <!-- Reports filter for this month -->
                                         <div class="card-content">
                                             <div class="card-title">Onboarded This Month</div>
                                             <div class="card-value">#{dashboard2.employeesOnboardedMonth}</div>
@@ -77,7 +77,7 @@
                                 </div>
 
                                 <!-- Card 5 -->
-                                <div class="card purple">
+                                <div class="card purple" style="border-left: 6px solid #9A35B6;">
                                     <h:link  styleClass="no-style" > <!-- Settings Recent logins -->
                                         <div class="card-content">
                                             <div class="card-title">Successful Logins Today</div>
@@ -90,9 +90,36 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <p:spacer height="50px"/>
-                        
+                        <p:panel id="mostAccessOverAll" styleClass="mostAccessed"
+                                 header="Most Accessed Entrances This Month" style="border-left: 6px solid #95C0F5;  border-radius: 10px;">
+                            <p:lineChart model="#{dashboard2.lineChartModel}" style="height: 300px;" widgetVar="lineChartjs"
+                                      >
+
+<!--                                 AJAX behavior for chart interaction -->
+                                <p:ajax event="itemSelect" 
+                                        listener="#{dashboard2.onChartItemSelect}"
+                                        oncomplete="redirectToHistoryMonitoring()"/>
+                            </p:lineChart>
+                            
+                            <h:outputScript>
+                                
+                                function redirectToHistoryMonitoring() {
+                                console.log(PF('lineChartjs'))
+                                //window.location.href = '/STIM/app/Access/historyMonitoring.xhtml';
+                                }
+                            </h:outputScript>
+                            
+                        </p:panel>
+
+                        <!--              
+                                                <p:panel id="mostAccess" styleClass="mostAccessed"
+                                                         header="Top 5 Most Accessed Entrances (Granted Only)" style="border-left: 6px solid #95C0F5;  border-radius: 10px;">
+                                                    <p:lineChart id="topEntranceChart" model="#{dashboard2.topEntrancesChartModel}"  style="height: 300px;" />
+                                                </p:panel>
+                        -->
+                        <br/><br/>
                         <h:outputText value="Filter by Entrance: "/>
                         <p:selectOneMenu value="#{dashboard2.selectedEntranceId}">
                             <f:selectItem itemLabel="All Entrances" itemValue="#{null}"/>
@@ -152,16 +179,7 @@
                                                             <p>Onboarded This Week</p>
                                                         </span>
                                                     </li>
-                                                 
-                                                
-                                                    <li>
-                                                        <i class='bx pi pi-dollar !text-[30px]'></i>
-                                                        <span class="info">
-                                                            <h3 class="!text-left">#{dashboard2.verificationSuccessRate}%</h3>
-                                                            <p>Verification Success Rate</p>
-                                                        </span>
-                                                    </li>                    -->
-                        <!--                            <li>
+                                             <li>
                                                         <i class='bx pi pi-dollar !text-[30px]'></i>
                                                         <span class="info">
                                                             <h3 class="!text-left">#{dashboard2.accessSuccessRate}%</h3>
@@ -172,12 +190,32 @@
                         <p:spacer height="30px"/>
 
                         <p:panelGrid columns="2" style="margin-right: 10px!important"> 
-                            <p:panel header="Roles With Most Employees">
-                                <p:pieChart model="#{dashboard2.rolePieChartModel}" style="height: 400px;" />
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:panelGroup layout="block" 
+                                                  style="display: flex; align-items: center; justify-content: space-between;">
+                                        <h:outputText value="Roles With Most Employees"/>
+                                        <p:button icon="pi pi-arrow-circle-right" styleClass="rounded-button " style="color: white!important;" 
+                                                  outcome="/app/Reports/roleReport?faces-redirect=true"
+                                                  title="See More Details on Employee Roles"
+                                                  />
+                                    </h:panelGroup>
+                                </f:facet>
+                                <p:pieChart model="#{dashboard2.rolePieChartModelS}" style="height: 400px;" />
                             </p:panel>
 
 
-                            <p:panel header="Entrance Access Count ">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:panelGroup layout="block" 
+                                                  style="display: flex; align-items: center; justify-content: space-between;">
+                                        <h:outputText value="Entrance Access Count "/>
+                                        <p:button icon="pi pi-arrow-circle-right" styleClass="rounded-button " style="color: white!important;" 
+                                                  outcome="/app/Reports/entrancesReport?faces-redirect=true"
+                                                  title="See More Details on Entrances"
+                                                  />
+                                    </h:panelGroup>
+                                </f:facet>
                                 <h:outputText value="Filter by Entrance: "/>
                                 <p:selectOneMenu value="#{dashboard2.selectedEntranceId}">
                                     <f:selectItem itemLabel="All Entrances" itemValue="#{null}"/>
@@ -192,9 +230,10 @@
 
                             </p:panel>
 
-                            <p:panel header="Top 5 Most Accessed Entrances (Granted Only)">
-                                <p:lineChart model="#{dashboard2.topEntrancesChartModel}" style="height: 300px;" />
-                            </p:panel>
+<!--                            <p:panel>
+                                <p:pieChart model="#{dashboard2.rolePieChartModel}" style="height: 400px;" />
+                            </p:panel>-->
+
 
 
                             <!--                            <p:panel styleClass="chart-container">
@@ -207,26 +246,28 @@
 
                         <p:spacer height="10px"/>
 
-                        <p:panel header="Recent Employees Added">
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:panelGroup layout="block" 
+                                              style="display: flex; align-items: center; justify-content: space-between;">
+                                    <h:outputText value="Recent Employees Added"/>
+                                    <p:button icon="pi pi-arrow-circle-right" styleClass="rounded-button " style="color: white!important;" 
+                                              outcome="/app/Reports/employeeReport?faces-redirect=true"
+                                              title="See More Details on Employees"
+                                              />
+                                </h:panelGroup>
+                            </f:facet>
                             <p:dataTable value="#{dashboard2.recentEmployees}" var="emp">
                                 <p:column headerText="Name"><h:outputText value="#{emp.firstname} #{emp.lastname}"/></p:column>
-                                <p:column headerText="Onboarded">
+                                <p:column headerText="Date And Time Onboarded">
                                     <h:outputText value="#{emp.createdAt}">
-                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss"/>
+                                        <f:convertDateTime pattern="dd-MM-yyyy HH:mm:ss" />
                                     </h:outputText>
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
 
                         <p:spacer height="30px"/>
-
-
-                        <p:panel header="Roles with Most Employees">
-                            <p:dataTable value="#{dashboard2.rolesWithMostEmployees}" var="role">
-                                <p:column headerText="Role"><h:outputText value="#{role.roleName}"/></p:column>
-                                <p:column headerText="Employees"><h:outputText value="#{role.count}"/></p:column>
-                            </p:dataTable>
-                        </p:panel>
 
                         <p:spacer height="30px"/>
                         <p:panel header="Recent Successful Logins">
@@ -355,11 +396,66 @@
 
         </div>
         <script target="head" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<!--        <script type="text/javascript">
+        // Chart extender function to enable click interactions
+        function chartExtender() {
+            this.cfg.axes.xaxis.renderer = $.jqplot.DateAxisRenderer;
+            this.cfg.axes.xaxis.tickOptions = {formatString: '%b %#d'};
+            this.cfg.highlighter = {
+                show: true,
+                sizeAdjust: 7.5,
+                tooltipAxes: 'y',
+                tooltipFormatString: '<b>%s</b> accesses on %s'
+            };
+            this.cfg.cursor = {
+                show: true,
+                zoom: false,
+                showTooltip: false
+            };
+        }
+        
+        // Function to redirect to history monitoring with filters
+        function redirectToHistoryMonitoring() {
+            // Get the selected values from hidden inputs
+            var selectedEntrance = document.getElementById('dashboardForm:selectedEntrance').value;
+            var selectedAccessType = document.getElementById('dashboardForm:selectedAccessType').value;
+            var selectedValue = document.getElementById('dashboardForm:selectedValue').value;
+            var dateRangeStart = document.getElementById('dashboardForm:dateRangeStart').value;
+            var dateRangeEnd = document.getElementById('dashboardForm:dateRangeEnd').value;
+            
+            if (selectedEntrance && selectedAccessType) {
+                // Build the redirect URL with parameters
+                var baseUrl = 'historyMonitoring.xhtml';
+                var params = '?faces-redirect=true';
+                params += '&entrance=' + encodeURIComponent(selectedEntrance);
+                params += '&accessType=' + encodeURIComponent(selectedAccessType);
+                params += '&count=' + encodeURIComponent(selectedValue);
+                if (dateRangeStart) params += '&startDate=' + encodeURIComponent(dateRangeStart);
+                if (dateRangeEnd) params += '&endDate=' + encodeURIComponent(dateRangeEnd);
+                params += '&source=dashboard';
+                
+                // Redirect to history monitoring page
+                window.location.href = baseUrl + params;
+            }
+        }
+        
+        // Alternative: Use PrimeFaces remote command for server-side redirect
+        function serverRedirect() {
+            PF('redirectCommand')([{name: 'redirect', value: 'true'}]);
+        }
+        </script>-->
         <style>
             body .ui-panel .ui-panel-titlebar{
                 background: #2196f3;
                 color: white;
 
+            }
+            .ui-panel.mostAccessed .ui-panel-titlebar {
+                background-color: #95C0F5;
+                color: black;
+                border-top-left-radius: 10px;
+                border-top-right-radius: 10px;
+                /*                background: #99E57A !important;*/
             }
             .dashboard-card {
                 background: #f8f9fa;

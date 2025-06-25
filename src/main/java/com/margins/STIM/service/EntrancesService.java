@@ -54,6 +54,15 @@ public class EntrancesService {
     public Entrances findEntranceById(String id) {
         return entityManager.find(Entrances.class, id);
     }
+    
+    public Entrances findEntranceByIdFresh(String id) {
+        return entityManager.createQuery(
+                "SELECT e FROM Entrances e LEFT JOIN FETCH e.employees WHERE e.entranceDeviceID = :id",
+                Entrances.class)
+                .setParameter("id", id)
+                .getSingleResult();
+    }
+    
     public List<Entrances> findEntranceByIds(List<String> ids) {
         return entityManager.createQuery(
                 "SELECT e FROM Entrances e WHERE e.entrance_Device_ID IN :ids", Entrances.class)

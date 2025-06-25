@@ -8,6 +8,13 @@
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets">
+    
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{employeeRoleAssignmentBean.setupBreadcrumb}" />
+        </f:metadata>
+    </ui:define>
+    
     <ui:define name="title">Assign Role to Employee</ui:define>
 
     <ui:define name="metadata"></ui:define>

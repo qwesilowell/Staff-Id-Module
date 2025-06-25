@@ -23,7 +23,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table (name ="EMPLOYMENT_STATUS", schema = "PMANTE")
+@Table (name ="EMPLOYMENT_STATUS")
 @Cacheable(false)
 public class EmploymentStatus extends EntityModel implements Serializable {
     

@@ -18,6 +18,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "Employee_roles")
+@Cacheable(false)
 public class EmployeeRole extends EntityModel implements Serializable {
 
 

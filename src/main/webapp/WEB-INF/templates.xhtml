@@ -62,7 +62,13 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                             <p:graphicImage name="id-card-svgrepo-com.svg" library="images" style="height:30px; vertical-align: middle;"/>
                         </div>-->
         </div>
-
+        
+        <div class="breadcrumb-container">
+            <h:form>
+                <p:breadCrumb model="#{breadcrumbBean.model}" styleClass="custom-breadcrumb"/>
+            </h:form>
+        </div>
+ 
         <!-- Sidebar Navigation -->
         <div id="sidebar" class="sidebar">
             <h:form>
@@ -70,17 +76,17 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     <p:submenu label="Home" expanded="true">
                         <p:menuitem value="Dashboard" icon="pi pi-fw pi-chart-bar" outcome="/app/dashboard2?faces-redirect=true"/>
                     </p:submenu>
-
-                    <!-- Verification Menu -->
+<!--
+                     Verification Menu 
                     <p:submenu label="Verfication" expanded="true">
-                        <p:menuitem value="Single Finger Verification" outcome="/app/Verification/singleFinger?faces-redirect= true" ajax="false" icon="fa-regular fa-hand-point-up"/>
                         <p:menuitem value="Multi Finger Verification" outcome="/app/Verification/multiFinger?faces-redirect=true" ajax="false" icon="fa-solid fa-hand"/>
-                    </p:submenu>
+                    </p:submenu>-->
 
                     <!-- Employee Menu -->
                     <p:submenu label="Employee" expanded="true">
                         <p:menuitem value="Onboard Employee" outcome="/app/OnboardEmployee/onboardEmployee?faces-redirect=true" icon="fa-solid fa-user-large"/>
                         <p:menuitem value="Employee Profiles" outcome="/app/employeeList?faces-redirect=true" icon="pi pi-pencil"/>
+                        <p:menuitem value="Update Employee Details" outcome="/app/Verification/singleFinger?faces-redirect= true" icon="fa-regular fa-hand-point-up"/>
                     </p:submenu>
 
                     <p:submenu label="Employee Roles" expanded="true">

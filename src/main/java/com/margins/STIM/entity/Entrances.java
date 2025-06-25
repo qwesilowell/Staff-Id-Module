@@ -11,6 +11,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  *
@@ -18,6 +21,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "ENTRANCES")
+@Cacheable(false)
 public class Entrances /*extends EntityModel*/ implements Serializable {
 
     @Id
@@ -33,6 +37,8 @@ public class Entrances /*extends EntityModel*/ implements Serializable {
     @ManyToMany(mappedBy = "accessibleEntrances")
     private Set<EmployeeRole> allowedRoles = new HashSet<>();
 
+    @Getter
+    @Setter
     @ManyToMany(mappedBy = "customEntrances")
     private List<Employee> employees = new ArrayList<>();
 
@@ -77,4 +83,31 @@ public class Entrances /*extends EntityModel*/ implements Serializable {
 
     public Entrances() {
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 97 * hash + Objects.hashCode(this.entranceDeviceId);
+        hash = 97 * hash + Objects.hashCode(this.entrance_Name);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Entrances other = (Entrances) obj;
+        if (!Objects.equals(this.entranceDeviceId, other.entranceDeviceId)) {
+            return false;
+        }
+        return Objects.equals(this.entrance_Name, other.entrance_Name);
+    }
+    
 }

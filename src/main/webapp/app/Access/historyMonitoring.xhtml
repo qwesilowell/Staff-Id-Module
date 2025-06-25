@@ -6,7 +6,13 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets"
                 xmlns:f="jakarta.faces.core">
-
+    
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{historyBean.setupBreadcrumb}" />
+        </f:metadata>
+    </ui:define>
+    
     <ui:define name ="title">History Monitoring</ui:define>
 
     <ui:define name="metadata">
@@ -19,7 +25,7 @@
         <!-- Main Content -->
         <div class="main-content">
             <h:form id="historyMonitorForm">
-                <p:growl id="messages"  showSummary= "true" showDetail="true"/>
+                <p:growl id="messages"  widgetVar="messages"  showSummary= "true" showDetail="true" life="6000" globalOnly="true"/>
 
                 <p:spacer height="10px"/>
 
@@ -51,6 +57,16 @@
                                 <f:selectItems value="#{historyBean.allEntrances}" var="entrance" itemLabel="#{entrance.entrance_Name}" itemValue="#{entrance.entrance_Device_ID}"/>
                             </p:selectOneMenu>
                         </p:outputPanel>
+                        
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter by Role</p:outputLabel>
+                            <p:autoComplete value="#{historyBean.selectedRole}"
+                                            completeMethod="#{historyBean.searchRoles}"
+                                            var="role" itemLabel="#{role.roleName}" itemValue="#{role}"
+                                            converter="employeeRoleConverter"  style="width: 100%"
+                                            forceSelection="true" dropdown="true"
+                                            placeholder="Search or Select Entrance" panelStyle="max-height: 200px; overflow-y:auto;"/>
+                        </p:outputPanel>
 
                         <p:outputPanel>
                             <p:outputLabel for="@next">Filter  by result</p:outputLabel>
@@ -63,13 +79,13 @@
 
                         <p:outputPanel>
                             <p:outputLabel for="@next">Filter  by date</p:outputLabel>
-                            <p:datePicker selectionMode="range" monthNavigator="true" yearNavigator="true" showButtonBar="true" value="#{historyBean.timeRange}"/>
+                            <p:datePicker selectionMode="range" monthNavigator="true" yearNavigator="true" showButtonBar="true" value="#{historyBean.timeRange}" style="width: 100%"/>
                         </p:outputPanel>
                     </p:panelGrid>
                     
                     <div style="display: flex; justify-content: space-between;">
                         <p:commandButton value="Reset" action="#{historyBean.reset()}" update="@form" 
-                                         icon="pi pi-spinner-dotted" iconPos="left" 
+                                         icon="fa fa-spinner" iconPos="left" 
                                          styleClass="ui-button-raised ui-button-danger" style="margin-left: 1%"/>
                         <p:commandButton value="Generate Search Criteria" action="#{historyBean.fetchCriteria()}"
                                          icon="pi pi-search" iconPos="left" 
@@ -90,8 +106,6 @@
                         </div>
                     </f:facet>
 
-
-
                     <!-- Employee Name Filter -->
                     <p:column headerText="Employee" sortBy="#{historyBean.getEmployeeName(log.employee)}" filterable="true">
                         <h:outputText value="#{historyBean.getEmployeeName(log.employee)}" />
@@ -102,6 +116,9 @@
                         <h:outputText value="#{log.employee.ghanaCardNumber}" />
                     </p:column>
 
+                    <p:column headerText="Employee Role" sortBy="#{log.employee.role.roleName}">
+                        <h:outputText value="#{log.employee.role.roleName}"/> 
+                    </p:column>
                     <!-- Entrance Filter -->
                     <p:column headerText="Entrance" sortBy="#{historyBean.getEntranceName(log.entranceId)}">
                         <h:outputText value="#{historyBean.getEntranceName(log.entranceId)}" />

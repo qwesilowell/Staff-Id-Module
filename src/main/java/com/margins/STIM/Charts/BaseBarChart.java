@@ -31,7 +31,7 @@ public class BaseBarChart {
         BarChartDataSet barDataSet = new BarChartDataSet();
         barDataSet.setLabel("Remove");
 
-        List<Object> values = new ArrayList<>();
+        List<Number> values = new ArrayList<>();
         List<String> bgColor = new ArrayList<>();
         List<String> borderColor = new ArrayList<>();
         List<String> labels = new ArrayList<>();

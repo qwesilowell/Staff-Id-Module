@@ -3,7 +3,6 @@ package com.margins.STIM.Bean;
 import com.google.gson.Gson;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
-import jakarta.validation.constraints.NotEmpty;
 import java.io.Serializable;
 import jakarta.ejb.EJB;
 import com.margins.STIM.service.User_Service;
@@ -18,6 +17,7 @@ import com.margins.STIM.util.FingerprintProcessor;
 import com.margins.STIM.util.JSF;
 import com.margins.STIM.util.ValidationUtil;
 import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.IOException;
 import java.net.URI;
@@ -49,6 +49,8 @@ public class UserBean implements Serializable {
     @EJB
     private User_Service userService;
 
+    @Inject 
+    private BreadcrumbBean breadcrumbBean;
 
     @Getter
     @Setter
@@ -139,7 +141,9 @@ public class UserBean implements Serializable {
         System.out.println("USERS>>>>>>>>>>>>>> " + users.toString());
     }
 
-    
+    public void setupBreadcrumb() {
+        breadcrumbBean.setCreateNewUserBreadcrumb();
+    }
 
     private void clearForm() {
         this.ghanaCardNumber = null;

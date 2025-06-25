@@ -22,7 +22,7 @@ import javax.imageio.IIOImage;
  
 /**
 *
-* @author BryanAnyanful
+* @author 
 */
 public class FingerprintProcessor {
  

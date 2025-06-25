@@ -9,6 +9,13 @@
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets">
+    
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{wizardBean.setupBreadcrumb}" />
+        </f:metadata>
+    </ui:define>
+    
     <ui:define name="title">Onboard Employee</ui:define>
 
 
@@ -305,11 +312,11 @@
 
                             <!-- Right Column -->
                             <h:panelGroup styleClass="form-right">
-                                <h:outputLabel value="Address:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
+                                <h:outputLabel value="Address: *" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
                                 <p:inputText value="#{wizardBean.address}" placeholder="Enter address"
                                              style="width:100%; padding:5px; margin-bottom:1rem;" />
 
-                                <h:outputLabel value="Assigned Role:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
+                                <h:outputLabel value="Assigned Role: *" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
                                 <p:outputPanel style="display:flex; gap:10px; align-items:center; margin-bottom:1rem;">
                                     <p:inputText value="#{wizardBean.assignedRoleName}" readonly="true"
                                                  style="border:none; background-color:#f0f0f0; color:gray; font-weight:bold; width:50%;" />
@@ -317,7 +324,7 @@
                                                      onclick="PF('roleSelectionDialog').show();" styleClass="ui-button-secondary" />
                                 </p:outputPanel>
 
-                                <h:outputLabel value="Employment Status:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
+                                <h:outputLabel value="Employment Status: *" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
                                 <p:selectOneMenu id="empStatus" value="#{wizardBean.selectedEmploymentStatusId}"
                                                  style="width:100%; margin-bottom:1rem;">
                                     <f:selectItem itemLabel="Select Status" itemValue="" noSelectionOption="true" />
@@ -325,8 +332,16 @@
                                                    itemLabel="#{status.empstatus}" itemValue="#{status.id}" />
                                 </p:selectOneMenu>
 
-                                <h:outputLabel value="Email Address:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
+                                <h:outputLabel value="Email: *" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
                                 <p:inputText value="#{wizardBean.email}" placeholder="Enter email address"
+                                             style="width:100%; padding:5px; margin-bottom:1rem;" />
+                                
+                                <h:outputLabel value="Primary Phone Number: *" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
+                                <p:inputText value="#{wizardBean.primaryPhone}" placeholder="Enter primary phone number"
+                                             style="width:100%; padding:5px; margin-bottom:1rem;" />
+                                
+                                <h:outputLabel value="Secondary Phone Number" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
+                                <p:inputText value="#{wizardBean.secondaryPhone}" placeholder="Optional"
                                              style="width:100%; padding:5px; margin-bottom:1rem;" />
                             </h:panelGroup>
                         </h:panelGroup>
@@ -397,7 +412,7 @@
 
                         <div style="display: flex; justify-content: space-between; margin-top: 20px;">
                             <p:commandButton value="Back" action="#{wizardBean.prevStep}" update="wizardForm"/>
-                            <p:commandButton value="Save Employee" action="#{wizardBean.saveEmployeeToDatabase}" update="growl"/>
+                            <p:commandButton value="Save Employee" action="#{wizardBean.saveEmployeeToDatabase}" style="background-color: green !important" update="growl"/>
                         </div>
 
 

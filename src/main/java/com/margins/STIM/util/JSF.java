@@ -51,6 +51,10 @@ public class JSF {
     public static void addSuccessMessage(String message) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, message, message));
     }
+    
+    public static void addSuccessMessageWithSummary(String summary,String message) {
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, summary, message));
+    }
 
     public static void addErrorMessage(String message) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message));

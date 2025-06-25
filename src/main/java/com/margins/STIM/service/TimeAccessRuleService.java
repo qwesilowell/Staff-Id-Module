@@ -9,13 +9,10 @@ import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.EmployeeRole;
 import com.margins.STIM.entity.Entrances;
 import com.margins.STIM.entity.RoleTimeAccess;
-import com.margins.STIM.entity.TimeAccessRule;
 import com.margins.STIM.util.DateFormatter;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
-import jakarta.transaction.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.Date;
@@ -27,110 +24,6 @@ public class TimeAccessRuleService {
 
     @PersistenceContext
     private EntityManager em;
-
-    public void saveTimeRule(TimeAccessRule rule) {
-        if ((rule.getRole() != null && rule.getEmployee() != null)
-                || (rule.getRole() == null && rule.getEmployee() == null)) {
-            throw new IllegalArgumentException("Rule must have either role or employee, not both or neither");
-        }
-        if (rule.getEntrance() == null) {
-            throw new IllegalArgumentException("Rule must have an entrance");
-        }
-        if (rule.getId() == null) {
-            em.persist(rule);
-        } else {
-            em.merge(rule);
-        }
-    }
-
-    public TimeAccessRule getTimeRuleById(Long ruleId) {
-        return em.find(TimeAccessRule.class, ruleId);
-    }
-
-    public List<TimeAccessRule> getTimeRulesByRole(int roleId) {
-        TypedQuery<TimeAccessRule> query = em.createQuery(
-                "SELECT r FROM TimeAccessRule r WHERE r.role.id = :roleId AND r.employee IS NULL",
-                TimeAccessRule.class
-        );
-        query.setParameter("roleId", roleId);
-        return query.getResultList();
-    }
-
-    public List<TimeAccessRule> getTimeRulesByEntrance(String entranceId) {
-        TypedQuery<TimeAccessRule> query = em.createQuery(
-                "SELECT r FROM TimeAccessRule r WHERE r.entrance.entranceDeviceId = :entranceId AND r.employee IS NULL",
-                TimeAccessRule.class
-        );
-        query.setParameter("entranceId", entranceId);
-        return query.getResultList();
-    }
-
-    public List<TimeAccessRule> getTimeRulesByEmployee(String ghanaCardNumber) {
-        TypedQuery<TimeAccessRule> query = em.createQuery(
-                "SELECT r FROM TimeAccessRule r WHERE r.employee.ghanaCardNumber = :ghanaCardNumber AND r.role IS NULL",
-                TimeAccessRule.class
-        );
-        query.setParameter("ghanaCardNumber", ghanaCardNumber);
-        return query.getResultList();
-    }
-
-    public TimeAccessRule getRuleByRoleAndEntrance(int roleId, String entranceId) {
-        TypedQuery<TimeAccessRule> query = em.createQuery(
-                "SELECT r FROM TimeAccessRule r WHERE r.role.id = :roleId "
-                + "AND r.entrance.entranceDeviceId = :entranceDeviceId "
-                + "AND r.employee IS NULL",
-                TimeAccessRule.class
-        );
-        query.setParameter("roleId", roleId);
-        query.setParameter("entranceDeviceId", entranceId);
-        return query.getResultStream().findFirst().orElse(null);
-    }
-
-    public TimeAccessRule getRuleByEmployeeAndEntrance(String ghanaCardNumber, String entranceId) {
-        TypedQuery<TimeAccessRule> query = em.createQuery(
-                "SELECT r FROM TimeAccessRule r WHERE r.employee.ghanaCardNumber = :ghanaCard "
-                + "AND r.entrance.entranceDeviceId= :entranceDeviceId",
-                TimeAccessRule.class
-        );
-        query.setParameter("ghanaCard", ghanaCardNumber);
-        query.setParameter("entranceDeviceId", entranceId);
-        return query.getResultStream().findFirst().orElse(null);
-    }
-
-    public void deleteTimeRule(Long ruleId) {
-        TimeAccessRule rule = em.find(TimeAccessRule.class, ruleId);
-        if (rule != null) {
-            em.remove(rule);
-        }
-    }
-
-    public void deleteTimeRulesByRoleAndEntrance(int roleId, String entranceId) {
-        TypedQuery<TimeAccessRule> query = em.createQuery(
-                "SELECT r FROM TimeAccessRule r WHERE r.role.id = :roleId AND r.entrance.entranceDeviceId = :entranceId AND r.employee IS NULL",
-                TimeAccessRule.class
-        );
-        query.setParameter("roleId", roleId);
-        query.setParameter("entranceId", entranceId);
-        List<TimeAccessRule> rules = query.getResultList();
-        for (TimeAccessRule rule : rules) {
-            em.remove(rule);
-        }
-    }
-
-    public void deleteTimeRulesByEmployeeAndEntrance(String ghanaCardNumber, String entranceId) {
-        TypedQuery<TimeAccessRule> query = em.createQuery(
-                "SELECT r FROM TimeAccessRule r WHERE r.employee.ghanaCardNumber = :ghanaCardNumber AND r.entrance.entranceDeviceId= :entranceId AND r.role IS NULL",
-                TimeAccessRule.class
-        );
-        query.setParameter("ghanaCardNumber", ghanaCardNumber);
-        query.setParameter("entranceId", entranceId);
-        List<TimeAccessRule> rules = query.getResultList();
-        for (TimeAccessRule rule : rules) {
-            em.remove(rule);
-        }
-    }
-    
-    
     
     public void saveOrUpdateRoleTimeAccess(EmployeeRole role, Entrances entrance,
             Map<String, LocalTime> startTimes,
@@ -178,7 +71,19 @@ public class TimeAccessRuleService {
         }
     }
     
+    public List<RoleTimeAccess> findByRoleAndEntrance(EmployeeRole role, Entrances entrance) {
+        return em.createQuery("SELECT r FROM RoleTimeAccess r WHERE r.employeeRole = :role AND r.entrances = :entrance", RoleTimeAccess.class)
+                .setParameter("role", role)
+                .setParameter("entrance", entrance)
+                .getResultList();
+    }
     
+    public void deleteTimeRules(EmployeeRole role, Entrances entrance) {
+        List<RoleTimeAccess> timeAccessList = findByRoleAndEntrance(role, entrance);
+        for (RoleTimeAccess rta : timeAccessList) {
+            em.remove(rta);
+        }
+    }
     
     public void saveOrUpdateCustomTimeAccess(Employee employee, Entrances entrance,
             Map<String, LocalTime> startTimes,
@@ -223,4 +128,13 @@ public class TimeAccessRuleService {
             return null;
         }
     }
+    
+    public List<CustomTimeAccess> findByEmployeeAndEntrance(Employee emp, Entrances entrance) {
+        return em.createQuery("SELECT r FROM CustomTimeAccess r WHERE r.employee = :emp AND r.entrances = :entrance", CustomTimeAccess.class)
+                .setParameter("emp", emp)
+                .setParameter("entrance", entrance)
+                .getResultList();
+    }
+    
+
 }

@@ -8,10 +8,17 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets">
 
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{manageEmployeesBean.setupBreadcrumb}" />
+        </f:metadata>
+    </ui:define>
+
     <ui:define name ="title">Employee List</ui:define>
     <ui:define name="head">
         <h:outputStylesheet library="css" name="manageEmployee.css"/>
     </ui:define>
+
     <ui:define name ="content">
         <!-- Main Content -->
         <div class="main-content" >
@@ -80,7 +87,14 @@
                                 <div class="user-profile">
                                     <div class="profile-avatar"><strong>#{manageEmployeesBean.selectedEmployeeInitials}</strong></div>
                                     <h1 class="user-name">#{manageEmployeesBean.selectedEmployee.fullName}</h1>
-                                    <div class="user-email">#{manageEmployeesBean.selectedEmployee.email}</div>
+                                    <div class="user-email" style="display: flex; justify-content: space-between">
+                                        <div style="margin-right: 3px">
+                                            • #{manageEmployeesBean.selectedEmployee.email}
+                                        </div>
+                                        <div>
+                                            • #{manageEmployeesBean.selectedEmployee.primaryPhone}
+                                        </div>
+                                    </div>
                                     <h3 class = "gh-no">#{manageEmployeesBean.selectedEmployee.ghanaCardNumber}</h3>
                                     <p class="user-bio">
                                         #{manageEmployeesBean.selectedEmployee.role} <span class="user-empstat">(#{manageEmployeesBean.selectedEmployee.employmentStatus})</span>
@@ -145,21 +159,7 @@
                                     <div style="display: flex; align-items: center; gap: 8px;">
                                         <i class="fa-regular fa-clock"></i>
                                         <h3 class="section-title" style="margin: 0;">Custom Time Access Details</h3>
-                                    </div>
-                                    <h:panelGroup id="customTimeAccessPanel">
-                                        <h:panelGroup  rendered="#{not empty manageEmployeesBean.getEmployeeTimeRules(manageEmployeesBean.selectedEmployee.ghanaCardNumber)}"
-                                                       styleClass="skill-tags"
-                                                       style="margin-top: 10px;">
-                                            <ui:repeat value="#{manageEmployeesBean.getEmployeeTimeRules(manageEmployeesBean.selectedEmployee.ghanaCardNumber)}" var="rule">
-                                                <span class="skill-tag">#{manageEmployeesBean.formatTimeRule(rule)}</span>                                            
-                                            </ui:repeat>
-                                        </h:panelGroup>
-                                        <br/>
-                                        <h:outputText value="No custom time rules assigned"
-                                                      rendered="#{empty manageEmployeesBean.getEmployeeTimeRules(manageEmployeesBean.selectedEmployee.ghanaCardNumber)}"
-                                                      style="font-style: italic; color: gray; font-weight: bold;" />
-                                    </h:panelGroup>
-
+                                    </div>                                   
                                     <div class="profile-actions">
                                         <p:commandButton value="Create Customized Time Access"
                                                          icon=" pi pi-cog"
@@ -193,8 +193,6 @@
                           style="color:#9ca3af">
                     <h:panelGroup>
                         <h:outputText value="Are you sure you want to delete employee?" />
-
-                        <!--                        <h:outputText value="#-{manageEmployeesBean.selectedEmployee.fullName} ?" style="display:block; margin-top:20px;" />-->
                     </h:panelGroup>              
                     <br/>
                     <br/>
@@ -238,14 +236,14 @@
                             <h:panelGroup>
                                 <!-- Select Entrance -->
                                 <p:autoComplete id="entrance" value="#{manageEmployeesBean.selectedEntranceId}"
-                                                completeMethod="#{manageEmployeesBean.searchAllEntrances}" 
+                                                completeMethod="#{manageEmployeesBean.employeesEntrances}" 
                                                 var="entrance" itemLabel="#{entrance.entrance_Name}" 
                                                 itemValue="#{entrance.entrance_Device_ID}"
                                                 forceSelection="true" dropdown="true"
                                                 scrollHeight="200"
                                                 placeholder="Search or Select Entrance" 
                                                 style="width: 100%;  overflow: hidden">
-                                    <p:ajax event="itemSelect" listener="#{manageEmployeesBean.prepareCustomTimeRules}" update="timeSettings" />     
+                                    <p:ajax event="itemSelect" listener="#{manageEmployeesBean.prepareCustomTimeRules}" update="timeSettings dayTimeInputs" process="@this" />     
                                 </p:autoComplete>
                             </h:panelGroup>
                         </div>
@@ -257,7 +255,7 @@
                             <p:selectManyCheckbox value="#{manageEmployeesBean.selectedDays}" layout="grid" columns="3" id="daysCheckbox">
                                 <f:selectItem itemLabel="Monday" itemValue="MONDAY" />
                                 <f:selectItem itemLabel="Tuesday" itemValue="TUESDAY" />
-                                <f:selectItem itemLabel="Wednesday" itemValue="Wednesday" />
+                                <f:selectItem itemLabel="Wednesday" itemValue="WEDNESDAY" />
                                 <f:selectItem itemLabel="Thursday" itemValue="THURSDAY" />
                                 <f:selectItem itemLabel="Friday" itemValue="FRIDAY" />
                                 <f:selectItem itemLabel="Saturday" itemValue="SATURDAY" />
@@ -319,8 +317,7 @@
                         <div class="dialog-footer">
                             <p:commandButton value="Save Rule" icon="pi pi-save" 
                                              action="#{manageEmployeesBean.saveDayTimeRules()}"
-                                             update="employeeForm messages" 
-                                             oncomplete="PF('sidebar2').hide()" 
+                                             update="employeeForm" 
                                              styleClass="save" />
                         </div>
                     </h:form>
@@ -361,173 +358,5 @@
             });
             //]]>
         </script>
-
-        <style>
-            .labelColumn {
-                font-weight: 600;
-                vertical-align: middle;
-                padding-right: 15px;
-                width: 35%;
-                color: #374151;
-            }
-            .same-line-container {
-                display: flex;
-                align-items: center; /* Vertically align items in the container */
-                gap: 10px; /* Adjust the spacing between the elements as needed */
-            }
-
-            .icon-style {
-                font-size: 1.2rem; /* Apply the font size to all icons */
-                margin-right: 0.5rem; /* Add a little space to the right of each icon */
-                color:#644d12;
-                ;
-            }
-
-            .label-style {
-                font-weight: 600; /* Make the labels bold */
-                color: #374151; /* Apply the label color */
-            }
-
-            .value-style {
-                color: #111827; /* Apply the value color */
-            }
-
-            .days-container {
-                background: #F9FAFB;
-                border-radius: 8px;
-                padding: 15px 10px 10px;
-            }
-
-            .days-checkboxes {
-                width: 100%;
-            }
-
-            .days-checkboxes .ui-selectmanycheckbox label {
-                margin-right: 8px;
-                padding: 6px 0;
-                font-weight: 500;
-            }
-
-            .days-checkboxes .ui-chkbox-box {
-                border-radius: 4px;
-            }
-
-            /* Footer */
-            .dialog-footer {
-                background: #fafaf8;
-                padding: 16px;
-                display: flex;
-                justify-content: flex-end;
-                border-top: 1px solid #E5E7EB;
-            }
-
-            .p-dialog .ui-panelgrid td {
-                padding: 10px 4px;
-            }
-
-            .custom-panelgrid {
-                width: 100%;
-            }
-
-            .save {
-                background-color: #2196f3;
-                color: white !important;
-                padding: 6px 4px !important;
-            }
-
-            .icon-expand-btn {
-                overflow: hidden;
-                white-space: nowrap;
-                width: 40px; /* Show only the icon initially */
-                transition: all 0.3s ease;
-                padding-left: 5px;
-                padding-right: 12px;
-                color: #374151 !important;
-                background-color: white !important ;
-                border: none !important;
-            }
-
-            .icon-expand-btn .ui-button-text {
-                opacity: 0;
-                width: 0;
-                display: inline-block;
-                transition: opacity 0.3s ease, width 0.3s ease;
-            }
-
-
-            /* On hover, expand the button */
-            .icon-expand-btn:hover {
-                width: 290px; /* Adjust width as needed for text */
-                background-color:#E5E7EB !important;
-            }
-
-            /* Fade in the text */
-            .icon-expand-btn:hover .ui-button-text {
-                opacity: 1;
-                width: auto;
-                margin-left: 5px;
-            }
-            .white-row {
-                background-color: white !important;
-            }
-
-            .ash-row {
-                background-color: #f0f0f0 !important;
-            }
-            .white-row:hover, .ash-row:hover {
-                background-color: #dceeff !important;
-                cursor: pointer;
-            }
-
-
-            .day-row {
-                margin-bottom: 20px; /* Space between days */
-            }
-            .day-title {
-                font-weight: bold;
-                font-size: 1.2em;
-                margin-bottom: 8px;
-                color: #333;
-            }
-
-            .time-row {
-                display: flex;
-                align-items: center;
-                gap: 20px;
-                flex-wrap: wrap;
-                margin-top: 6px;
-            }
-
-            /* Align label, icon, and input within each group */
-            .time-group {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            }
-
-            /* Make the time input smaller and tighter */
-            .small-time-picker .ui-inputfield {
-                width: 100% !important;
-                font-size: 0.75rem !important;
-                padding: 4px 6px !important;
-            }
-
-            /* Optional: reduce margin around output labels */
-            .label-style {
-                font-size: 0.75rem;
-                margin: 0;
-                font-style: italic;
-            }
-            @media (max-width: 600px) {
-                .time-row {
-                    flex-direction: column; /* Stack vertically on small screens */
-                    align-items: flex-start;
-                }
-                .time-group .p-datepicker {
-                    width: 100%; /* Full width on mobile */
-                }
-            }
-        </style>
-
     </ui:define>
 </ui:composition>

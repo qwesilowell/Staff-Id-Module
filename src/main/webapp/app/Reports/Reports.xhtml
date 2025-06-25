@@ -6,6 +6,12 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets"
                 xmlns:f="jakarta.faces.core">
+    
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{reportController.setupRepBreadcrumb}" />
+        </f:metadata>
+    </ui:define>
 
     <ui:define name ="title">Reports</ui:define>
 
@@ -18,7 +24,173 @@
     <ui:define name ="content">
         <!-- Main Content -->
         <div class="main-content">
-            
+            <div class="reportnav">
+                <div class="cards-container">
+                    <!-- Card 1 -->
+                    <div class="card blue">
+                        <h:link outcome="/app/Reports/employeeReport?faces-redirect=true" styleClass="no-style" >
+                            <div class="card-content">                                       
+                                <div class="card-title">Employees Report</div>
+                                <br/>
+                                <div class="card-value">Reports based on Employee-related summaries and insights</div>
+                                <ul style="padding-left: 1rem; font-size: 0.85rem; margin-top: 0.5rem;">
+
+                                </ul>
+                            </div>
+                            <div class="card-icon">
+                                <i class=" pi pi-users"></i>
+                            </div>
+                        </h:link>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="card green">
+                        <h:link outcome="/app/Reports/roleReport?faces-redirect=true" styleClass="no-style" >
+                            <div class="card-content">
+                                <div class="card-title">Roles Report</div>
+                                <br/>
+                                <div class="card-value">Role reports and how they relate to access.</div>
+                            </div>
+                            <div class="card-icon">
+                                <i class="fa fa-user-tie"></i>
+                            </div>
+                        </h:link>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="card orange">
+                        <h:link outcome="/app/Reports/entrancesReport?faces-redirect=true" styleClass="no-style" >
+                            <div class="card-content">
+                                <div class="card-title">Entrances Report</div>
+                                <br/>
+                                <div class="card-value">Overview of entrance configurations and usage</div>
+                            </div>
+                            <div class="card-icon">
+                                <i class="fa-solid fa-door-open"></i>
+                            </div>
+                        </h:link>
+                    </div>
+
+                    <!-- Card 5 -->
+                    <div class="card purple">
+                        <h:link  styleClass="no-style" > <!-- Settings Recent logins -->
+                            <div class="card-content">
+                                <div class="card-title"> Logins Report </div>
+                                <br/>
+                                <div class="card-value">Create reports based on logins into the system and times</div>
+                            </div>
+                            <div class="card-icon">
+                                <i class="fa-regular fa-circle-check"></i>
+                            </div>
+                        </h:link>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <style>
+            .no-style{
+                display: flex;
+                justify-content: space-between;
+
+                text-decoration: none !important;
+                color: inherit !important;
+                width: 100%;
+                height: 100%;
+            }
+
+            .reportnav {
+                max-width:max-content;
+                margin-right: 10px;
+                margin-top: 50px;
+            }
+            .cards-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 20px;
+            }
+
+            .card {
+                background-color: white;
+                border-radius: 10px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                padding: 20px;
+                justify-content: space-between;
+                align-items: center;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                height: 120px;
+                width: 200%;
+            }
+
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+            }
+
+
+
+            .card-title {
+                font-size: 20px;
+                color: #666;
+                font-weight: bold;
+            }
+
+            .card-value {
+                font-size: 16px;
+                font-weight: 500;
+                color: #333;
+            }
+
+            .card-icon {
+                font-size: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+            }
+
+            /* Card color variations */
+            .card.blue .card-icon {
+                color: #4c84ff;
+                background-color: rgba(76, 132, 255, 0.1);
+            }
+
+            .card.green .card-icon {
+                color: #2ed47a;
+                background-color: rgba(46, 212, 122, 0.1);
+            }
+
+            .card.orange .card-icon {
+                color: #ff8c00;
+                background-color: rgba(255, 140, 0, 0.1);
+            }
+
+            .card.red .card-icon {
+                color: #f95062;
+                background-color: rgba(249, 80, 98, 0.1);
+            }
+
+            .card.purple .card-icon {
+                color: #8e44ad;
+                background-color: rgba(142, 68, 173, 0.1);
+            }
+
+            .card.teal .card-icon {
+                color: #00a8a8;
+                background-color: rgba(0, 168, 168, 0.1);
+            }
+
+            .card.pink .card-icon {
+                color: #ff4f81;
+                background-color: rgba(255, 79, 129, 0.1);
+            }
+
+            .card.yellow .card-icon {
+                color: #ffa800;
+                background-color: rgba(255, 168, 0, 0.1);
+            }
+        </style>
     </ui:define>
 </ui:composition>

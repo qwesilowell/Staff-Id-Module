@@ -27,6 +27,9 @@ public class EmployeeRoleAssignmentBean implements Serializable {
 
     @Inject
     private EmployeeRole_Service roleService;
+    
+    @Inject 
+    private BreadcrumbBean breadcrumbBean;
 
     private List<Employee> employees;
     private List<EmployeeRole> roles;
@@ -46,6 +49,10 @@ public class EmployeeRoleAssignmentBean implements Serializable {
 
     public List<EmployeeRole> getRoles() {
         return roles;
+    }
+    
+    public void setupBreadcrumb() {
+        breadcrumbBean.setAssignRoleBreadcrumb();
     }
 
     public void findEmployee() {

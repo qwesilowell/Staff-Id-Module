@@ -45,7 +45,7 @@ public class AccessLog implements Serializable {
     @Column(name = "result")
     private String result; // "granted" or "denied"
 
-    @Column(name = "verification_time")
+    @Column(name = "verification_time") //, columnDefinition = "NUMBER(2,2) DEFAULT 0"
     private Double verificationTime; // in seconds
     
     public AccessLog() {
