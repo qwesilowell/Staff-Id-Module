@@ -4,6 +4,7 @@
  */
 package com.margins.STIM.entity;
 
+import jakarta.persistence.Column;
 import java.time.LocalDate;
 import java.util.Date;
 import jakarta.persistence.GeneratedValue;
@@ -12,51 +13,40 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  *
  * @author PhilipManteAsare
  */
 @MappedSuperclass
+@Getter
+@Setter
 public class EntityModel {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    
-    @Temporal(TemporalType.TIMESTAMP)
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Date createdAt;
-    
-    private LocalDate updatedAt;
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-    
-    public Date getCreatedAt() {
-        return createdAt;
-    }
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @PrePersist
-    public void setCreatedAt() {
-        Date currentdate = new Date();
-        this.createdAt = currentdate;
+    protected void onCreate() {
+        createdAt = new Date();
+        updatedAt = LocalDateTime.now();
     }
-    
-    public LocalDate getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    @PreUpdate
-    public void setUpdatedAt() {
-        this.updatedAt = LocalDate.now();
-    }
-    
-    
-}
 
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted = false;
+}

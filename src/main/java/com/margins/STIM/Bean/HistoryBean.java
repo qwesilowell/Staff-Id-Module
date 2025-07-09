@@ -163,9 +163,9 @@ public class HistoryBean implements Serializable {
         return employee.getFullName();
     }
 
-    public String getEntranceName(String entranceId) {
+    public String getEntranceName(int entranceId) {
         Entrances entrance = entrancesService.findEntranceById(entranceId);
-        return entrance != null ? entrance.getEntrance_Name() : entranceId;
+        return entrance != null ? entrance.getEntranceName(): "Entrance not found";
     }
 
     public String getFormattedTimestamp(AccessLog log) {

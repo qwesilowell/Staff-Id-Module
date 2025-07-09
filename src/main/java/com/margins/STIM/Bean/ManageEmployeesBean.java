@@ -11,6 +11,7 @@ import com.margins.STIM.service.Employee_Service;
 import com.margins.STIM.service.EntrancesService;
 import com.margins.STIM.service.TimeAccessRuleService;
 import com.margins.STIM.util.DateFormatter;
+import com.margins.STIM.util.JSF;
 import java.io.Serializable;
 import java.util.List;
 import jakarta.annotation.PostConstruct;
@@ -41,10 +42,8 @@ public class ManageEmployeesBean implements Serializable {
     private List<Employee> employees;
     private String searchTerm;
 
-
     @Inject
     private BreadcrumbBean breadcrumbBean;
-
 
     @Inject
     private EntrancesService entrancesService;
@@ -78,9 +77,6 @@ public class ManageEmployeesBean implements Serializable {
     @Setter
     private boolean showCustomTimeRules;
     @Getter
-    @Setter
-    private String selectedEntranceId;
-    @Getter
     private List<Entrances> allEntrances;
     @Getter
     @Setter
@@ -106,7 +102,7 @@ public class ManageEmployeesBean implements Serializable {
         showCustomEntrances = false;
         showCustomTimeRules = false;
     }
-    
+
     public void setupBreadcrumb() {
         if (breadcrumbBean != null) {
             breadcrumbBean.setEmployeeListBreadcrumb();
@@ -116,13 +112,11 @@ public class ManageEmployeesBean implements Serializable {
         }
     }
 
-
 //    public String viewEmployeeDetails() {
 //        // Add employee details to breadcrumb
 //        breadcrumbBean.addBreadcrumb("Employee Details", null, true);
 //        return "employee-details?faces-redirect=true";
 //    }
-    
     public void findEmployee() {
         if (searchQuery == null || searchQuery.trim().isEmpty()) {
             employees = employeeService.findAllEmployees();
@@ -144,7 +138,6 @@ public class ManageEmployeesBean implements Serializable {
 
     public void viewEmployee(String ghanaCardNumber) {
         selectedEmployee = employeeService.findEmployeeByGhanaCard(ghanaCardNumber);
-        selectedEntranceId = null;
         selectedEntrance = null;
         showEntrances = false;
         showCustomEntrances = false;
@@ -240,14 +233,14 @@ public class ManageEmployeesBean implements Serializable {
 
     public List<Entrances> searchCustomEntrances(String query) {
         return selectedEmployee.getCustomEntrances().stream()
-                .filter(e -> e.getEntrance_Name() != null
-                && e.getEntrance_Name().toLowerCase().contains(query.toLowerCase()))
+                .filter(e -> e.getEntranceName() != null
+                && e.getEntranceName().toLowerCase().contains(query.toLowerCase()))
                 .collect(Collectors.toList());
     }
 
     public List<Entrances> searchAllEntrances(String query) {
         return allEntrances.stream()
-                .filter(e -> e.getEntrance_Name().toLowerCase().contains(query.toLowerCase()))
+                .filter(e -> e.getEntranceName().toLowerCase().contains(query.toLowerCase()))
                 .collect(Collectors.toList());
     }
 
@@ -262,15 +255,14 @@ public class ManageEmployeesBean implements Serializable {
             combinedEntrances.addAll(selectedEmployee.getRole().getAccessibleEntrances());
         }
         return combinedEntrances.stream()
-                .filter(e -> e.getEntrance_Device_ID() != null)
+                .filter(e -> e.getEntranceDeviceId() != null)
                 .collect(Collectors.toList());
 
     }
 
-    public void prepareCustomTimeRules(SelectEvent<String> event) {
-        String entranceId = event.getObject();
-        this.selectedEntranceId = entranceId;
-        this.selectedEntrance = entrancesService.findEntranceById(entranceId);
+    public void prepareCustomTimeRules(SelectEvent<Entrances> event) {
+        Entrances entrance = event.getObject();
+        this.selectedEntrance = entrance;
 
         if (selectedEmployee != null) {
             customRule = new CustomTimeAccess();
@@ -282,11 +274,13 @@ public class ManageEmployeesBean implements Serializable {
             // Clear current selectedDays first
             selectedDays = new ArrayList<>();
 
-            // Populate selectedDays from existingRules
-            for (CustomTimeAccess rule : existingRules) {
-                String day = rule.getDayOfWeek().name();
-                if (!selectedDays.contains(day)) {
-                    selectedDays.add(day);
+            if (existingRules != null) {
+                // Populate selectedDays from existingRules
+                for (CustomTimeAccess rule : existingRules) {
+                    String day = rule.getDayOfWeek().name();
+                    if (!selectedDays.contains(day)) {
+                        selectedDays.add(day);
+                    }
                 }
             }
 
@@ -299,7 +293,7 @@ public class ManageEmployeesBean implements Serializable {
     public boolean validateRule() {
         boolean isValid = true;
 
-        if (selectedEntranceId == null || selectedEntranceId.isEmpty() || selectedEmployee == null) {
+        if (selectedEmployee == null) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_WARN, "Validation Error", "Select an entrance"));
             return false; // critical
@@ -345,7 +339,7 @@ public class ManageEmployeesBean implements Serializable {
     }
 
     public void resetSidebar() {
-        selectedEntranceId = null;
+//        selectedEntranceId = null;
         selectedEntrance = null;
         selectedDays = new ArrayList<>();
         startTimes = new HashMap<>();
@@ -398,6 +392,27 @@ public class ManageEmployeesBean implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Saving Failed"));
         }
     }
+
+    public void deleteDayTimeTule(String day) {
+        if (selectedEmployee == null || selectedEntrance == null) {
+
+            JSF.addErrorMessage("Please select an employee and entrance before removing.");
+            return;
+        }
+
+        // Remove from UI model
+        selectedDays.remove(day);
+
+        startTimes.remove(day);
+
+        endTimes.remove(day);
+
+        // Soft delete from database
+        timeAccessRuleService.deleteCustomTimeAccess(selectedEmployee, selectedEntrance, day);
+
+        JSF.addSuccessMessageWithSummary("Successful","Time access for " + day + " removed successfully.");
+    }
+
 
     // Getters and Setters
     public List<Employee> getEmployees() {

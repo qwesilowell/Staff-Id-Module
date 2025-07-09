@@ -9,13 +9,13 @@
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets">
-    
+
     <ui:define name="metadata">
         <f:metadata>
             <f:viewAction action="#{wizardBean.setupBreadcrumb}" />
         </f:metadata>
     </ui:define>
-    
+
     <ui:define name="title">Onboard Employee</ui:define>
 
 
@@ -320,8 +320,11 @@
                                 <p:outputPanel style="display:flex; gap:10px; align-items:center; margin-bottom:1rem;">
                                     <p:inputText value="#{wizardBean.assignedRoleName}" readonly="true"
                                                  style="border:none; background-color:#f0f0f0; color:gray; font-weight:bold; width:50%;" />
-                                    <p:commandButton value="Assign Role" type="button"
-                                                     onclick="PF('roleSelectionDialog').show();" styleClass="ui-button-secondary" />
+                                    <p:commandButton value="Select Role"
+                                                     actionListener="#{wizardBean.loadAvailableRoles()}"
+                                                     oncomplete="PF('roleSelectionDialog').show();"
+                                                     styleClass="ui-button-secondary" 
+                                                     update=":roleSelectionDialog"/>
                                 </p:outputPanel>
 
                                 <h:outputLabel value="Employment Status: *" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
@@ -335,11 +338,11 @@
                                 <h:outputLabel value="Email: *" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
                                 <p:inputText value="#{wizardBean.email}" placeholder="Enter email address"
                                              style="width:100%; padding:5px; margin-bottom:1rem;" />
-                                
+
                                 <h:outputLabel value="Primary Phone Number: *" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
                                 <p:inputText value="#{wizardBean.primaryPhone}" placeholder="Enter primary phone number"
                                              style="width:100%; padding:5px; margin-bottom:1rem;" />
-                                
+
                                 <h:outputLabel value="Secondary Phone Number" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
                                 <p:inputText value="#{wizardBean.secondaryPhone}" placeholder="Optional"
                                              style="width:100%; padding:5px; margin-bottom:1rem;" />

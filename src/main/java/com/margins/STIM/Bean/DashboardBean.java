@@ -423,9 +423,9 @@ public class DashboardBean implements Serializable {
         return total == 0 ? 0 : (success * 100.0) / total;
     }
 
-    public String getEntranceName(String entranceId) {
+    public String getEntranceName(int entranceId) {
         Entrances entrance = entrancesService.findEntranceById(entranceId);
-        return entrance != null ? entrance.getEntrance_Name() : entranceId;
+        return entrance != null ? entrance.getEntranceName(): "Entrance not found";
     }
 
     public String getEmployeeName(Employee employee) {

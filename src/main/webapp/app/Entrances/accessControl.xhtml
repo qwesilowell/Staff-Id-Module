@@ -5,13 +5,13 @@
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets">
-    
+
     <ui:define name="metadata">
         <f:metadata>
             <f:viewAction action="#{accessBean.setupBreadcrumb}" />
         </f:metadata>
     </ui:define>
-    
+
     <ui:define name="title">Access Control Test</ui:define>
 
     <ui:define name ="content">
@@ -23,16 +23,21 @@
                 <p:panel header="ACCESS CONTROL TEST" style="width: 600px; margin: auto; margin-top:50px; height:auto; text-align: center;">
 
                     <!-- Searchable Dropdown for Entrances -->
-                    <h:outputLabel for="entrance" value="Select Entrance:"  style="font-size: large; font-weight: bolder;"/>
-                    <p:autoComplete id="entrance" 
-                                    value="#{accessBean.selectedEntrance}" 
-                                    completeMethod="#{accessBean.completeEntrances}" 
-                                    dropdown="true" 
-                                    placeholder="Type to search entrances..." 
-                                    minQueryLength="1" 
+                    <h:outputLabel for="device" value="Select Device:" style="font-size: large; font-weight: bolder;" />
+                    <p:autoComplete id="device"
+                                    value="#{accessBean.selectedDevice}"
+                                    completeMethod="#{accessBean.completeDevices}"
+                                    var="d"
+                                    itemLabel="#{d.deviceName} (#{d.deviceId}) - #{d.devicePosition}"
+                                    itemValue="#{d}"
+                                    forceSelection="true"
+                                    dropdown="true"
+                                    placeholder="Type to search devices..."
+                                    minQueryLength="1"
                                     style="width: 100%;">
-                        <f:selectItem itemLabel="Select an entrance" itemValue="" noSelectionOption="true" />
+                        <f:converter converterId="deviceConverter" />
                     </p:autoComplete>
+
                     <br/><br/><br/>
 
                     <!-- Ghana Card Input -->

@@ -34,10 +34,11 @@
                         <h:panelGroup>
                             <!-- Select Entrance -->
                             <p:outputLabel for="entrance" value="Select Entrance: " />
-                            <p:autoComplete id="entrance" value="#{assignRoleBean.selectedEntranceId}"
+                            <p:autoComplete id="entrance" value="#{assignRoleBean.selectedEntrance}"
                                             completeMethod="#{assignRoleBean.searchEntrances}" 
-                                            var="entrance" itemLabel="#{entrance.entrance_Name}" 
-                                            itemValue="#{entrance.entrance_Device_ID}"
+                                            var="entrance" itemLabel="#{entrance.entranceName}" 
+                                            itemValue="#{entrance}"
+                                            converter="entranceConverter"
                                             forceSelection="true" dropdown="true"
                                             placeholder="Search or Select Entrance" 
                                             style="width: 100%; ">
@@ -151,7 +152,7 @@
                             <div class="same-line-container">
                                 <i class="pi pi-map-marker p-mr-2 text-success icon-style"></i>
                                 <p:outputLabel value="Entrance:" styleClass="label-style" />
-                                <h:outputText value="#{assignRoleBean.dayRule.entrances.entrance_Name}" styleClass="value-style" />
+                                <h:outputText value="#{assignRoleBean.dayRule.entrances.entranceName}" styleClass="value-style" />
                             </div>
                         </div>
 

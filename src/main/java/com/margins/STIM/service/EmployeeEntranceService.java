@@ -33,9 +33,9 @@ public class EmployeeEntranceService {
         }
 
         // Validate and fetch existing Entrance
-        Entrances existingEntrance = entityManager.find(Entrances.class, employeeEntrance.getEntrance().getEntrance_Device_ID());
+        Entrances existingEntrance = entityManager.find(Entrances.class, employeeEntrance.getEntrance().getEntranceDeviceId());
         if (existingEntrance == null) {
-            throw new IllegalArgumentException("Entrance with ID " + employeeEntrance.getEntrance().getEntrance_Device_ID() + " does not exist.");
+            throw new IllegalArgumentException("Entrance with ID " + employeeEntrance.getEntrance().getEntranceDeviceId() + " does not exist.");
         }
 
         // Validate and fetch existing Access Level
@@ -125,7 +125,7 @@ public class EmployeeEntranceService {
 
         for (EmployeeEntrance entrance : assignedEntrances) {
             boolean alreadyAssigned = getAssignedEntrances(employee.getGhanaCardNumber()).stream()
-                    .anyMatch(e -> e.getEntrance().getEntrance_Device_ID().equals(entrance.getEntrance().getEntrance_Device_ID()));
+                    .anyMatch(e -> e.getEntrance().getEntranceDeviceId().equals(entrance.getEntrance().getEntranceDeviceId()));
 
             if (!alreadyAssigned) {
                 createEmployeeEntrance(entrance);
@@ -153,7 +153,7 @@ public class EmployeeEntranceService {
 
         for (EmployeeEntrance entrance : assignedEntrances) {
             EmployeeEntrance existingRecord = getAssignedEntrances(employee.getGhanaCardNumber()).stream()
-                    .filter(e -> e.getEntrance().getEntrance_Device_ID().equals(entrance.getEntrance().getEntrance_Device_ID()))
+                    .filter(e -> e.getEntrance().getEntranceDeviceId().equals(entrance.getEntrance().getEntranceDeviceId()))
                     .findFirst()
                     .orElse(null);
 

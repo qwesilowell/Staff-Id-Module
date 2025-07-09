@@ -260,7 +260,7 @@ public class SingleFingerController implements Serializable {
                     verificationSuccess = true;
                     JSF.addSuccessMessage("Multi Finger Verification Successful!");
 
-                    currentStep++;
+                   
 
                     String cardNumber = callBack.getData().getPerson().nationalId;
 //                    String newFirstName = callBack.getData().getPerson().getForenames();
@@ -268,6 +268,7 @@ public class SingleFingerController implements Serializable {
                     foundEmployee = employeeService.findEmployeeByGhanaCard(cardNumber);
 
                     if (foundEmployee != null) {
+                         currentStep++;
                         updatedAddress = foundEmployee.getAddress();
                         updatedEmail = foundEmployee.getEmail();
                         updatedStatus = foundEmployee.getEmploymentStatus().getId();
@@ -275,6 +276,7 @@ public class SingleFingerController implements Serializable {
                         JSF.addSuccessMessage("Verification successful. Employee found: " + foundEmployee.getFullName());
                         PrimeFaces.current().ajax().update("wizardForm");
                     } else {
+                        resetWizard();
                         JSF.addErrorMessage("Verification successful but no matching employee found.");
                     }
                 }
@@ -285,6 +287,7 @@ public class SingleFingerController implements Serializable {
             JSF.addErrorMessage("An unexpected error occurred. Please try again!");
             System.out.println("ERROR 3");
             e.printStackTrace(); // Log the error for debugging
+            resetWizard();
         }
 
     }
@@ -337,13 +340,14 @@ public class SingleFingerController implements Serializable {
                     verificationSuccess = true;
                     JSF.addSuccessMessage("Facial Verification Successful!");
 
-                    currentStep++;
+                    
                     String cardNumber = callBack.getData().getPerson().nationalId;
 //                    String newFirstName = callBack.getData().getPerson().getForenames();
 //                    String newLastName = callBack.getData().getPerson().getSurname();
                     foundEmployee = employeeService.findEmployeeByGhanaCard(cardNumber);
 
                     if (foundEmployee != null) {
+                        currentStep++;
                         updatedAddress = foundEmployee.getAddress();
                         updatedEmail = foundEmployee.getEmail();
                         updatedStatus = foundEmployee.getEmploymentStatus().getId();
@@ -355,6 +359,7 @@ public class SingleFingerController implements Serializable {
                         PrimeFaces.current().ajax().update("wizardForm");
                         
                     } else {
+                        resetWizard();
                         JSF.addErrorMessage("Verification successful but no matching employee found.");
                     }
                 }
@@ -365,6 +370,7 @@ public class SingleFingerController implements Serializable {
             JSF.addErrorMessage("An unexpected error occurred. Please try again!");
             System.out.println("ERROR 3");
             e.printStackTrace(); // Log the error for debugging
+            resetWizard();
         }
 
     }
@@ -445,7 +451,7 @@ public class SingleFingerController implements Serializable {
                     verificationSuccess = true;
                     JSF.addSuccessMessage("Single Finger Verification Successful!");
 
-                    currentStep++;
+                   
 
                     String cardNumber = callBack.getData().getPerson().nationalId;
 //                    String newFirstName = callBack.getData().getPerson().getForenames();
@@ -453,6 +459,7 @@ public class SingleFingerController implements Serializable {
                     foundEmployee = employeeService.findEmployeeByGhanaCard(cardNumber);
 
                     if (foundEmployee != null) {
+                         currentStep++;
                         updatedAddress = foundEmployee.getAddress();
                         updatedEmail = foundEmployee.getEmail();
                         updatedStatus = foundEmployee.getEmploymentStatus().getId();
@@ -461,6 +468,7 @@ public class SingleFingerController implements Serializable {
                         PrimeFaces.current().ajax().update("wizardForm");
                     } else {
                         JSF.addErrorMessage("Verification successful but no matching employee found.");
+                        resetWizard();
                     }
                 }
             } else {
@@ -470,6 +478,7 @@ public class SingleFingerController implements Serializable {
             JSF.addErrorMessage("An unexpected error occurred. Please try again!");
             System.out.println("ERROR 3");
             e.printStackTrace(); // Log the error for debugging
+            resetWizard();
         }
     }
 
@@ -505,10 +514,12 @@ public class SingleFingerController implements Serializable {
             employeeService.updateEmployee(cardNumber, existingEmployee);
             foundEmployee = existingEmployee; // Update UI reference
             JSF.addSuccessMessage("Employee " + newFirstName + " " + newLastName + " updated succesfully ");
+            resetWizard();
 
         } catch (Exception e) {
             JSF.addErrorMessage("Error updating employee.");
             e.printStackTrace();
+            resetWizard();
         }
     }
 

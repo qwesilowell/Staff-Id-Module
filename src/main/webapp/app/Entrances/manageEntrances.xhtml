@@ -8,7 +8,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets"
                 xmlns:f="jakarta.faces.core">
-    
+
     <ui:define name="metadata">
         <f:metadata>
             <f:viewAction action="#{entranceBean.setupBreadcrumb}" />
@@ -44,14 +44,40 @@
                     <!-- Entrances Table -->
                     <p:dataTable id="entranceTable" value="#{entranceBean.entrances}" var="entrance" paginator="true" paginatorPosition="bottom" rows="10">
                         <p:column headerText="Device ID" >
-                            <h:outputText value="#{entrance.entrance_Device_ID}"/>
+                            <h:outputText value="#{entrance.entranceDeviceId}"/>
                         </p:column>
                         <p:column headerText="Entrance Name" >
-                            <h:outputText value="#{entrance.entrance_Name}"/>
+                            <h:outputText value="#{entrance.entranceName}"/>
                         </p:column>
                         <p:column headerText="Location" >
-                            <h:outputText value="#{entrance.entrance_Location}"/>
+                            <h:outputText value="#{entrance.entranceLocation}"/>
                         </p:column>
+                        <p:column headerText="Mode">
+                            <!-- STRICT mode -->
+                            <h:panelGroup layout="block"
+                                          rendered="#{entrance.entranceMode == 'STRICT'}"
+                                           styleClass="mode-tag #{entrance.entranceMode}"> 
+                                <i class="fa-solid fa-lock" style="margin-right: 6px;"></i>
+                                STRICT
+                            </h:panelGroup>
+
+                            <!-- FULL_ACCESS mode -->
+                            <h:panelGroup layout="block"
+                                          rendered="#{entrance.entranceMode == 'FULL_ACCESS'}"
+                                          styleClass="mode-tag #{entrance.entranceMode}">
+                                <i class="fa-solid fa-lock-open" style="margin-right: 6px;"></i>
+                                FULL ACCESS
+                            </h:panelGroup>
+
+                            <!-- LENIENT mode -->
+                            <h:panelGroup layout="block"
+                                          rendered="#{entrance.entranceMode == 'LENIENT'}"
+                                          styleClass="mode-tag #{entrance.entranceMode}">
+                                <i class="fa-solid fa-unlock" style="margin-right: 6px;"></i>
+                                LENIENT
+                            </h:panelGroup>
+                        </p:column>
+
                         <p:column headerText="Actions" style="width: 160px; text-align: center;">
                             <div style="display: flex; justify-content: center; gap: 10px;">
                                 <p:commandButton icon="pi pi-pencil" styleClass="rounded-button ui-button-success ui-button-outlined" 
@@ -71,13 +97,20 @@
                 <p:dialog id="entranceDialog" widgetVar="entranceDialogWidget" header="Entrance Details" modal="true" closable="false">
                     <h:panelGrid columns="2">
                         <h:outputLabel value="Device ID:"/>
-                        <p:inputText value="#{entranceBean.selectedEntrance.entrance_Device_ID}"/>
+                        <p:inputText value="#{entranceBean.selectedEntrance.entranceDeviceId}"/>
 
                         <h:outputLabel value="Name:"/>
-                        <p:inputText value="#{entranceBean.selectedEntrance.entrance_Name}"/>
+                        <p:inputText value="#{entranceBean.selectedEntrance.entranceName}"/>
 
                         <h:outputLabel value="Location:"/>
-                        <p:inputText value="#{entranceBean.selectedEntrance.entrance_Location}"/>
+                        <p:inputText value="#{entranceBean.selectedEntrance.entranceLocation}"/>
+
+                        <h:outputLabel value="Mode:"/>
+                        <p:selectOneMenu value="#{entranceBean.selectedEntrance.entranceMode}" style="width: 100%" >
+                            <!--                            <f:selectItem itemLabel="Select Mode" itemValue="" noSelectionOption="true"/>-->
+                            <f:selectItems value="#{entranceBean.entranceModes}" var="mode"
+                                           itemLabel="#{mode}" itemValue="#{mode}"/>
+                        </p:selectOneMenu>
                     </h:panelGrid>
                     <div style="margin-top: 15px; text-align: right;">
                         <p:commandButton value="Save" icon="pi pi-check"
@@ -85,14 +118,14 @@
                                          update="messages entranceTable"
                                          oncomplete="PF('entranceDialogWidget').hide()"
                                          style="background: #007bff; color: white; border-radius: 4px;"
-                                         rendered="#{empty entranceBean.selectedEntrance.entrance_Device_ID}" />
+                                         rendered="#{empty entranceBean.selectedEntrance.entranceDeviceId}" />
 
                         <p:commandButton value="Update" icon="pi pi-check"
                                          actionListener="#{entranceBean.updateEntrance}"
                                          update="messages entranceTable"
                                          oncomplete="PF('entranceDialogWidget').hide()"
                                          style="background: #007bff; color: white; border-radius: 4px;"
-                                         rendered="#{not empty entranceBean.selectedEntrance.entrance_Device_ID}" /> <!-- Only show when editing -->
+                                         rendered="#{not empty entranceBean.selectedEntrance.entranceDeviceId}" /> <!-- Only show when editing -->
 
                         <p:commandButton value="Cancel" icon="pi pi-times" onclick="PF('entranceDialogWidget').hide()" style="margin-left: 5px;"/>
                     </div>
@@ -107,5 +140,32 @@
                 <p:messages id="messages" showSummary= "false" showDetail="true" closable="true"/>
             </h:form>
         </div>
+
+        <style>
+            .mode-tag {
+               display: inline-block;
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-weight: 600;
+               
+            }
+
+            /* Mode-specific gradients */
+            .STRICT {
+                color: white;
+                background: linear-gradient( 135deg, #ff0000, #ff7f7f); /*  red */
+            }
+
+            .FULL_ACCESS {
+                color: white;
+                background: linear-gradient(to right, #3aaf7c, #30bdb6); /* green-teal */
+            }
+
+            .LENIENT {    
+                color: black;
+                background: linear-gradient(to right, #f7971e, #ffd200);
+            }
+
+        </style>
     </ui:define>
 </ui:composition>

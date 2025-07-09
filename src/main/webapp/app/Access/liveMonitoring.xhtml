@@ -46,8 +46,11 @@
                             <p:column headerText="GhanaCard No">
                                 <h:outputText value="#{log.employee.ghanaCardNumber}"/>
                             </p:column>
+                            <p:column headerText="Device Used">
+                                <h:outputText value="#{log.device.deviceName}"/>
+                            </p:column>
                             <p:column headerText="Entrance">
-                                <h:outputText value="#{liveMonitoring.getEntranceName(log.entranceId)}"/>
+                                <h:outputText value="#{log.device.entrance.entranceName}"/>
                             </p:column>
                             <p:column headerText="Result">
                                 <h:outputText value="#{log.result.toUpperCase()}"

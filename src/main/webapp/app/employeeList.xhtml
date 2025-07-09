@@ -123,7 +123,7 @@
                                                       styleClass="skill-tags"
                                                       style="margin-top: 10px;">
                                             <ui:repeat value="#{manageEmployeesBean.selectedEmployeeEntrances}" var="entrance">
-                                                <span class="skill-tag">#{entrance.entrance_Name}</span>
+                                                <span class="skill-tag">#{entrance.entranceName}</span>
                                             </ui:repeat>
                                             <h:outputText value="No entrances assigned" rendered="#{empty manageEmployeesBean.selectedEmployeeEntrances}" />
                                         </h:panelGroup>
@@ -145,7 +145,7 @@
                                                       styleClass="skill-tags"
                                                       style="margin-top: 10px;">
                                             <ui:repeat value="#{manageEmployeesBean.selectedCustomEmpEntrances}" var="entrance">
-                                                <span class="skill-tag">#{entrance.entrance_Name}</span>
+                                                <span class="skill-tag">#{entrance.entranceName}</span>
                                             </ui:repeat>
                                             <br/>
                                             <h:outputText value="No Custom entrances assigned" rendered="#{empty manageEmployeesBean.selectedCustomEmpEntrances}" />
@@ -235,10 +235,11 @@
                             <p:outputLabel value="Entrance:" styleClass="label-style" />
                             <h:panelGroup>
                                 <!-- Select Entrance -->
-                                <p:autoComplete id="entrance" value="#{manageEmployeesBean.selectedEntranceId}"
+                                <p:autoComplete id="entrance" value="#{manageEmployeesBean.selectedEntrance}"
                                                 completeMethod="#{manageEmployeesBean.employeesEntrances}" 
-                                                var="entrance" itemLabel="#{entrance.entrance_Name}" 
-                                                itemValue="#{entrance.entrance_Device_ID}"
+                                                var="entrance" itemLabel="#{entrance.entranceName}" 
+                                                itemValue="#{entrance}"
+                                                converter="entranceConverter"
                                                 forceSelection="true" dropdown="true"
                                                 scrollHeight="200"
                                                 placeholder="Search or Select Entrance" 
@@ -307,6 +308,12 @@
                                                               stepMinute="1"
                                                               styleClass="small-time-picker" />
                                             </div>
+                                            <p:commandButton icon="pi pi-trash" 
+                                                             styleClass="rounded-button ui-button-danger ui-button-outlined deletebutton"
+                                                             title="Remove this day"
+                                                             process="@this"
+                                                             actionListener="#{manageEmployeesBean.deleteDayTimeTule(day)}"
+                                                             update=":sidebarForm:timeSettings :employeeForm:growl" />
                                         </div>
                                     </div><p:separator />
                                     <p:spacer height="10px"/>
@@ -317,7 +324,7 @@
                         <div class="dialog-footer">
                             <p:commandButton value="Save Rule" icon="pi pi-save" 
                                              action="#{manageEmployeesBean.saveDayTimeRules()}"
-                                             update="employeeForm" 
+                                             update="employeeForm :sidebarForm" 
                                              styleClass="save" />
                         </div>
                     </h:form>

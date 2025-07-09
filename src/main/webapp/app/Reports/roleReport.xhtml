@@ -144,7 +144,7 @@
                         <br/><br/>
 
                         <ui:repeat value="#{roleReportController.selectedEntranceEmployee}" var="entrances">
-                            <span class="skill-tag">• #{entrances.entrance_Name}</span>
+                            <span class="skill-tag">• #{entrances.entranceName}</span>
                         </ui:repeat>
                     </div>
                     <br/>
@@ -172,7 +172,7 @@
                             <p:outputLabel value="Total Entrances: #{roleReportController.selectedEntranceEmployee.size()}" styleClass="value-style" />
                             <ul>
                                 <ui:repeat value="#{roleReportController.selectedEntranceEmployee}" var="entrance">
-                                    <li>#{entrance.entrance_Name}</li>
+                                    <li>#{entrance.entranceName}</li>
                                 </ui:repeat>
                             </ul>
                         </div>

@@ -5,6 +5,7 @@
 package com.margins.STIM.service;
 
 import com.margins.STIM.entity.Entrances;
+import com.margins.STIM.entity.enums.EntranceMode;
 import java.util.List;
 import jakarta.ejb.Stateless;
 import jakarta.faces.context.FacesContext;
@@ -51,21 +52,21 @@ public class EntrancesService {
      * @param id The ID of the entrance.
      * @return The entrance, or null if not found.
      */
-    public Entrances findEntranceById(String id) {
+    public Entrances findEntranceById(int id) {
         return entityManager.find(Entrances.class, id);
     }
     
-    public Entrances findEntranceByIdFresh(String id) {
+    public Entrances findEntranceByIdFresh(int id) {
         return entityManager.createQuery(
-                "SELECT e FROM Entrances e LEFT JOIN FETCH e.employees WHERE e.entranceDeviceID = :id",
+                "SELECT e FROM Entrances e LEFT JOIN FETCH e.employees WHERE e.id = :id",
                 Entrances.class)
                 .setParameter("id", id)
                 .getSingleResult();
     }
     
-    public List<Entrances> findEntranceByIds(List<String> ids) {
+    public List<Entrances> findEntranceByIds(List<Integer> ids) {
         return entityManager.createQuery(
-                "SELECT e FROM Entrances e WHERE e.entrance_Device_ID IN :ids", Entrances.class)
+                "SELECT e FROM Entrances e WHERE e.id IN :ids", Entrances.class)
                 .setParameter("ids", ids)
                 .getResultList();
     }
@@ -79,12 +80,13 @@ public class EntrancesService {
      * @throws EntityNotFoundException if the entrance with the given ID is not
      * found.
      */
-    public Entrances updateEntrance(String id, Entrances entrance) {
+    public Entrances updateEntrance(int id, Entrances entrance) {
         Entrances existingEntrance = entityManager.find(Entrances.class, id);
         if (existingEntrance != null) {
-            existingEntrance.setEntrance_Device_ID(entrance.getEntrance_Device_ID());
-            existingEntrance.setEntrance_Name(entrance.getEntrance_Name());
-            existingEntrance.setEntrance_Location(entrance.getEntrance_Location());
+            existingEntrance.setEntranceDeviceId(entrance.getEntranceDeviceId());
+            existingEntrance.setEntranceName(entrance.getEntranceName());
+            existingEntrance.setEntranceLocation(entrance.getEntranceLocation());
+            existingEntrance.setEntranceMode(entrance.getEntranceMode());
             entityManager.merge(existingEntrance);
             return existingEntrance;
         }
@@ -98,7 +100,7 @@ public class EntrancesService {
      * @throws EntityNotFoundException if the entrance with the given ID is not
      * found.
      */
-    public void deleteEntrance(String id) {
+    public void deleteEntrance(int id) {
         Entrances entrance = entityManager.find(Entrances.class, id);
         if (entrance != null) {
             entityManager.remove(entrance);
@@ -109,7 +111,7 @@ public class EntrancesService {
 
 
     public List<Entrances> searchEntrances(String query) {
-        return entityManager.createQuery("SELECT e FROM Entrances e WHERE LOWER(e.entrance_Name) LIKE :query OR e.entranceDeviceId "
+        return entityManager.createQuery("SELECT e FROM Entrances e WHERE LOWER(e.entranceName) LIKE :query OR e.entranceDeviceId "
                 + "LIKE :query", Entrances.class)
                 .setParameter("query", "%" + query.toLowerCase() + "%")
                 .getResultList();
@@ -121,27 +123,6 @@ public class EntrancesService {
 
     public void addEntrance(Entrances entrance) {
         entityManager.persist(entrance);
-    }
-    
-    public boolean canAccessEntrance(String employeeRoleId, String entranceDeviceId) {
-        Entrances entrance = findEntranceById(entranceDeviceId);
-
-        if (entrance == null) {
-            throw new RuntimeException("Entrance not found");
-        }
-
-        return entrance.getAllowedRoles().stream()
-                .anyMatch(role -> role.getId() == Integer.parseInt(employeeRoleId));
-    }
-    
-    public void handleAccessRequest(String employeeRoleId, String entranceDeviceId) {
-        if (canAccessEntrance(employeeRoleId, entranceDeviceId)) {
-            System.out.println("Access granted.");
-            // TODO: Trigger door unlock mechanism
-        } else {
-            System.out.println("Access denied.");
-            // TODO: Trigger security alert
-        }
     }
     
   public int getTotalEntrances() {
@@ -168,6 +149,12 @@ public class EntrancesService {
         );
         query.setParameter("ghanaCardNumber", ghanaCardNumber);
         return query.getResultList();
+    }
+    
+    public List<Entrances> findByMode(EntranceMode mode) {
+        return entityManager.createQuery("SELECT e FROM Entrances e WHERE e.entranceMode = :mode", Entrances.class)
+                .setParameter("mode", mode)
+                .getResultList();
     }
 
 }

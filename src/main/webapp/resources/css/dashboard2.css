@@ -8,6 +8,15 @@ body {
     height: 100vh; /* Ensure the body fills the viewport */
 }
 
+.custom-label {
+    font-weight: bold; /* Make the text bold */
+    background-color: #f0f8ff; /* Light background color */
+    padding: 10px; /* Add some padding */
+    border-radius: 5px; /* Rounded corners */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3); /* Shadow effect */
+    color: #333; /* Text color */
+}
+
 /* Top Navigation Bar */
 .topbar {
     background-color: #2196f3;

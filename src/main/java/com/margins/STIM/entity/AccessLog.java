@@ -4,6 +4,7 @@
  */
 package com.margins.STIM.entity;
 
+import com.margins.STIM.entity.enums.DevicePosition;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -36,8 +37,10 @@ public class AccessLog implements Serializable {
     @JoinColumn(name = "employee_id", referencedColumnName = "GHANA_CARD_NUMBER")
     private Employee employee; // Ghana Card number
 
-    @Column(name = "entrance_id")
-    private String entranceId; // entrance_Device_ID
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "device_id")
+    private Devices device;
 
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
@@ -47,15 +50,25 @@ public class AccessLog implements Serializable {
 
     @Column(name = "verification_time") //, columnDefinition = "NUMBER(2,2) DEFAULT 0"
     private Double verificationTime; // in seconds
+
     
     public AccessLog() {
     }
 
-    public AccessLog(Employee employee, String entranceId, String result, Double verificationTime) {
+    public AccessLog(Employee employee, Devices device, String result, Double verificationTime) {
         this.employee = employee;
-        this.entranceId = entranceId;
+        this.device = device;
         this.timestamp = LocalDateTime.now();
         this.result = result;
         this.verificationTime = verificationTime;
+        this.timestamp = LocalDateTime.now();
+    }
+    
+    public boolean isEntry(){
+    return device != null && device.getDevicePosition() == DevicePosition.ENTRY;
+    }
+    
+    public boolean isExit() {
+        return device != null && device.getDevicePosition() == DevicePosition.EXIT;
     }
 }

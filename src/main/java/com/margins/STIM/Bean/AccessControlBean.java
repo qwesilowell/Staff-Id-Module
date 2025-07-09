@@ -5,14 +5,17 @@
 package com.margins.STIM.Bean;
 
 import com.google.gson.Gson;
+import com.margins.STIM.Interface.DeviceService;
 import com.margins.STIM.entity.AccessLog;
+import com.margins.STIM.entity.Devices;
 
 import com.margins.STIM.entity.Employee;
-import com.margins.STIM.entity.EmployeeRole;
 import com.margins.STIM.entity.Entrances;
+import com.margins.STIM.entity.enums.EntranceMode;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.service.AccessLogService;
+import com.margins.STIM.service.EmployeeEntranceStateService;
 
 import com.margins.STIM.service.EmployeeRole_Service;
 import com.margins.STIM.service.Employee_Service;
@@ -32,6 +35,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.net.ssl.SSLContext;
@@ -52,8 +56,8 @@ public class AccessControlBean implements Serializable {
 
     @EJB
     private EntrancesService entrancesService;
-    
-    @Inject 
+
+    @Inject
     private BreadcrumbBean breadcrumbBean;
 
     @EJB
@@ -61,34 +65,48 @@ public class AccessControlBean implements Serializable {
 
     @EJB
     private EmployeeRole_Service employeeRoleService;
-    
+
     @EJB
     private AccessLogService accessLogService;
 
+    @Inject
+    private DeviceService deviceService;
+    
+   @Inject
+    private EmployeeEntranceStateService employeeEntranceStateService;
+
     private List<Entrances> entrances;
+    private List<Devices> allDevices;
     private String selectedEntrance;
     private String statusMessage;
     private String ghanaCardNumber;
     private String capturedFinger;
     private String socketData;
     private String fingerPosition;
+    private Devices selectedDevice;
+
     String BASE_URL = JSF.getContextURL() + "/";
     VerificationResultData callBack = new VerificationResultData();
 
     @PostConstruct
     public void init() {
         entrances = getAllEntrances();
+        allDevices = getAllDevices();
         statusMessage = "Awaiting Action";
         ghanaCardNumber = "";
         fingerPosition = "";
         capturedFinger = "";
         selectedEntrance = "";
     }
-    
+
     public List<Entrances> getAllEntrances() {
         return entrancesService.findAllEntrances(); // Fetch from DB once
     }
-    
+
+    public List<Devices> getAllDevices() {
+        return deviceService.getAllDevices();
+    }
+
     public void setupBreadcrumb() {
         breadcrumbBean.setAccessControlBreadcrumb();
     }
@@ -101,21 +119,21 @@ public class AccessControlBean implements Serializable {
             results = entrancesService.searchEntrances(query); // Filter from service
         }
         return results.stream()
-                .map(e -> e.getEntrance_Name() + " (" + e.getEntrance_Device_ID() + ")")
+                .map(e -> e.getEntranceName() + " (" + e.getEntranceDeviceId() + ")")
                 .collect(Collectors.toList());
     }
 
     // Reset Fingerprint Selection
     public void reset() {
-         ghanaCardNumber = null; 
-         selectedEntrance= null;
+        ghanaCardNumber = null;
+        selectedEntrance = null;
         capturedFinger = null;
         fingerPosition = null;
         statusMessage = "Awaiting Action";
         JSF.addWarningMessage("Reset successful.");
 
     }
-    
+
     public void resetForm() {
         ghanaCardNumber = "";
         fingerPosition = "";
@@ -132,7 +150,7 @@ public class AccessControlBean implements Serializable {
     public void submit() {
         String result = "denied"; // Default
         Double verificationTime = null;
-        String entranceId = null;
+//        String entranceId = null;
         Employee employee = null;
         try {
             System.out.println("GHANACARD2 >>>>>>>>>>>>>> " + ghanaCardNumber);
@@ -148,14 +166,19 @@ public class AccessControlBean implements Serializable {
                 return;
             }
 
-            if (selectedEntrance == null || selectedEntrance.trim().isEmpty()) {
-                statusMessage = "No Entrance";
-                JSF.addErrorMessage("Please select an entrance.");
+            if (selectedDevice == null) {
+                statusMessage = "Device Not Available.";
+                JSF.addErrorMessage("Device Not Available.");
+                return;
+            }
+            if (selectedDevice.getEntrance() == null) {
+                statusMessage = "No Entrance Assigned to device.";
+                JSF.addErrorMessage("No Entrance Assigned to device.");
                 return;
             }
             System.out.println("GHANACARD3 >>>>>>>>>>>>>> " + ghanaCardNumber);
 
-            entranceId = extractEntranceId(selectedEntrance);
+//            entranceId = extractEntranceId(selectedEntrance);
             VerificationRequest request = new VerificationRequest();
             request.setPosition(fingerPosition);
             request.setPinNumber(ghanaCardNumber);
@@ -206,7 +229,7 @@ public class AccessControlBean implements Serializable {
                 JSF.addErrorMessage("Fingerprint Verification Failed!");
                 // No return here—let it log
             } else {
-                Entrances entrance = entrancesService.findEntranceById(entranceId);
+                Entrances entrance = selectedDevice.getEntrance();
                 if (entrance == null) {
                     statusMessage = "Invalid Entrance";
                     JSF.addErrorMessage("Selected entrance not found.");
@@ -215,13 +238,19 @@ public class AccessControlBean implements Serializable {
                     if (employee == null) {
                         statusMessage = "Access Denied";
                         JSF.addErrorMessage("Employee not found.");
-                    } else if (accessLogService.hasAccess(employee, entrance)) {
+                    } else if (accessLogService.hasAccess(employee, selectedDevice)) {
                         statusMessage = "Access Granted";
                         result = "granted"; // Update result on success
-                        JSF.addSuccessMessage("Access granted to " + entrance.getEntrance_Name());
+                        JSF.addSuccessMessage("Access granted to " + entrance.getEntranceName());
+                        
+                        if (entrance.getEntranceMode() == EntranceMode.STRICT) {
+                            employeeEntranceStateService.recordStrictEntryOrExit(
+                                    employee, entrance, selectedDevice.getDevicePosition(), "SYSTEM"
+                            );
+                        }
                     } else {
                         statusMessage = "Access Denied";
-                        JSF.addErrorMessage("Access denied to " + entrance.getEntrance_Name());
+                        JSF.addErrorMessage("Access denied to " + entrance.getEntranceName());
                     }
                 }
             }
@@ -231,20 +260,20 @@ public class AccessControlBean implements Serializable {
             JSF.addErrorMessage("An unexpected error occurred. Please try again!");
             e.printStackTrace();
         } finally {
-            // Log every attempt       
-            
-            entranceId = entranceId != null ? entranceId : extractEntranceId(selectedEntrance);
-            System.out.println("Logging: employee=" + ghanaCardNumber + ", entrance=" + entranceId
+            // Log every attempt   
+            System.out.println("DEBUG: selectedDevice = " + selectedDevice);
+            System.out.println("DEBUG: selectedDevice.getDeviceId() = "
+                    + (selectedDevice != null ? selectedDevice.getDeviceId() : "null"));
+            System.out.println("Logging: employee=" + ghanaCardNumber + ", device=" + (selectedDevice != null ? selectedDevice.getDeviceName() : "none")
                     + ", result=" + result + ", time=" + verificationTime);
-            
 
-            AccessLog log ;
-            
-            if (employee != null) {
-                  log  = new AccessLog(employee, entranceId, result, verificationTime);
-            }else {
-                log = new AccessLog(null, entranceId, result, verificationTime);
-            }
+            AccessLog log = new AccessLog();
+            log.setEmployee(employee);
+            log.setDevice(selectedDevice);
+            log.setResult(result);
+            log.setVerificationTime(verificationTime);
+            log.setTimestamp(LocalDateTime.now());
+
             accessLogService.logAccess(log);
         }
     }
@@ -255,14 +284,12 @@ public class AccessControlBean implements Serializable {
         }
         return entranceString;
     }
-    
-    private boolean hasAccess(Employee employee, Entrances entrance) {
-        EmployeeRole role = employee.getRole();
-        if (role == null) {
-            return false;
+
+    public List<Devices> completeDevices(String query) {
+        if (query == null || query.isBlank()) {
+            return deviceService.getAllDevices(); // fallback to all
         }
-        return entrance.getAllowedRoles().stream()
-                .anyMatch(r -> r.getId() == role.getId()); 
+        return deviceService.searchDevices(query);
     }
 
     private void reload() {

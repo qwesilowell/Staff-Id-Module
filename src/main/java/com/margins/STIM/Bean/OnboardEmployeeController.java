@@ -193,8 +193,8 @@ public class OnboardEmployeeController implements Serializable {
     @PostConstruct
     public void init() {
         // Load available roles from database
-        availableRoles = roleService.findAllEmployeeRoles();
-        availableStatuses = employeeService.findAllEmploymentStatuses();
+//        availableRoles = roleService.findAllEmployeeRoles();
+//        availableStatuses = employeeService.findAllEmploymentStatuses();
     }
 
     public void setupBreadcrumb() {
@@ -387,6 +387,18 @@ public class OnboardEmployeeController implements Serializable {
         return data.toString();
     }
 
+    public void loadAvailableRoles() {
+        this.availableRoles = roleService.findAllEmployeeRoles(); // or any logic to get DB roles
+    }
+    public List<EmployeeRole> getAvailableRoles() {
+        return availableRoles; // fetched once when button is clicked
+    }
+    public List <EmploymentStatus> getavailableStatuses(){
+        this.availableStatuses = employeeService.findAllEmploymentStatuses();
+        return availableStatuses;
+    }
+    
+    
     public void sendForVerification() throws IOException {
         try {
 

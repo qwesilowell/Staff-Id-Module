@@ -39,6 +39,8 @@ import lombok.Setter;
 @Named("assignRoleBean")
 @ViewScoped
 @Cacheable(false)
+@Getter
+@Setter
 public class AssignRoleBean implements Serializable {
 
     @Inject
@@ -53,46 +55,36 @@ public class AssignRoleBean implements Serializable {
     @Inject
     private BreadcrumbBean breadcrumbBean;
 
-    private String selectedEntranceId;
+    private int selectedEntranceId;
     private Set<Integer> selectedRolesIds;
     private List<EmployeeRole> assignedRoles;
     private EmployeeRole selectedEmployeeRoleId;
 
-    @Getter
-    @Setter
+   
     private List<String> selectedEntranceIds;
-    @Setter
+
     private List<EmployeeRole> allRoles;
-    @Setter
+
     private List<Entrances> allEntrances;
-    @Getter
-    @Setter
+
     private RoleTimeAccess dayRule;
-    @Getter
-    @Setter
+
     private Entrances selectedEntrance;
-    @Getter
-    @Setter
+
     private EmployeeRole currentRole;
-    @Getter
+
     private boolean timeRuleValid;
-    @Getter
-    @Setter
+
     private List<String> selectedDays = new ArrayList<>();
-    @Getter
-    @Setter
+
     private Map<String, LocalTime> startTimes = new HashMap<>();
-    @Getter
-    @Setter
+
     private Map<String, LocalTime> endTimes = new HashMap<>();
-    @Getter
-    @Setter
+
     private Map<Integer, Boolean> roleHasTimeRules = new HashMap<>();
-    @Getter
-    @Setter
+
     private List<EmployeeRole> availableRolesForSelection = new ArrayList<>();
-    @Getter
-    @Setter
+
     private Map<Integer, String> roleStatusMessages = new HashMap<>();
 
     @PostConstruct
@@ -117,8 +109,8 @@ public class AssignRoleBean implements Serializable {
     }
 
     public void assignRolesToEntrance() {
-        if (selectedEntranceId != null && selectedRolesIds != null && !selectedRolesIds.isEmpty()) {
-            Entrances entrance = entrancesService.findEntranceById(selectedEntranceId);
+        if (selectedRolesIds != null && !selectedRolesIds.isEmpty()) {
+            Entrances entrance = selectedEntrance;
             if (entrance == null) {
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Entrance not found"));
@@ -167,13 +159,12 @@ public class AssignRoleBean implements Serializable {
 
     public List<Entrances> searchEntrances(String query) {
         return allEntrances.stream()
-                .filter(e -> e.getEntrance_Name().toLowerCase().contains(query.toLowerCase()))
+                .filter(e -> e.getEntranceName().toLowerCase().contains(query.toLowerCase()))
                 .collect(Collectors.toList());
     }
 
     public void loadAssignedRoles() {
-        if (selectedEntranceId != null && !selectedEntranceId.trim().isEmpty()) {
-            selectedEntrance = entrancesService.findEntranceById(selectedEntranceId);
+        if (selectedEntrance != null) { 
             if (selectedEntrance != null) {
                 assignedRoles = new ArrayList<>(selectedEntrance.getAllowedRoles());
                 
@@ -231,7 +222,7 @@ public class AssignRoleBean implements Serializable {
         dayRule.setEmployeeRole(role);
         this.currentRole = role;
 
-        if (selectedEntrance == null && selectedEntranceId != null) {
+        if (selectedEntrance == null && selectedEntranceId != 0) {
             selectedEntrance = entrancesService.findEntranceById(selectedEntranceId);
         }
         dayRule.setEntrances(selectedEntrance);
@@ -337,13 +328,13 @@ public class AssignRoleBean implements Serializable {
     }
 
     public void removeRole() {
-        if (selectedEntranceId != null && currentRole != null) {
+        if (selectedEntranceId != 0 && currentRole != null) {
             employeeRoleService.removeRoleAccessWithTimeRules(currentRole.getId(), selectedEntranceId);
             Entrances ent = entrancesService.findEntranceById(selectedEntranceId);
 
             loadAssignedRoles();
 
-            JSF.addSuccessMessageWithSummary("Success", currentRole.getRoleName() + " and time access removed for " + ent.getEntrance_Name());
+            JSF.addSuccessMessageWithSummary("Success", currentRole.getRoleName() + " and time access removed for " + ent.getEntranceName());
             currentRole = null;
         }
 
@@ -351,14 +342,6 @@ public class AssignRoleBean implements Serializable {
 
     public List<EmployeeRole> getAssignedRoles() {
         return assignedRoles;
-    }
-
-    public String getSelectedEntranceId() {
-        return selectedEntranceId;
-    }
-
-    public void setSelectedEntranceId(String selectedEntranceId) {
-        this.selectedEntranceId = selectedEntranceId;
     }
 
     public Set<Integer> getSelectedRolesIds() {

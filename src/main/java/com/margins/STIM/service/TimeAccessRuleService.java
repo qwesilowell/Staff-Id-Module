@@ -119,7 +119,9 @@ public class TimeAccessRuleService {
     
     private CustomTimeAccess findByEmployeeEntranceAndDay(Employee employee, Entrances entrance, DayOfWeek day) {
         try {
-            return em.createQuery("SELECT r FROM CustomTimeAccess r WHERE r.employee = :employee AND r.entrances = :entrance AND r.dayOfWeek = :day", CustomTimeAccess.class)
+            return em.createQuery("SELECT r FROM CustomTimeAccess r WHERE r.deleted = false AND "
+                    + "r.employee = :employee AND "
+                    + "r.entrances = :entrance AND r.dayOfWeek = :day", CustomTimeAccess.class)
                     .setParameter("employee", employee)
                     .setParameter("entrance", entrance)
                     .setParameter("day", day)
@@ -130,11 +132,23 @@ public class TimeAccessRuleService {
     }
     
     public List<CustomTimeAccess> findByEmployeeAndEntrance(Employee emp, Entrances entrance) {
-        return em.createQuery("SELECT r FROM CustomTimeAccess r WHERE r.employee = :emp AND r.entrances = :entrance", CustomTimeAccess.class)
+        return em.createQuery("SELECT r FROM CustomTimeAccess r WHERE r.deleted = false AND "
+                + "r.employee = :emp AND "
+                + "r.entrances = :entrance", CustomTimeAccess.class)
                 .setParameter("emp", emp)
                 .setParameter("entrance", entrance)
                 .getResultList();
     }
     
+
+    public void deleteCustomTimeAccess(Employee employee, Entrances entrance, String dayStr) {
+        DayOfWeek day = DayOfWeek.valueOf(dayStr.toUpperCase());
+
+        CustomTimeAccess existing = findByEmployeeEntranceAndDay(employee, entrance, day);
+        if (existing != null) {
+            existing.setDeleted(true);
+            em.merge(existing); // Soft delete by marking it
+        }
+    }
 
 }

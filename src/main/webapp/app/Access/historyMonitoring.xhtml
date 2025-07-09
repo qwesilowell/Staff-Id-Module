@@ -54,7 +54,7 @@
                             <p:outputLabel for="@next">Filter by Entrance</p:outputLabel>
                             <p:selectOneMenu value="#{historyBean.selectedEntranceId}" style="width: 100%">
                                 <f:selectItem itemLabel="All Entrances" itemValue="#{null}" noSelectionOption="true" />
-                                <f:selectItems value="#{historyBean.allEntrances}" var="entrance" itemLabel="#{entrance.entrance_Name}" itemValue="#{entrance.entrance_Device_ID}"/>
+                                <f:selectItems value="#{historyBean.allEntrances}" var="entrance" itemLabel="#{entrance.entranceName}" itemValue="#{entrance.id}"/>
                             </p:selectOneMenu>
                         </p:outputPanel>
                         
@@ -119,9 +119,13 @@
                     <p:column headerText="Employee Role" sortBy="#{log.employee.role.roleName}">
                         <h:outputText value="#{log.employee.role.roleName}"/> 
                     </p:column>
+                    
+                    <p:column headerText="Device Used" sortBy="#{log.device.deviceName}">
+                        <h:outputText value="#{log.device.deviceName}" />
+                    </p:column>
                     <!-- Entrance Filter -->
-                    <p:column headerText="Entrance" sortBy="#{historyBean.getEntranceName(log.entranceId)}">
-                        <h:outputText value="#{historyBean.getEntranceName(log.entranceId)}" />
+                    <p:column headerText="Entrance" sortBy="#{log.device.entrance.entranceName}">
+                        <h:outputText value="#{log.device.entrance.entranceName}" />
                     </p:column>
 
                     <!-- Result Filter -->

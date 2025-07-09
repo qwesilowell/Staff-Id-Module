@@ -119,13 +119,13 @@ public class AssignEntranceBean implements Serializable {
     public List<Entrances> getFilteredAvailableEntrances() {
         Set<String> roleEntranceIds = new HashSet<>();
         if (assignedRoleEntrances != null) {
-            assignedRoleEntrances.forEach(e -> roleEntranceIds.add(e.getEntrance_Device_ID()));
+            assignedRoleEntrances.forEach(e -> roleEntranceIds.add(e.getEntranceDeviceId()));
         }
         if (assignedCustomEntrances != null) {
-            assignedCustomEntrances.forEach(e -> roleEntranceIds.add(e.getEntrance_Device_ID()));
+            assignedCustomEntrances.forEach(e -> roleEntranceIds.add(e.getEntranceDeviceId()));
         }
         return availableEntrances.stream()
-                .filter(e -> !roleEntranceIds.contains(e.getEntrance_Device_ID()))
+                .filter(e -> !roleEntranceIds.contains(e.getEntranceDeviceId()))
                 .collect(Collectors.toList());
     }
 
@@ -137,7 +137,7 @@ public class AssignEntranceBean implements Serializable {
         try {
             System.out.println("Saving custom entrances for employee: " + selectedEmployee.getGhanaCardNumber());
             System.out.println("Selected entrances: " + selectedEntrances.stream()
-                    .map(e -> e.getEntrance_Device_ID() + ":" + e.getEntrance_Name())
+                    .map(e -> e.getEntranceDeviceId()+ ":" + e.getEntranceName())
                     .collect(Collectors.joining(", ")));
 
             // Fetch existing entrances
@@ -152,7 +152,7 @@ public class AssignEntranceBean implements Serializable {
             // Add only new ones that aren't already in the list
             for (Entrances selected : selectedEntrances) {
                 boolean exists = currentEntrances.stream()
-                        .anyMatch(e -> e.getEntrance_Device_ID().equals(selected.getEntrance_Device_ID()));
+                        .anyMatch(e -> e.getEntranceDeviceId().equals(selected.getEntranceDeviceId()));
                 if (!exists) {
                     currentEntrances.add(selected);
                 }
@@ -187,11 +187,11 @@ public class AssignEntranceBean implements Serializable {
             return;
         }
         try {
-            System.out.println("Removing entrance " + entrance.getEntrance_Device_ID() + " for employee: " + selectedEmployee.getGhanaCardNumber());
+            System.out.println("Removing entrance " + entrance.getEntranceDeviceId() + " for employee: " + selectedEmployee.getGhanaCardNumber());
 
             // Remove entrance from the list
-            selectedEntrances.removeIf(e -> e.getEntrance_Device_ID().equals(entrance.getEntrance_Device_ID()));
-            assignedCustomEntrances.removeIf(e -> e.getEntrance_Device_ID().equals(entrance.getEntrance_Device_ID()));
+            selectedEntrances.removeIf(e -> e.getEntranceDeviceId().equals(entrance.getEntranceDeviceId()));
+            assignedCustomEntrances.removeIf(e -> e.getEntranceDeviceId().equals(entrance.getEntranceDeviceId()));
 
             // Sync with employee object
             selectedEmployee.setCustomEntrances(new ArrayList<>(assignedCustomEntrances));
@@ -202,7 +202,7 @@ public class AssignEntranceBean implements Serializable {
             availableEntrances = getAllEntrances();
 
           
-            showMessage(FacesMessage.SEVERITY_WARN, "Success", "Removed custom entrance \"" + entrance.getEntrance_Name() + "\" for " + selectedEmployee.getFullName());
+            showMessage(FacesMessage.SEVERITY_WARN, "Success", "Removed custom entrance \"" + entrance.getEntranceName() + "\" for " + selectedEmployee.getFullName());
         } catch (Exception e) {
             logError("Error removing custom entrance", e);
             showMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to remove entrance: " + e.getMessage());

@@ -82,9 +82,9 @@ public class EntrancesRestService {
     public Response updateEntrance(@PathParam("id") String id, Entrances entrance) {
         Entrances existingEntrance = entityManager.find(Entrances.class, id);
         if (existingEntrance != null) {
-            existingEntrance.setEntrance_Device_ID(entrance.getEntrance_Device_ID());
-            existingEntrance.setEntrance_Name(entrance.getEntrance_Name());
-            existingEntrance.setEntrance_Location(entrance.getEntrance_Location());
+            existingEntrance.setEntranceDeviceId(entrance.getEntranceDeviceId());
+            existingEntrance.setEntranceName(entrance.getEntranceName());
+            existingEntrance.setEntranceLocation(entrance.getEntranceLocation());
             entityManager.merge(existingEntrance);
             return Response.ok("Entrance updated successfully").build();
         }

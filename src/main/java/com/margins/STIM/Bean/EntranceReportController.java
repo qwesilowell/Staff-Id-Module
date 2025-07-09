@@ -54,7 +54,7 @@ public class EntranceReportController implements Serializable {
     // Filter properties
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private String selectedEntranceId;
+    private int selectedEntranceId;
 
     // Data properties
     private List<EntranceReportDTO> reportData;
@@ -106,7 +106,7 @@ public class EntranceReportController implements Serializable {
     public void clearFilters() {
         startDate = null;
         endDate = null;
-        selectedEntranceId = null;
+//        selectedEntranceId = null;
         loadReport();
         addInfoMessage("Filters cleared");
     }
@@ -126,7 +126,7 @@ public class EntranceReportController implements Serializable {
         try {
             // Find the selected entrance detail
             selectedEntranceDetail = reportData.stream()
-                    .filter(report -> report.getEntrances().getEntrance_Device_ID().equals(entranceId))
+                    .filter(report -> report.getEntrances().getEntranceDeviceId().equals(entranceId))
                     .findFirst()
                     .orElse(null);
 
@@ -139,7 +139,7 @@ public class EntranceReportController implements Serializable {
         }
     }
 
-    public void viewEmployees(String entranceId) {
+    public void viewEmployees(int entranceId) {
         selectedEntrance = entranceService.findEntranceById(entranceId);
         loadEmployeesForEntrance();
         loadRolesForEnt();
@@ -173,25 +173,25 @@ public class EntranceReportController implements Serializable {
     
     }
 
-    public String navigateToHistory(String entranceId) {
-        if(entranceId  != null){
-        selectedEntrance = entranceService.findEntranceById(entranceId);
-        
-        FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_INFO, "Succes", "Displaying All Access for " + selectedEntrance.getEntrance_Name()));
-        PrimeFaces.current().ajax().update("entForm");
-
-        // Return the outcome with the parameter for filtering
-        return "/app/Access/historyMonitoring?faces-redirect=true&entranceId=" + entranceId;
-        }
-        else{
+    public String navigateToHistory(int entranceId) {
+        if(0  == entranceId){
             addErrorMessage("No entrance selcted");
             return null ;
         }
+        else{
+            selectedEntrance = entranceService.findEntranceById(entranceId);
+            
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Succes", "Displaying All Access for " + selectedEntrance.getEntranceName()));
+            PrimeFaces.current().ajax().update("entForm");
+            
+            // Return the outcome with the parameter for filtering
+            return "/app/Access/historyMonitoring?faces-redirect=true&entranceId=" + entranceId;
+        }
     }
 
-    public String navToResult(String entranceId, String result) {
+    public String navToResult(int entranceId, String result) {
         selectedEntrance = entranceService.findEntranceById(entranceId);
 
         String resultText;
@@ -203,7 +203,7 @@ public class EntranceReportController implements Serializable {
 
         FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
         FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_INFO, "Succes", "Displaying " + resultText + " Access for " + selectedEntrance.getEntrance_Name()));
+                new FacesMessage(FacesMessage.SEVERITY_INFO, "Succes", "Displaying " + resultText + " Access for " + selectedEntrance.getEntranceName()));
         PrimeFaces.current().ajax().update("entForm");
 
         // Return the outcome with the parameter for filtering
@@ -223,7 +223,7 @@ public class EntranceReportController implements Serializable {
 //
 //        // Find the entrance data
 //        EntranceReportDTO entranceData = reportData.stream()
-//                .filter(report -> report.getEntrances().getEntrance_Device_ID().equals(entranceId))
+//                .filter(report -> report.getEntrances().getEntranceDeviceId().equals(entranceId))
 //                .findFirst()
 //                .orElse(null);
 //
@@ -256,7 +256,7 @@ public class EntranceReportController implements Serializable {
 //
 //    // Find the entrance data
 //    EntranceReportDTO entranceData = reportData.stream()
-//            .filter(report -> report.getEntrances().getEntrance_Device_ID().equals(entranceId))
+//            .filter(report -> report.getEntrances().getEntranceDeviceId().equals(entranceId))
 //            .findFirst()
 //            .orElse(null);
 //

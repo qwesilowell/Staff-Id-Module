@@ -6,11 +6,17 @@ package com.margins.STIM.service;
 
 import com.margins.STIM.entity.AccessLog;
 import com.margins.STIM.entity.CustomTimeAccess;
+import com.margins.STIM.entity.Devices;
 import com.margins.STIM.entity.Employee;
+import com.margins.STIM.entity.EmployeeEntranceState;
 import com.margins.STIM.entity.EmployeeRole;
 import com.margins.STIM.entity.Entrances;
 import com.margins.STIM.entity.RoleTimeAccess;
+import com.margins.STIM.entity.enums.DevicePosition;
+import com.margins.STIM.entity.enums.EntranceMode;
+import com.margins.STIM.entity.enums.LocationState;
 import com.margins.STIM.util.DateFormatter;
+import com.margins.STIM.util.JSF;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -43,6 +49,9 @@ public class AccessLogService {
 
     @Inject
     private Employee_Service employeeService;
+    
+    @Inject
+    private  EmployeeEntranceStateService employeeEntranceStateService;
 
     @PersistenceContext
     private EntityManager em;
@@ -52,6 +61,8 @@ public class AccessLogService {
         em.flush();
         em.clear();
     }
+    
+    
 
     // For dashboard later
     public int countByResultInPeriod(String result, LocalDateTime start, LocalDateTime end) {
@@ -68,7 +79,7 @@ public class AccessLogService {
     public int countByResultAndEntrance(String result, LocalDateTime start, LocalDateTime end, String entranceId) {
         Long count = em.createQuery(
                 "SELECT COUNT(a) FROM AccessLog a WHERE a.result = :result "
-                + "AND a.entranceId = :entranceId AND a.timestamp BETWEEN :start AND :end", Long.class)
+                + "AND a.device.entrance.entranceDeviceId = :entranceId AND a.timestamp BETWEEN :start AND :end", Long.class)
                 .setParameter("result", result)
                 .setParameter("entranceId", entranceId)
                 .setParameter("start", start)
@@ -96,14 +107,17 @@ public class AccessLogService {
     }
 
     public List<AccessLog> getRecentAccessAttemptsByEntrance(String entranceId, int limit) {
-        return em.createQuery("SELECT a FROM AccessLog a WHERE a.entranceId = :entranceId ORDER BY a.timestamp DESC", AccessLog.class)
+        return em.createQuery("SELECT a FROM AccessLog a WHERE a.device IS NOT NULL AND a.device.entrance IS NOT NULL AND a.device.entrance.entranceDeviceId  = :entranceId ORDER BY a.timestamp DESC", AccessLog.class)
                 .setParameter("entranceId", entranceId)
                 .setMaxResults(limit)
                 .getResultList();
     }
 
     public List<AccessLog> getAllRecentAccessAttemptsByEntrance(String entranceId) {
-        return em.createQuery("SELECT a FROM AccessLog a WHERE a.entranceId = :entranceId ORDER BY a.timestamp DESC", AccessLog.class)
+        return em.createQuery("SELECT a FROM AccessLog a "
+                + "WHERE a.device IS NOT NULL AND a.device.entrance IS NOT NULL "
+                + "AND a.device.entrance.entranceDeviceId = :entranceId "
+                + "ORDER BY a.timestamp DESC", AccessLog.class)
                 .setParameter("entranceId", entranceId)
                 .getResultList();
     }
@@ -113,9 +127,14 @@ public class AccessLogService {
         List<Object[]> results = em.createQuery(
                 "SELECT a.result, COUNT(a) FROM AccessLog a "
                 + "WHERE a.result IN ('granted', 'denied') "
-                + "AND a.entranceId = :entranceId "
+                + "AND a.device IS NOT NULL "
+                + "AND a.device.entrance IS NOT NULL "
+                + "AND a.device.entrance.entranceDeviceId = :entranceId "
+                + "AND a.timestamp BETWEEN :start AND :end "
                 + "GROUP BY a.result", Object[].class)
                 .setParameter("entranceId", entranceId)
+                .setParameter("start", start)
+                .setParameter("end", end)
                 .getResultList();
 
         Map<String, Integer> resultCounts = new HashMap<>();
@@ -159,10 +178,13 @@ public class AccessLogService {
     public Map<String, Integer> getTop5RecentEntrancesByGrantedAccess(LocalDateTime start, LocalDateTime end) {
 
         List<Object[]> results = em.createQuery(
-                "SELECT a.entranceId, COUNT(a) as accessCount, MAX(a.timestamp) as lastAccessTime "
+                "SELECT a.device.entrance.id, a.device.entrance.entranceName, COUNT(a), MAX(a.timestamp) "
                 + "FROM AccessLog a "
-                + "WHERE a.result = 'granted' AND a.timestamp BETWEEN :start AND :end "
-                + "GROUP BY a.entranceId "
+                + "WHERE a.result = 'granted' "
+                + "AND a.timestamp BETWEEN :start AND :end "
+                + "AND a.device IS NOT NULL "
+                + "AND a.device.entrance IS NOT NULL "
+                + "GROUP BY a.device.entrance.id, a.device.entrance.entranceName "
                 + "ORDER BY MAX(a.timestamp) DESC", Object[].class)
                 .setParameter("start", start)
                 .setParameter("end", end)
@@ -171,36 +193,35 @@ public class AccessLogService {
 
         Map<String, Integer> entranceCounts = new HashMap<>();
         for (Object[] row : results) {
-            String entranceId = (String) row[0];
-            Long count = (Long) row[1];
-
-            Entrances entrance = entrancesService.findEntranceById(entranceId);
-            String entranceName = entrance != null ? entrance.getEntrance_Name() : entranceId;
+            Integer entranceId = (Integer) row[0];
+            String entranceName = (String) row[1];
+            Long count = (Long) row[2];
 
             entranceCounts.put(entranceName, count.intValue());
         }
 
         return entranceCounts;
     }
-    
-    
+
     public Map<String, Map<String, Integer>> getTop5RecentEntrancesByAccessResult(LocalDateTime start, LocalDateTime end) {
         List<Object[]> results = em.createQuery(
-                "SELECT a.entranceId, a.result, COUNT(a), MAX(a.timestamp) "
+                "SELECT a.device.entrance.id, a.result, COUNT(a), MAX(a.timestamp) "
                 + "FROM AccessLog a "
                 + "WHERE a.timestamp BETWEEN :start AND :end "
-                + "GROUP BY a.entranceId, a.result "
+                + "AND a.device IS NOT NULL "
+                + "AND a.device.entrance IS NOT NULL "
+                + "GROUP BY a.device.entrance.id, a.result "
                 + "ORDER BY MAX(a.timestamp) DESC", Object[].class)
                 .setParameter("start", start)
                 .setParameter("end", end)
                 .getResultList();
 
-        // Step 1: Count total accesses per entrance
-        Map<String, LocalDateTime> entranceLastAccess = new HashMap<>();
-        Map<String, Map<String, Integer>> accessMap = new HashMap<>();
+        // Track last access timestamp per entrance
+        Map<Integer, LocalDateTime> entranceLastAccess = new HashMap<>();
+        Map<Integer, Map<String, Integer>> accessMap = new HashMap<>();
 
         for (Object[] row : results) {
-            String entranceId = (String) row[0];
+            Integer entranceId = (Integer) row[0];
             String result = (String) row[1]; // "granted" or "denied"
             Long count = (Long) row[2];
             LocalDateTime lastAccess = (LocalDateTime) row[3];
@@ -214,7 +235,7 @@ public class AccessLogService {
         }
 
         // Step 2: Sort entrances by most recent access time
-        List<String> top5EntranceIds = entranceLastAccess.entrySet().stream()
+        List<Integer> top5EntranceIds = entranceLastAccess.entrySet().stream()
                 .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
                 .map(Map.Entry::getKey)
                 .distinct()
@@ -223,16 +244,14 @@ public class AccessLogService {
 
         // Step 3: Build final result map with entrance names
         Map<String, Map<String, Integer>> finalResult = new LinkedHashMap<>();
-        for (String entranceId : top5EntranceIds) {
+        for (Integer entranceId : top5EntranceIds) {
             Entrances entrance = entrancesService.findEntranceById(entranceId);
-            String entranceName = entrance != null ? entrance.getEntrance_Name() : entranceId;
-            finalResult.put(entranceName, accessMap.get(entranceId));
+            String entranceName = entrance != null ? entrance.getEntranceName() : "Entrance Not Found";
+            finalResult.put(entranceName, accessMap.get(entranceId));//Entrance Not found
         }
 
         return finalResult;
     }
-    
-
 
     private boolean isWithinRoleTimeRule(EmployeeRole role, LocalTime now, DayOfWeek day, Entrances entrance) {
         List<RoleTimeAccess> rules = timeAccessRuleService.findByRoleAndEntrance(role, entrance);
@@ -262,69 +281,134 @@ public class AccessLogService {
                 {
                     return true;
                 }
-                
-               
+
             }
         }
         return false;
     }
 
-    // New method to check access
-    public boolean hasAccess(Employee employee, Entrances entrance) {
-        //  Employee employee = employeeService.findEmployeeByGhanaCard(ghanaCardNumber);
-//        Employee employee = em.find(Employee.class, ghanaCardNumber);
-//        if (employee == null) {
-//            System.out.println("Employee not found: " + ghanaCardNumber);
-//            return false;
-//        }
-        if (employee == null) {
-            System.out.println("employee is null");
+    private boolean hasRoleOrCustomAccess(Employee employee, Entrances entrance) {
+
+        if (employee == null || entrance == null) {
             return false;
         }
-        if (entrance == null) {
-            System.out.println("entrance is null");
-            return false;
-        }
-        
 
-        LocalTime now = LocalTime.now();
-        DayOfWeek today = LocalDate.now().getDayOfWeek();
+        Integer targetEntranceId = entrance.getId(); // Use primary key (ID) comparison
 
-        // Check role-based entrances
+        // Check role-based access
         EmployeeRole role = employee.getRole();
         if (role != null && role.getAccessibleEntrances() != null) {
             boolean hasRoleAccess = role.getAccessibleEntrances()
                     .stream()
-                    .anyMatch(e -> entrance.getEntrance_Device_ID().equals(e.getEntrance_Device_ID()));
+                    .anyMatch(e -> targetEntranceId.equals(e.getId()));
 
             if (hasRoleAccess) {
-                if (isWithinRoleTimeRule(role, now, today, entrance)) {
-                    System.out.println("Allowed by default rolefor >>>> " + role);
-                    System.out.println(today);
-                    System.out.println(now);
-
-                    return true; // ✅ Access granted via role + time
-                }
+                return true;
             }
         }
 
-        // Check custom entrances
+        // Check custom access
         if (employee.getCustomEntrances() != null) {
             boolean hasCustomAccess = employee.getCustomEntrances()
                     .stream()
-                    .anyMatch(e -> entrance.getEntrance_Device_ID().equals(e.getEntrance_Device_ID()));
+                    .anyMatch(e -> targetEntranceId.equals(e.getId()));
 
             if (hasCustomAccess) {
-                if (isWithinCustomAccess(employee, entrance, today, now)) {
-                    System.out.println("Allowed by custom role for >>>> " + employee);
-                    System.out.println(today);
-                    System.out.println(now);
-                    return true; // ✅ Access granted via custom rule
-                }
+                return true;
             }
         }
 
-        System.out.println("Access denied for employee>>>>>>: " + employee + " entrance>>>>>>>: " + entrance);
+        return false; // Neither role-based nor custom access
+
+    }
+
+    // New method to check access
+    public boolean hasAccess(Employee employee, Devices devices) {
+
+        if (employee == null) {
+            System.out.println("employee is null");
+            return false;
+        }
+        if (devices == null) {
+            System.out.println("device is null");
+            return false;
+        }
+        if (devices.getEntrance() == null) {
+            System.out.println("No entrance assigned to this device");
+            JSF.addErrorMessage("No entrance assigned to this device");
+            return false;
+        }
+
+        Entrances entrance = devices.getEntrance();
+        EntranceMode mode = entrance.getEntranceMode();
+        DevicePosition position = devices.getDevicePosition();
+
+        LocalTime now = LocalTime.now();
+        DayOfWeek today = LocalDate.now().getDayOfWeek();
+
+        boolean hasBaseAccess = hasRoleOrCustomAccess(employee, entrance);
+        if (!hasBaseAccess) {
+            System.out.println("Access denied: no role or custom access.");
+            return false;
+        }
+
+        //==============IN FULL ACCESS MODE=========
+        if (mode == EntranceMode.FULL_ACCESS) {
+            // ENTRY and EXIT both require only role/custom check (already passed)
+            return true;
+        }
+
+        // ========== LENIENT Mode ==========
+        if (mode == EntranceMode.LENIENT) {
+            if (position == DevicePosition.ENTRY) {
+                // Must pass time-based check
+                boolean withinRoleTime = isWithinRoleTimeRule(employee.getRole(), now, today, entrance);
+                boolean withinCustomTime = isWithinCustomAccess(employee, entrance, today, now);
+
+                if (!withinRoleTime && !withinCustomTime) {
+                    System.out.println("Access denied: outside both time ranges.");
+                    return false;
+                }
+
+                if (!withinRoleTime) {
+                    System.out.println("Warning: outside role time range, but custom access allowed.");
+                } else if (!withinCustomTime) {
+                    System.out.println("Warning: outside custom time range, but role access allowed.");
+                }
+
+                return true; //  At least one time rule passed
+            }
+            if (position == DevicePosition.EXIT) {
+                // No time check needed
+                return true;
+            }
+        }
+        
+        // ===== STRICT Mode Rules =====
+        if (mode == EntranceMode.STRICT) {
+            EmployeeEntranceState state = employeeEntranceStateService
+                    .findByEmployeeAndEntrance(employee.getId(), entrance.getId());
+
+            if (position == DevicePosition.ENTRY) {
+                if (state != null && state.getCurrentState() == LocationState.INSIDE) {
+                    System.out.println("Denied: already INSIDE.");
+                    return false;
+                }
+                return true; // Allowed to enter
+            }
+
+            if (position == DevicePosition.EXIT) {
+                if (state == null || state.getCurrentState() != LocationState.INSIDE) {
+                    System.out.println("Denied: not INSIDE, cannot EXIT.");
+                    return false;
+                }
+                return true; // Allowed to exit
+            }
+        }
+
+        System.out.println(
+                "Access denied for employee>>>>>>: " + employee + " entrance>>>>>>>: " + entrance);
+
         return false;
     }
 
@@ -335,12 +419,12 @@ public class AccessLogService {
         Map<String, Object> params = new HashMap<>();
 
         if (ghanaCardNumber != null && !ghanaCardNumber.isEmpty()) {
-            queryStr.append(" AND a.employee.ghanaCardNumber LIKE :ghanaCardNumber");
+            queryStr.append(" AND a.employee IS NOT NULL AND a.employee.ghanaCardNumber LIKE :ghanaCardNumber");
             params.put("ghanaCardNumber", "%" + ghanaCardNumber + "%");
         }
 
         if (entranceId != null && !entranceId.isEmpty()) {
-            queryStr.append(" AND a.entranceId = :entranceId");
+            queryStr.append(" AND a.device IS NOT NULL AND a.device.entrance IS NOT NULL AND a.device.entrance.entranceDeviceId = :entranceId");
             params.put("entranceId", entranceId);
         }
 
@@ -353,15 +437,17 @@ public class AccessLogService {
             queryStr.append(" AND a.timestamp BETWEEN :startTime AND :endTime");
             params.put("startTime", startTime);
             params.put("endTime", endTime);
+
         }
 
-        TypedQuery<Long> query = em.createQuery(queryStr.toString(), Long.class);
+        TypedQuery<Long> query = em.createQuery(queryStr.toString(), Long.class
+        );
         params.forEach(query::setParameter);
 
         return query.getSingleResult().intValue();
     }
 
-    public List<AccessLog> filterAccessLog(List<LocalDateTime> dateRange, String entranceId, String ghanacardnumber, String employeeName,Integer roleId, String result) {
+    public List<AccessLog> filterAccessLog(List<LocalDateTime> dateRange, String entranceId, String ghanacardnumber, String employeeName, Integer roleId, String result) {
 
         StringBuilder queryBuilder = new StringBuilder("SELECT a FROM AccessLog a WHERE 1=1 ");
 
@@ -379,7 +465,7 @@ public class AccessLogService {
 
         if (entranceId != null && !entranceId.isBlank()) {
 
-            queryBuilder.append("AND a.entranceId = :entranceId ");
+            queryBuilder.append("AND a.device IS NOT NULL AND a.device.entrance IS NOT NULL AND a.device.entrance.entranceDeviceId = :entranceId ");
 
             params.put("entranceId", entranceId);
 
@@ -387,20 +473,20 @@ public class AccessLogService {
 
         if (ghanacardnumber != null && !ghanacardnumber.isBlank()) {
 
-            queryBuilder.append("AND UPPER(a.employee.ghanaCardNumber) LIKE :ghanacardnumber ");
+            queryBuilder.append("AND a.employee IS NOT NULL AND UPPER(a.employee.ghanaCardNumber) LIKE :ghanacardnumber ");
 
             params.put("ghanacardnumber", "%" + ghanacardnumber.toUpperCase() + "%");
 
         }
 
         if (employeeName != null && !employeeName.isBlank()) {
-            queryBuilder.append("AND (CONCAT(LOWER(a.employee.firstname), ' ', LOWER(a.employee.lastname)) LIKE :employeeName ");
+            queryBuilder.append("AND a.employee IS NOT NULL AND (CONCAT(LOWER(a.employee.firstname), ' ', LOWER(a.employee.lastname)) LIKE :employeeName ");
             queryBuilder.append("OR LOWER(a.employee.firstname) LIKE :employeeName ");
             queryBuilder.append("OR LOWER(a.employee.lastname) LIKE :employeeName) ");
-            
+
             params.put("employeeName", "%" + employeeName.toLowerCase() + "%");
         }
-        
+
         if (roleId != null) {
             queryBuilder.append("AND a.employee.role.id = :roleId ");
             params.put("roleId", roleId);
@@ -416,7 +502,8 @@ public class AccessLogService {
 
         queryBuilder.append("ORDER BY a.timestamp DESC");
 
-        TypedQuery<AccessLog> query = em.createQuery(queryBuilder.toString(), AccessLog.class);
+        TypedQuery<AccessLog> query = em.createQuery(queryBuilder.toString(), AccessLog.class
+        );
 
         params.forEach(query::setParameter);
 

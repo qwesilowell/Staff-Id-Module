@@ -53,7 +53,9 @@ public class LiveMonitoringBean implements Serializable {
     public void setupBreadcrumb() {
         breadcrumbBean.setLiveMonitoringBreadcrumb();
     }
-
+    
+    
+//Can be set to show as visitor
     public String getEmployeeName(Employee employee) {
         if (employee == null) {
             return "Unknown Employee";
@@ -61,9 +63,9 @@ public class LiveMonitoringBean implements Serializable {
         return employee.getFullName();
     }
 
-    public String getEntranceName(String entranceId) {
+    public String getEntranceName(int entranceId) {
         Entrances entrance = entrancesService.findEntranceById(entranceId);
-        return entrance != null ? entrance.getEntrance_Name() : entranceId;
+        return entrance != null ? entrance.getEntranceName(): "Entrance not found";
     }
 
     public String getFormattedTimestamp(AccessLog log) {

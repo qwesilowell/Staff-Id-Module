@@ -160,18 +160,18 @@ public class EmployeeRole_Service {
                 .collect(Collectors.toList());
     }
 
-    public void removeRoleAccessWithTimeRules(int roleId, String entranceId) {
+    public void removeRoleAccessWithTimeRules(int roleId, int entranceId) {
         EmployeeRole role = findEmployeeRoleById(roleId);
         Entrances entrance = entranceService.findEntranceById(entranceId);
 
         if (role != null && entrance != null) {
             // Step 1: Delete time rules
             List<RoleTimeAccess> timeAccessList = timeAccessService.findByRoleAndEntrance(role, entrance);
-            System.out.println("removing time access for role>>>>> " + role + "and entrance>>>> " + entrance.getEntrance_Name());
+            System.out.println("removing time access for role>>>>> " + role + "and entrance>>>> " + entrance.getEntranceName());
 
             for (RoleTimeAccess rta : timeAccessList) {
                 System.out.println("Deleting Time Rule → Role: " + rta.getEmployeeRole().getRoleName()
-                        + ", Entrance: " + rta.getEntrances().getEntrance_Device_ID()
+                        + ", Entrance: " + rta.getEntrances().getEntranceDeviceId()
                         + ", Day: " + rta.getDayOfWeek()
                         + ", Start: " + rta.getStartTime()
                         + ", End: " + rta.getEndTime());

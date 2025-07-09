@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
  *
  * @author PhilipManteAsare
  */
-
 @Stateless
 @Transactional
 public class Employee_Service {
@@ -34,54 +33,48 @@ public class Employee_Service {
 
     // Create 
     public Employee saveEmployee(Employee employee) {
-         // New employee
+        // New employee
         entityManager.persist(employee);
         return employee;
     }
     //Update 
-    public Employee updateEmployee(String ghanaCardNumber, Employee employee) { 
-        Employee existingEmployee = findEmployeeByGhanaCard(ghanaCardNumber);
-        if (existingEmployee != null) {
-            employee.setGhanaCardNumber(ghanaCardNumber); // Ensure Ghana Card number consistency
-            return entityManager.merge(employee);
-        }
-        throw new EntityNotFoundException("Employee does not exist with Ghana Card number: " + ghanaCardNumber);
-    }
-    
-    public Employee updateEmployeeD(String ghanaCardNumber, Employee updatedEmployee) {
+//    public Employee updateEmployee(String ghanaCardNumber, Employee employee) { 
+//        Employee existingEmployee = findEmployeeByGhanaCard(ghanaCardNumber);
+//        if (existingEmployee != null) {
+//            employee.setGhanaCardNumber(ghanaCardNumber); // Ensure Ghana Card number consistency
+//            return entityManager.merge(employee);
+//        }
+//        throw new EntityNotFoundException("Employee does not exist with Ghana Card number: " + ghanaCardNumber);
+//    }
+
+    public Employee updateEmployee(String ghanaCardNumber, Employee updatedEmployee) {
         Employee existing = findEmployeeByGhanaCard(ghanaCardNumber);
-        if (existing != null) {
-            // Only update the fields you intend to change
-            existing.setFirstname(updatedEmployee.getFirstname());
-            existing.setLastname(updatedEmployee.getLastname());
-            existing.setEmail(updatedEmployee.getEmail());
-            existing.setAddress(updatedEmployee.getAddress());
-            existing.setEmploymentStatus(updatedEmployee.getEmploymentStatus());
-
-            // Optional: update phone, role, etc.
-            // existing.setPhone(updatedEmployee.getPhone());
-            return entityManager.merge(existing);
+        if (existing == null) {
+            throw new EntityNotFoundException("Employee does not exist with Ghana Card number: " + ghanaCardNumber);
         }
-        throw new EntityNotFoundException("Employee does not exist");
+        // Only update the fields you intend to change
+        existing.setFirstname(updatedEmployee.getFirstname());
+        existing.setLastname(updatedEmployee.getLastname());
+        existing.setEmail(updatedEmployee.getEmail());
+        existing.setAddress(updatedEmployee.getAddress());
+        existing.setEmploymentStatus(updatedEmployee.getEmploymentStatus());
+
+        // Optional: update phone, role, etc.
+        // existing.setPhone(updatedEmployee.getPhone());
+        return entityManager.merge(existing);
     }
 
+    public Employee findEmployeeById(int id) {
+        return entityManager.find(Employee.class, id);
+    }
     
+    //Update Employee Custom Entrance
     public Employee updateEmployeeEnt(String ghanaCardNumber, Employee employee) {
-        System.out.println("Starting update for employee: " + ghanaCardNumber);
         Employee existingEmployee = findEmployeeByGhanaCard(ghanaCardNumber);
         if (existingEmployee != null) {
             employee.setGhanaCardNumber(ghanaCardNumber);
-            System.out.println("Merging employee with custom entrances: "
-                    + employee.getCustomEntrances().stream()
-                            .map(e -> e.getEntrance_Device_ID() + ":" + e.getEntrance_Name())
-                            .collect(Collectors.joining(", ")));
             Employee merged = entityManager.merge(employee);
-            System.out.println("Merged employee with custom entrances: "
-                    + merged.getCustomEntrances().stream()
-                            .map(e -> e.getEntrance_Device_ID() + ":" + e.getEntrance_Name())
-                            .collect(Collectors.joining(", ")));
             entityManager.flush();
-            System.out.println("Flushed changes for employee: " + ghanaCardNumber);
             return merged;
         }
         System.err.println("Employee not found: " + ghanaCardNumber);
@@ -90,27 +83,30 @@ public class Employee_Service {
 
     // Retrieve all Employees
     public List<Employee> findAllEmployees() {
-        return entityManager.createQuery("SELECT e FROM Employee e", Employee.class)
+        return entityManager.createQuery("SELECT e FROM Employee e", Employee.class
+        )
                 .getResultList();
     }
 
     // Find Employee by Ghana Card Number
-     public Employee findEmployeeByGhanaCard(String ghanaCardNumber) {
-        return entityManager.createQuery("SELECT e FROM Employee e WHERE e.ghanaCardNumber = :ghanaCardNumber", Employee.class)
+    public Employee findEmployeeByGhanaCard(String ghanaCardNumber) {
+        return entityManager.createQuery("SELECT e FROM Employee e WHERE e.ghanaCardNumber = :ghanaCardNumber", Employee.class
+        )
                 .setParameter("ghanaCardNumber", ghanaCardNumber)
                 .getResultStream()
                 .findFirst()
                 .orElse(null);
     }
 
-     // Search Employees by partial Ghana Card Number
+    // Search Employees by partial Ghana Card Number
     public List<Employee> searchEmployeesByGhanaCard(String ghanaCardPattern) {
-        return entityManager.createQuery("SELECT e FROM Employee e WHERE LOWER(e.ghanaCardNumber) LIKE :ghanaCardPattern", Employee.class)
-        .setParameter("ghanaCardPattern", "%" + ghanaCardPattern.toLowerCase() + "%")
-        .getResultList();
+        return entityManager.createQuery("SELECT e FROM Employee e WHERE LOWER(e.ghanaCardNumber) LIKE :ghanaCardPattern", Employee.class
+        )
+                .setParameter("ghanaCardPattern", "%" + ghanaCardPattern.toLowerCase() + "%")
+                .getResultList();
     }
-    
-        // Method to validate Ghana Card number format
+
+    // Method to validate Ghana Card number format
     public boolean validateGhanaCard(String ghanaCardNumber) {
         if (ghanaCardNumber == null || ghanaCardNumber.trim().isEmpty()) {
             return false;
@@ -122,7 +118,6 @@ public class Employee_Service {
         return pattern.matcher(ghanaCardNumber).matches();
     }
 
-    
     // Delete Employee by Ghana Card Number
     public void deleteEmployee(String ghanaCardNumber) {
         Employee employee = findEmployeeByGhanaCard(ghanaCardNumber);
@@ -132,7 +127,8 @@ public class Employee_Service {
             throw new EntityNotFoundException("Employee does not exist with Ghana Card number: " + ghanaCardNumber);
         }
     }
-     public void registerEmployee(Employee employee, BiometricData biometricData) {
+
+    public void registerEmployee(Employee employee, BiometricData biometricData) {
         try {
             entityManager.persist(employee); // Save employee WITHOUT role
 
@@ -147,8 +143,6 @@ public class Employee_Service {
         }
     }
 
-     
-     
     public void assignRoleToEmployee(String ghanaCardNumber, EmployeeRole role) {
         Employee employee = findEmployeeByGhanaCard(ghanaCardNumber);
 
@@ -161,14 +155,15 @@ public class Employee_Service {
             throw new EntityNotFoundException("Employee with Ghana Card number " + ghanaCardNumber + " not found.");
         }
     }
-    
+
     public Employee findEmployeeByName(String name) {
         return entityManager.createQuery(
-                "SELECT e FROM Employee e WHERE LOWER(e.firstname) LIKE :name OR LOWER(e.lastname) LIKE :name", Employee.class)
+                "SELECT e FROM Employee e WHERE LOWER(e.firstname) LIKE :name OR LOWER(e.lastname) LIKE :name", Employee.class
+        )
                 .setParameter("name", "%" + name.toLowerCase() + "%") // Case-insensitive search
                 .getResultStream().findFirst().orElse(null);
     }
-    
+
     public List<Employee> searchEmployees(String searchQuery) {
         if (searchQuery == null || searchQuery.trim().isEmpty()) {
             return findAllEmployees(); // Return all employees if search query is empty
@@ -176,24 +171,28 @@ public class Employee_Service {
 
         // Search by both name and Ghana Card number
         String query = searchQuery.toLowerCase();
+
         return entityManager.createQuery(
                 "SELECT e FROM Employee e WHERE "
                 + "LOWER(e.firstname) LIKE :query OR "
                 + "LOWER(e.lastname) LIKE :query OR "
-                + "LOWER(e.ghanaCardNumber) LIKE :query", Employee.class)
+                + "LOWER(e.ghanaCardNumber) LIKE :query", Employee.class
+        )
                 .setParameter("query", "%" + query + "%")
                 .getResultList();
     }
-   
+
     public int getTotalEmployees() {
-        Long count = entityManager.createQuery("SELECT COUNT(e) FROM Employee e", Long.class)
+        Long count = entityManager.createQuery("SELECT COUNT(e) FROM Employee e", Long.class
+        )
                 .getSingleResult();
         return count.intValue();
     }
 
     public int countEmployeesOnboarded(LocalDateTime start, LocalDateTime end) {
         Long count = entityManager.createQuery(
-                "SELECT COUNT(e) FROM Employee e WHERE e.createdAt BETWEEN :start AND :end", Long.class)
+                "SELECT COUNT(e) FROM Employee e WHERE e.createdAt BETWEEN :start AND :end", Long.class
+        )
                 .setParameter("start", Date.from(start.atZone(ZoneId.systemDefault()).toInstant()))
                 .setParameter("end", Date.from(end.atZone(ZoneId.systemDefault()).toInstant()))
                 .getSingleResult();
@@ -201,7 +200,8 @@ public class Employee_Service {
     }
 
     public List<Employee> getRecentEmployees(int limit) {
-        return entityManager.createQuery("SELECT e FROM Employee e ORDER BY e.createdAt DESC", Employee.class)
+        return entityManager.createQuery("SELECT e FROM Employee e ORDER BY e.createdAt DESC", Employee.class
+        )
                 .setMaxResults(limit)
                 .getResultList();
     }
@@ -213,13 +213,13 @@ public class Employee_Service {
                 + "  SELECT a.targetId FROM ActivityLog a "
                 + "  WHERE a.action = 'create_employee' AND a.userId = :userId"
                 + ") "
-                + "ORDER BY e.createdAt DESC", Employee.class)
+                + "ORDER BY e.createdAt DESC", Employee.class
+        )
                 .setParameter("userId", userId)
                 .setMaxResults(limit)
                 .getResultList();
     }
-    
-    
+
     // Create
     public EmploymentStatus saveEmploymentStatus(EmploymentStatus status) {
         entityManager.persist(status);
@@ -238,13 +238,16 @@ public class Employee_Service {
 
     // Retrieve all
     public List<EmploymentStatus> findAllEmploymentStatuses() {
-        return entityManager.createQuery("SELECT es FROM EmploymentStatus es", EmploymentStatus.class)
+        return entityManager.createQuery("SELECT es FROM EmploymentStatus es", EmploymentStatus.class
+        )
                 .getResultList();
     }
 
     // Find by ID
-    public EmploymentStatus findEmploymentStatusById(int statusId) {
-        return entityManager.createQuery("SELECT es FROM EmploymentStatus es WHERE es.id = :statusId", EmploymentStatus.class)
+    public EmploymentStatus
+            findEmploymentStatusById(int statusId) {
+        return entityManager.createQuery("SELECT es FROM EmploymentStatus es WHERE es.id = :statusId", EmploymentStatus.class
+        )
                 .setParameter("statusId", statusId)
                 .getResultStream()
                 .findFirst()
@@ -272,5 +275,3 @@ public class Employee_Service {
         return count > 0;
     }
 }
-
-

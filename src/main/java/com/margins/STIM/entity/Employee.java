@@ -21,9 +21,15 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "Employee")
+@Getter
+@Setter
 public class Employee implements Serializable {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private int id;
+
     @Column(name = "GHANA_CARD_NUMBER", nullable = false, unique = true, length = 15)
     private String ghanaCardNumber;
 
@@ -44,33 +50,23 @@ public class Employee implements Serializable {
 
     @Column(name = "EMAIL")
     private String email;
-    
-    @Getter
-    @Setter
+
     @Column(name = "PRIMARY_PHONE", nullable = false)
     private String primaryPhone;
 
-    @Getter
-    @Setter
     @Column(name = "SECONDARY_PHONE")
     private String secondaryPhone;
-    
-    
-    @Setter
-    @Getter
+
     @ManyToOne
     @JoinColumn(name = "EMPLOYMENT_STATUS_ID")
     private EmploymentStatus employmentStatus;
 
 //    @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL)
 //    private BiometricData biometricData;
-
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = true)
     private EmployeeRole role;
 
-    @Getter
-    @Setter
     @ManyToMany
     @JoinTable(
             name = "employee_entrance_access",
@@ -83,92 +79,13 @@ public class Employee implements Serializable {
     @Column(name = "created_at", nullable = false)
     private Date createdAt;
 
-    
     public String getFullName() {
         return firstname + " " + lastname;
     }
 
-    // Getters and Setters
-    public String getGhanaCardNumber() {
-        return ghanaCardNumber;
-    }
-
-    public void setGhanaCardNumber(String ghanaCardNumber) {
-        this.ghanaCardNumber = ghanaCardNumber;
-    }
-
-    public String getFirstname() {
-        return firstname;
-    }
-
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
-    }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
-    }
-
-    public LocalDate getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public void setDateOfBirth(LocalDate dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-//    public BiometricData getBiometricData() {
-//        return biometricData;
-//    }
-//
-//    public void setBiometricData(BiometricData biometricData) {
-//        this.biometricData = biometricData;
-//    }
-
-    public EmployeeRole getRole() {
-        return role;
-    }
-
-    public void setRole(EmployeeRole role) {
-        this.role = role;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
     @PrePersist
     public void setCreatedAt() {
-        Date newDate = new Date();
-        this.createdAt = newDate;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+        this.createdAt = new Date();
     }
 
     public Employee() {

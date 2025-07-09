@@ -21,10 +21,9 @@ import lombok.Setter;
 @Entity
 @Table(name = "SYSTEM_USER")
 @Cacheable(false)
-public class Users /*extends EntityModel*/ implements Serializable {
-
-    @Id
-    @Column(name = "ADMINGHANA_CARD_NUMBER ", nullable = false, unique = true, length = 15)
+public class Users extends EntityModel implements Serializable {
+    
+    @Column(name = "ADMINGHANA_CARD_NUMBER", nullable = false, unique = true, length = 15)
     private String ghanaCardNumber;
    
     @Column(name = "USERNAME", nullable = false, unique = true)
@@ -33,14 +32,4 @@ public class Users /*extends EntityModel*/ implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "USER_ROLE")
     private UserType userType;
-
-    // Constructors
-    public Users() {
-    }
-  
-    public Users(String ghanaCardNumber,String username, String password, LocalDateTime createdAt, UserType userType) {
-        this.username = username;
-        this.ghanaCardNumber = ghanaCardNumber;
-        this.userType = userType;
-    }
 }

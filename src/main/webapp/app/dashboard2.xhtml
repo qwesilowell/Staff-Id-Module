@@ -123,7 +123,7 @@
                         <h:outputText value="Filter by Entrance: "/>
                         <p:selectOneMenu value="#{dashboard2.selectedEntranceId}">
                             <f:selectItem itemLabel="All Entrances" itemValue="#{null}"/>
-                            <f:selectItems value="#{dashboard2.allEntrances}" var="e" itemLabel="#{e.entrance_Name}" itemValue="#{e.entrance_Device_ID}"/>
+                            <f:selectItems value="#{dashboard2.allEntrances}" var="e" itemLabel="#{e.entranceName}" itemValue="#{e.entranceDeviceId}"/>
                             <p:ajax update="dashboardContent" listener="#{dashboard2.updateStats}" process="@this"/>
                         </p:selectOneMenu>
 
@@ -148,7 +148,7 @@
                                         <h:outputText value="#{log.employee.ghanaCardNumber}"/>
                                     </p:column>
                                     <p:column headerText="Entrance">
-                                        <h:outputText value="#{dashboard2.getEntranceName(log.entranceId)}"/>
+                                        <h:outputText value="#{log.device.entrance.entranceName}"/>
                                     </p:column>
                                     <p:column headerText="Result">
                                         <h:outputText value="#{log.result.toUpperCase()}"
@@ -219,7 +219,7 @@
                                 <h:outputText value="Filter by Entrance: "/>
                                 <p:selectOneMenu value="#{dashboard2.selectedEntranceId}">
                                     <f:selectItem itemLabel="All Entrances" itemValue="#{null}"/>
-                                    <f:selectItems value="#{dashboard2.allEntrances}" var="e" itemLabel="#{e.entrance_Name}" itemValue="#{e.entrance_Device_ID}"/>
+                                    <f:selectItems value="#{dashboard2.allEntrances}" var="e" itemLabel="#{e.entranceName}" itemValue="#{e.entranceDeviceId}"/>
                                     <p:ajax update="entanceAccessChart" listener="#{dashboard2.entranceaccessupdate()}" process="@this"/>
                                 </p:selectOneMenu>
 
@@ -330,7 +330,7 @@
                         <h:outputText value="Filter by Entrance: "/>
                         <p:selectOneMenu value="#{dashboard2.selectedEntranceId}">
                             <f:selectItem itemLabel="All Entrances" itemValue="#{null}"/>
-                            <f:selectItems value="#{dashboard2.allEntrances}" var="e" itemLabel="#{e.entrance_Name}" itemValue="#{e.entrance_Device_ID}"/>
+                            <f:selectItems value="#{dashboard2.allEntrances}" var="e" itemLabel="#{e.entranceName}" itemValue="#{e.entranceDeviceId}"/>
                             <p:ajax update="dashboardContentU" listener="#{dashboard2.updateStats}" process="@this"/>
                         </p:selectOneMenu>
 
@@ -345,10 +345,10 @@
                                         <h:outputText value="#{log.employee.ghanaCardNumber}"/>
                                     </p:column>
                                     <p:column headerText="Entrance">
-                                        <h:outputText value="#{dashboard2.getEntranceName(log.entranceId)}"/>
+                                        <h:outputText value="#{log.device.entrance.entranceName}"/>
                                     </p:column>
                                     <p:column headerText="Result">
-                                        <h:outputText value="#{log.result}"
+                                        <h:outputText value="#{log.result.toUpperCase()}"
                                                       styleClass="#{log.result eq 'granted' ? 'granted-box' : 'denied-box'}" />
 
                                     </p:column>
@@ -365,8 +365,8 @@
 
                         <p:panel header="Your Assigned Entrances">
                             <p:dataTable value="#{dashboard2.userAssignedEntrances}" var="entrance">
-                                <p:column headerText="Entrance Name"><h:outputText value="#{entrance.entrance_Name}"/></p:column>
-                                <p:column headerText="Location"><h:outputText value="#{entrance.entrance_Location}"/></p:column>
+                                <p:column headerText="Entrance Name"><h:outputText value="#{entrance.entranceName}"/></p:column>
+                                <p:column headerText="Location"><h:outputText value="#{entrance.entranceLocation}"/></p:column>
                             </p:dataTable>
                         </p:panel>
                         <p:spacer height="30px"/>

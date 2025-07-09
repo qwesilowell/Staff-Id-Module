@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:f="jakarta.faces.core">
+
+    <ui:define name="title">Reset Employee State</ui:define>
+
+    <ui:define name="content">
+        <div class="main-content">
+            <h:form id="filterForm">
+                <p:panel header="Filters" styleClass="custom-panel" toggleable="true">
+                    <p:panelGrid columns="4">
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter based on Employee name</p:outputLabel>
+                            <p:autoComplete value="#{employeeStateBean.selectedEmployee}"
+                                            completeMethod="#{employeeStateBean.completeEmployees}"
+                                            var="emp" itemLabel="#{emp.firstname} #{emp.lastname}" itemValue="#{emp}"
+                                            converter="employeeConverter"
+                                            placeholder="Search Employee..." forceSelection="true"
+                                            dropdown="true" style="width: 100%;"/>
+                        </p:outputPanel>
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter by Entrance</p:outputLabel>
+                            <p:selectOneMenu value="#{employeeStateBean.selectedEntrance}" converter="entranceConverter" style="width: 100%;">
+                                <f:selectItem itemLabel="All Entrances" itemValue="#{null}" />
+                                <f:selectItems value="#{employeeStateBean.allEntrances}" var="entrance"
+                                               itemLabel="#{entrance.entranceName}" itemValue="#{entrance}" />
+                            </p:selectOneMenu>
+                        </p:outputPanel>
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter by Employee State</p:outputLabel>
+                            <p:selectOneMenu value="#{employeeStateBean.locationStateFilter}" style="width: 100%;">
+                                <f:selectItem itemLabel="All States" itemValue="#{null}" />
+                                <f:selectItems value="#{employeeStateBean.locationStates}" var="state"
+                                               itemLabel="#{state}" itemValue="#{state}" />
+                            </p:selectOneMenu>
+                        </p:outputPanel>
+                    </p:panelGrid>
+
+                    <div style="display: flex; justify-content: space-between;">
+                        <p:commandButton value="Reset" action="#{historyBean.reset()}" update="@form" 
+                                         icon="fa fa-spinner" iconPos="left" 
+                                         styleClass="ui-button-raised ui-button-danger" style="margin-left: 1%"/>
+                        <p:commandButton value="Apply Filters" icon="pi pi-filter" action="#{employeeStateBean.applyFilters}"
+                                         update=":stateForm:stateTable" 
+                                         style="margin-top:10px; display:flex; justify-items:flex-end;"
+                                         styleClass="ui-button-raised ui-button-success"/>
+                    </div>
+                </p:panel>
+                <br/><br/>
+            </h:form>
+
+            <h:form id="stateForm">
+                <p:dataTable id="stateTable"
+                             var="state"
+                             value="#{employeeStateBean.filteredStates}"
+                             paginator="true"
+                             paginatorPosition="bottom"
+                             rows="10"
+                             rowKey="#{state.id}"
+                             styleClass="modern-table">
+
+                    <f:facet name="header">
+                        <div class="flex align-items-center justify-content-between">
+                            <span>MANAGE EMPLOYEE ENTRANCE STATE</span>
+                        </div>
+                    </f:facet>
+
+                    <p:column headerText="Employee" sortBy="#{state.employee.firstname}">
+                        <i class="pi pi-user" style="color:#6366F1; margin-right:5px"/> #{state.employee.firstname} #{state.employee.lastname}
+                    </p:column>
+
+                    <p:column headerText="Ghana Card">
+                        #{state.employee.ghanaCardNumber}
+                    </p:column>
+
+                    <p:column headerText="Entrance">
+                        <i class="pi pi-door" style="color:#10B981; margin-right:5px"/> #{state.entrance.entranceName}
+                    </p:column>
+
+                    <p:column headerText="State">
+                        <h:outputText value="#{state.currentState}" styleClass="#{state.currentState == 'INSIDE' ? 'text-success' : 'text-danger'}"/>
+                    </p:column>
+
+                    <p:column headerText="Last Updated">
+                        <h:outputText value="#{state.lastModifiedDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Updated By">
+                        #{state.lastUpdatedBy}
+                    </p:column>
+
+                    <p:column headerText="Action" style="width: 150px; text-align:center">
+                        <p:commandButton icon="pi pi-sync" title="Reset State"
+                                         actionListener="#{employeeStateBean.prepareReset(state)}"
+                                         update=":confirmResetDialog"
+                                         oncomplete="PF('confirmResetDialogWidget').show()"
+                                         styleClass="ui-button-info ui-button-flat"/>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+
+            <p:dialog header="Confirm Reset" widgetVar="confirmResetDialogWidget" modal="true"
+                      id="confirmResetDialog" closable="false" resizable="false" width="400">
+                <h:form id="confirmForm">
+                    <p:outputPanel rendered="#{not empty employeeStateBean.selectedState}">
+                        <p:outputLabel value="Change state for #{employeeStateBean.selectedState.employee.firstname} to:"/>
+                        <p:selectOneMenu value="#{employeeStateBean.newState}" style="margin-top: 10px;">
+                            <f:selectItem itemLabel="Select State" itemValue="" noSelectionOption="true"/>
+                            <f:selectItem itemLabel="INSIDE" itemValue="INSIDE"/>
+                            <f:selectItem itemLabel="OUTSIDE" itemValue="OUTSIDE"/>
+                        </p:selectOneMenu>
+
+                        <p:inputTextarea value="#{employeeStateBean.resetReason}" placeholder="Reason..." autoResize="true" style="margin-top: 10px; width: 100%"/>
+
+                        <div style="margin-top: 15px;">
+                            <p:commandButton value="Confirm Reset" icon="pi pi-check"
+                                             action="#{employeeStateBean.confirmReset}"
+                                             update=":stateForm:stateTable"
+                                             process="@form"
+                                             oncomplete="PF('confirmResetDialogWidget').hide()"
+                                             styleClass="ui-button-success"/>
+
+                            <p:commandButton value="Cancel" icon="pi pi-times"
+                                             onclick="PF('confirmResetDialogWidget').hide()"
+                                             type="button"
+                                             styleClass="ui-button-secondary" style="margin-left: 10px;"/>
+                        </div>
+                    </p:outputPanel>
+                </h:form>
+            </p:dialog>
+        </div>
+    </ui:define>
+</ui:composition>

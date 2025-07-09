@@ -142,7 +142,7 @@
                         <br/><br/>
 
                         <ui:repeat value="#{empReportController.selectedEmployeeEntrances}" var="entrance">
-                            <span class="skill-tag">• #{entrance.entrance_Name}</span>
+                            <span class="skill-tag">• #{entrance.entranceName}</span>
                         </ui:repeat>
                     </div>
                     <br/>
@@ -153,7 +153,7 @@
                         <strong>• Custom Entrances:</strong>
                         <br/><br/>
                         <ui:repeat value="#{empReportController.selectedEmployeeCustomEntrances}" var="entrance">
-                            <span class="skill-tag">• #{entrance.entrance_Name}</span>
+                            <span class="skill-tag">• #{entrance.entranceName}</span>
                         </ui:repeat>
                     </div>
                     </h:panelGroup>

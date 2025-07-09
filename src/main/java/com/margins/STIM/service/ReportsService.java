@@ -85,15 +85,17 @@ public class ReportsService {
         return query.getResultList();
     }
         
-    public List<EntranceReportDTO> getEntranceReport1(LocalDateTime startDate, LocalDateTime endDate, String entranceId) {
+    public List<EntranceReportDTO> getEntranceReport1(LocalDateTime startDate, LocalDateTime endDate, int entranceId) {
         List<AccessLog> logs = em.createQuery("SELECT e FROM AccessLog e WHERE e.timestamp BETWEEN :start AND :end", AccessLog.class)
                 .setParameter("start", startDate)
                 .setParameter("end", endDate)
                 .getResultList();
 
-        if (entranceId != null && !entranceId.isEmpty()) {
+        if (entranceId != 0) {
             logs = logs.stream()
-                    .filter(log -> entranceId.equals(log.getEntranceId()))
+                    .filter(log -> log.getDevice() != null
+                    && log.getDevice().getEntrance() != null
+                    && entranceId == log.getDevice().getEntrance().getId())
                     .collect(Collectors.toList());
         }
         //logs.stream().filter(log -> log.getEntranceId() != null log.getEntranceId());
@@ -105,11 +107,11 @@ public class ReportsService {
         for (AccessLog log : logs) {
             
             
-            String entranceSpec = log.getEntranceId();
+            String entranceSpec = log.getDevice().getEntrance().getEntranceDeviceId();
             if (entranceSpec!= null) {  
                 Map<String, Integer> data = entranceSpecificLogs.getOrDefault(entranceSpec, new HashMap<String, Integer>());
                 
-                if (log.getEntranceId().equals(entranceSpec)) {
+                if (log.getDevice().getEntrance().getEntranceDeviceId().equals(entranceSpec)) {
                     String resultType = log.getResult();
                     if (resultType != null) {
                         int count = data.getOrDefault(resultType, 0);
@@ -122,7 +124,7 @@ public class ReportsService {
                
             }
             
-            String currentEntrance = log.getEntranceId();
+            String currentEntrance = log.getDevice().getEntrance().getEntranceDeviceId();
             if (currentEntrance!= null) {  
                 int count = entranceLogs.getOrDefault(currentEntrance, 0);
                 entranceLogs.put(currentEntrance, count + 1);
@@ -151,12 +153,12 @@ public class ReportsService {
     }
     
 
-    public List<EntranceReportDTO> getEntranceReport(LocalDateTime startDate, LocalDateTime endDate, String entranceId) {
-        StringBuilder jpql = new StringBuilder("SELECT e FROM AccessLog e WHERE 1=1");
+    public List<EntranceReportDTO> getEntranceReport(LocalDateTime startDate, LocalDateTime endDate, int entranceId) {
+        StringBuilder jpql = new StringBuilder("SELECT e FROM AccessLog e WHERE e.device.entrance IS NOT NULL");
         Map<String, Object> params = new HashMap<>();
 
-        if (entranceId != null && !entranceId.isEmpty()) {
-            jpql.append(" AND e.entranceId = :entranceId");
+        if (entranceId != 0) {
+            jpql.append(" AND e.device.entrance.id = :entranceId");
             params.put("entranceId", entranceId);
         }
 
@@ -177,13 +179,14 @@ public class ReportsService {
         }
 
         // Group logs by entranceId
-        Map<String, List<AccessLog>> logsByEntrance = logs.stream()
-                .collect(Collectors.groupingBy(AccessLog::getEntranceId));
-
+        Map<Integer, List<AccessLog>> logsByEntrance = logs.stream()
+                .filter(log -> log.getDevice() != null && log.getDevice().getEntrance() != null)
+                .collect(Collectors.groupingBy(log -> log.getDevice().getEntrance().getId()));
+        
         List<EntranceReportDTO> reports = new ArrayList<>();
 
-        for (Map.Entry<String, List<AccessLog>> entry : logsByEntrance.entrySet()) {
-            String currentEntranceId = entry.getKey();
+        for (Map.Entry<Integer, List<AccessLog>> entry : logsByEntrance.entrySet()) {
+            Integer currentEntranceId = entry.getKey();
             List<AccessLog> entranceLogs = entry.getValue();
 
             Entrances entrance = entranceService.findEntranceById(currentEntranceId);
