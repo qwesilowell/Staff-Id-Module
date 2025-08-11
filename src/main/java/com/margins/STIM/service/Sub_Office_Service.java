@@ -84,7 +84,8 @@ public class Sub_Office_Service {
     public void deleteSubOffice(Long subOfficeId) {
         Sub_Office subOffice = entityManager.find(Sub_Office.class, subOfficeId);
         if (subOffice != null) {
-            entityManager.remove(subOffice);
+            subOffice.setDeleted(true);
+            entityManager.merge(subOffice);
         } else {
             throw new EntityNotFoundException("Sub_Office with ID " + subOfficeId + " not found.");
         }

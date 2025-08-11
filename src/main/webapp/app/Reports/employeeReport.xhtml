@@ -7,7 +7,7 @@
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets">
-    
+
     <ui:define name="metadata">
         <f:metadata>
             <f:viewAction action="#{empReportController.setupBreadcrumb}" />
@@ -55,13 +55,14 @@
 
                         <p:outputPanel>
                             <p:outputLabel for="@next">Filter by date Onboarded</p:outputLabel>
-                            <p:datePicker selectionMode="range" monthNavigator="true" yearNavigator="true" showButtonBar="true" value="#{empReportController.timeRange}"/>
+                            <p:datePicker selectionMode="range" monthNavigator="true" yearNavigator="true" pattern="dd-MM-yyyy"
+                                          showButtonBar="true" value="#{empReportController.timeRange}"/>
                         </p:outputPanel>
                     </p:panelGrid>
 
                     <div style="display: flex; justify-content: space-between;">
                         <p:commandButton value="Reset" action="#{empReportController.reset()}" update="@form" 
-                                         icon="pi pi-spinner-dotted" iconPos="left" 
+                                         icon="fa-solid fa-spinner" iconPos="left" 
                                          styleClass="ui-button-raised ui-button-danger" style="margin-left: 1%"/>
                         <p:commandButton value="Generate Search Criteria" action="#{empReportController.fetchCriteria()}"
                                          icon="pi pi-search" iconPos="left" 
@@ -70,7 +71,14 @@
                 </p:panel>
 
                 <p:spacer height="30px"/>
-
+                <div style="display: flex; justify-content: flex-end;">
+                    <p:commandButton value="Export" 
+                                     icon="pi pi-file-pdf" 
+                                     styleClass="ui-button-secondary"
+                                     action="#{empReportController.export()}"
+                                     ajax="false"/>
+                </div>
+                <br/>
 
                 <!-- Employee List -->
                 <p:dataTable id="employeeTable" value="#{empReportController.employees}" var="employee"
@@ -115,7 +123,9 @@
                             <h:outputText value="Accessible Entrances" style="font-weight: bold; font-size: 1.1rem;" />
                             <div>
                                 <!-- Download icon button -->
-                                <p:commandButton icon="pi pi-download" title="Download" action="#{empReportController.downloadEntrances}" styleClass="rounded-button ui-button-flat p-button-sm" />
+                                <p:commandButton icon="pi pi-download" title="Download" action="#{empReportController.download()}" 
+                                                 styleClass="rounded-button ui-button-flat p-button-sm" 
+                                                 ajax="false"/>
 
                                 <p:commandButton icon="pi pi-times" onclick="PF('entrancesDialog').hide()" styleClass="rounded-button ui-button-flat p-button-sm" style="color: black;" /> 
                             </div>
@@ -123,15 +133,31 @@
                     </f:facet>
 
                     <div class="same-line-container" style="margin-top: 1rem;">
-                        <i class="pi pi-user p-mr-2 text-primary icon-style"></i>
-                        <p:outputLabel value="Name: " styleClass="label-style" />
-                        <h:outputText value="#{empReportController.selectedEmployee.fullName}" styleClass="value-style" />
+                        <div>
+                            <i class="pi pi-user p-mr-2 text-primary icon-style"></i>
+                            <p:outputLabel value="Name: " styleClass="label-style" />
+                            <h:outputText value="#{empReportController.selectedEmployee.fullName}" styleClass="value-style" />
+                        </div>
+                        <div>
+                            <i class="pi pi-id-card p-mr-2 text-primary icon-style"></i>
+                            <p:outputLabel value="GhanaCard: " styleClass="label-style" />
+                            <h:outputText value="#{empReportController.selectedEmployee.ghanaCardNumber}" styleClass="value-style" />
+                        </div>
                     </div>
 
                     <div class="same-line-container" style="margin-top: 0.5rem;">
-                        <i class="fa fa-user-tie p-mr-2 text-success icon-style"></i>
-                        <p:outputLabel value="Role: " styleClass="label-style" />
-                        <h:outputText value="#{empReportController.selectedEmployee.role.roleName}" styleClass="value-style" />
+                        <div>
+                            <i class="pi pi-calendar-plus p-mr-2 text-success icon-style"></i>
+                            <p:outputLabel value="Date Onboarded: " styleClass="label-style" />
+                            <h:outputText value="#{empReportController.selectedEmployee.createdAt}" styleClass="value-style" >
+                                <f:convertDateTime pattern="d MMMM, yyyy hh:mm a" />
+                            </h:outputText>
+                        </div>
+                        <div>
+                            <i class="fa fa-user-tie p-mr-2 text-success icon-style"></i>
+                            <p:outputLabel value="Role: " styleClass="label-style" />
+                            <h:outputText value="#{empReportController.selectedEmployee.role.roleName}" styleClass="value-style" />
+                        </div>
                     </div>
 
                     <p:separator style="margin-top: 1rem; margin-bottom: 1rem;" />
@@ -149,13 +175,13 @@
 
                     <!-- Custom Entrances -->
                     <h:panelGroup rendered="#{!empty empReportController.selectedEmployeeCustomEntrances}">
-                    <div>
-                        <strong>• Custom Entrances:</strong>
-                        <br/><br/>
-                        <ui:repeat value="#{empReportController.selectedEmployeeCustomEntrances}" var="entrance">
-                            <span class="skill-tag">• #{entrance.entranceName}</span>
-                        </ui:repeat>
-                    </div>
+                        <div>
+                            <strong>• Custom Entrances:</strong>
+                            <br/><br/>
+                            <ui:repeat value="#{empReportController.selectedEmployeeCustomEntrances}" var="entrance">
+                                <span class="skill-tag">• #{entrance.entranceName}</span>
+                            </ui:repeat>
+                        </div>
                     </h:panelGroup>
                 </p:dialog>
 
@@ -179,6 +205,7 @@
             }
             .same-line-container {
                 display: flex;
+                justify-content: space-between;
                 align-items: center; /* Vertically align items in the container */
                 gap: 10px; /* Adjust the spacing between the elements as needed */
             }
@@ -215,7 +242,7 @@
                 background-color: #dceeff !important;
                 cursor: pointer;
             }
-            
+
         </style>
     </ui:define>
 </ui:composition>

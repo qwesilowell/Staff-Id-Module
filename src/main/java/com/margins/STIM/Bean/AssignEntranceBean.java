@@ -2,6 +2,9 @@ package com.margins.STIM.Bean;
 
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.Entrances;
+import com.margins.STIM.entity.enums.ActionResult;
+import com.margins.STIM.entity.enums.AuditActionType;
+import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.Employee_Service;
 import com.margins.STIM.service.EntrancesService;
 import jakarta.annotation.PostConstruct;
@@ -30,9 +33,13 @@ public class AssignEntranceBean implements Serializable {
 
     @EJB
     private EntrancesService entrancesService;
-    
+
     @Inject
     private BreadcrumbBean breadcrumbBean;
+    @Inject
+    private AuditLogService auditLogService;
+    @Inject
+    private UserSession userSession;
 
     private String searchQuery;
     private List<Employee> employees;
@@ -60,11 +67,10 @@ public class AssignEntranceBean implements Serializable {
             showMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to initialize data.");
         }
     }
-    
+
     public void setupBreadcrumb() {
         breadcrumbBean.setAssignCustomEntranceBreadcrumb();
     }
-
 
     public List<Entrances> getAllEntrances() {
         return entrancesService.findAllEntrances(); // Fetch from DB once
@@ -137,7 +143,7 @@ public class AssignEntranceBean implements Serializable {
         try {
             System.out.println("Saving custom entrances for employee: " + selectedEmployee.getGhanaCardNumber());
             System.out.println("Selected entrances: " + selectedEntrances.stream()
-                    .map(e -> e.getEntranceDeviceId()+ ":" + e.getEntranceName())
+                    .map(e -> e.getEntranceDeviceId() + ":" + e.getEntranceName())
                     .collect(Collectors.joining(", ")));
 
             // Fetch existing entrances
@@ -162,6 +168,9 @@ public class AssignEntranceBean implements Serializable {
             selectedEmployee.setCustomEntrances(currentEntrances);
             employeeService.updateEmployeeEnt(selectedEmployee.getGhanaCardNumber(), selectedEmployee);
 
+            String detail = "Assigned  custom Entrance(s) to " + selectedEmployee.getFullName() + ".";
+            auditLogService.logActivity(AuditActionType.CREATE, "Assign Custom Entrance", ActionResult.SUCCESS, detail, userSession.getCurrentUser());
+
             // Update UI list
             assignedCustomEntrances = new ArrayList<>(currentEntrances);
             employees = employeeService.findAllEmployees(); // Refresh list
@@ -173,10 +182,14 @@ public class AssignEntranceBean implements Serializable {
             selectedEntrances.clear();
 
         } catch (EntityNotFoundException e) {
+            String errorDetail = "Failed to assign custom Entrance(s) to " + selectedEmployee.getFullName() + ". Error: " + e.getMessage();
+            auditLogService.logActivity(AuditActionType.CREATE, "Assign Custom Entrance", ActionResult.FAILED, errorDetail, userSession.getCurrentUser());
             logError("Employee not found", e);
+            
             showMessage(FacesMessage.SEVERITY_ERROR, "Error", "Employee not found: " + selectedEmployee.getGhanaCardNumber());
         } catch (Exception e) {
-            logError("Error saving custom entrances", e);
+            String errorDetail = "Failed to assign custom Entrance(s) to " + selectedEmployee.getFullName() + ". Error: " + e.getMessage();
+            auditLogService.logActivity(AuditActionType.CREATE, "Assign Custom Entrance", ActionResult.FAILED, errorDetail, userSession.getCurrentUser());
             showMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to save custom entrances: " + e.getMessage());
         }
     }
@@ -200,10 +213,15 @@ public class AssignEntranceBean implements Serializable {
             employeeService.updateEmployee(selectedEmployee.getGhanaCardNumber(), selectedEmployee);
 
             availableEntrances = getAllEntrances();
+            
+            String successDetail = "Removed custom entrance (" + entrance.getEntranceName() + ") for " + selectedEmployee.getFullName();
+            auditLogService.logActivity(AuditActionType.DELETE, "Remove Custom Entrance", ActionResult.SUCCESS, successDetail, userSession.getCurrentUser());
 
-          
-            showMessage(FacesMessage.SEVERITY_WARN, "Success", "Removed custom entrance \"" + entrance.getEntranceName() + "\" for " + selectedEmployee.getFullName());
+
+            showMessage(FacesMessage.SEVERITY_WARN, "Success", "Removed custom entrance " + entrance.getEntranceName() + " for " + selectedEmployee.getFullName());
         } catch (Exception e) {
+            String errorDetail = "Failed to remove entrance " + entrance.getEntranceName() + " for " + selectedEmployee.getFullName() + ". Error: " + e.getMessage();
+            auditLogService.logActivity(AuditActionType.DELETE, "Remove Custom Entrance", ActionResult.FAILED, errorDetail, userSession.getCurrentUser());
             logError("Error removing custom entrance", e);
             showMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to remove entrance: " + e.getMessage());
         }

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
+-->
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{userBean.setBreadcrumb}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="title">System Settings</ui:define>
+
+    <ui:define name ="content">
+        <!-- Main Content -->
+        <div class="main-content">
+
+            <h:form id="seederForm">
+                <p:panel header="Dummy Data Generator" styleClass="ui-panel-shadow" style="margin-top: 2rem;">
+                    <!--                    <p:selectBooleanCheckbox id="resetToggle"
+                                                                 value="#-{dummyDataSeeder.resetBeforeGenerating}"
+                                                                 itemLabel="Delete existing data before generating?"
+                                                                 style="margin-bottom: 1rem;" />-->
+
+                    <p:commandButton value="Generate Dummy Data"
+                                     icon="pi pi-database"
+                                     actionListener="#{dummyDataSeeder.generateAll}"
+                                     update="@form"
+                                     styleClass="ui-button-success"
+                                     onstart="PF('generateDlg').show()"
+                                     oncomplete="PF('generateDlg').hide()" />
+                </p:panel>
+
+                <p:dialog header="Generating..." widgetVar="generateDlg" modal="true" closable="false">
+                    <p:progressBar mode="indeterminate" styleClass="gradient-loader" style="height:10px; margin-bottom: 10px;" />
+                    <h:outputText value="Generating dummy records, please wait..." />
+                </p:dialog>
+
+                <p:commandButton value="Load Pages"
+                                 actionListener="#{dummyDataSeeder.generatePages()}"
+                                 update="@form"
+                                 styleClass="ui-button-success"/>
+                
+                <p:commandButton value="Test"
+                                 actionListener="#{dashboard.tryResults()}"
+                                 update="@form"
+                                 styleClass="ui-button-success"/>
+
+            </h:form>
+
+            <style>
+                /* Your existing gradient loader */
+                .gradient-loader .ui-progressbar-value {
+                    background: linear-gradient(to right, #3fce5e, #75e6a6);
+                }
+            </style>
+
+        </div>
+    </ui:define>
+</ui:composition>

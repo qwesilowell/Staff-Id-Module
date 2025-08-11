@@ -7,6 +7,9 @@ package com.margins.STIM.Bean;
 import com.margins.STIM.entity.CustomTimeAccess;
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.Entrances;
+import com.margins.STIM.entity.enums.ActionResult;
+import com.margins.STIM.entity.enums.AuditActionType;
+import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.Employee_Service;
 import com.margins.STIM.service.EntrancesService;
 import com.margins.STIM.service.TimeAccessRuleService;
@@ -44,6 +47,11 @@ public class ManageEmployeesBean implements Serializable {
 
     @Inject
     private BreadcrumbBean breadcrumbBean;
+
+    @Inject
+    private AuditLogService auditLogService;
+    @Inject
+    private UserSession userSession;
 
     @Inject
     private EntrancesService entrancesService;
@@ -112,11 +120,6 @@ public class ManageEmployeesBean implements Serializable {
         }
     }
 
-//    public String viewEmployeeDetails() {
-//        // Add employee details to breadcrumb
-//        breadcrumbBean.addBreadcrumb("Employee Details", null, true);
-//        return "employee-details?faces-redirect=true";
-//    }
     public void findEmployee() {
         if (searchQuery == null || searchQuery.trim().isEmpty()) {
             employees = employeeService.findAllEmployees();
@@ -154,11 +157,19 @@ public class ManageEmployeesBean implements Serializable {
             try {
                 System.out.println("Deleting employee: " + selectedEmployee.getGhanaCardNumber());
                 employeeService.deleteEmployee(selectedEmployee.getGhanaCardNumber());
+
+                String details = "Deleted employee: " + selectedEmployee.getFullName() + " with GhanaCardNumber " + selectedEmployee.getGhanaCardNumber();
+
+                auditLogService.logActivity(AuditActionType.DELETE, "Employee Profile Page", ActionResult.SUCCESS, details, userSession.getCurrentUser());
+
                 employees = employeeService.findAllEmployees(); // Refresh the list
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Employee " + selectedEmployee.getFullName() + " deleted."));
                 selectedEmployee = null; // Clear selection
             } catch (Exception e) {
+                String details = "Failed to delete employee "+selectedEmployee.getFullName() + " with GhanaCardNumber " + selectedEmployee.getGhanaCardNumber()  + " reason: " + e.getMessage();
+                auditLogService.logActivity(AuditActionType.DELETE, "Employee Profile Page", ActionResult.FAILED, details, userSession.getCurrentUser());
+
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to delete employee: " + e.getMessage()));
                 e.printStackTrace();
@@ -384,10 +395,20 @@ public class ManageEmployeesBean implements Serializable {
     public void saveDayTimeRules() {
         if (validateRule()) {
             timeAccessRuleService.saveOrUpdateCustomTimeAccess(selectedEmployee, selectedEntrance, startTimes, endTimes, selectedDays);
+            
+            String details = "Created a custom Entrance Time Access for: " + selectedEmployee.getFullName() + " at (" + selectedEntrance.getEntranceName() + " ).";
+
+            auditLogService.logActivity(AuditActionType.CREATE, "Employee Profiles Page", ActionResult.SUCCESS, details, userSession.getCurrentUser());
+            
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_INFO, "Saved", "Custom time access rules saved successfully."));
             resetSidebar();
         } else {
+            String details = "Failed to create a custom Entrance Time Access for " + selectedEmployee.getFullName() + "  at (" + selectedEntrance.getEntranceName() + ").";
+
+            auditLogService.logActivity(AuditActionType.CREATE, "Employee Profiles Page", ActionResult.FAILED, details, userSession.getCurrentUser());
+
+            
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Saving Failed"));
         }
@@ -409,10 +430,12 @@ public class ManageEmployeesBean implements Serializable {
 
         // Soft delete from database
         timeAccessRuleService.deleteCustomTimeAccess(selectedEmployee, selectedEntrance, day);
+        
+        String details = "Custom Time Access deleted for " +selectedEmployee.getFullName()+ " at " + selectedEntrance.getEntranceName() + " has been deleted for " + day + ".";
+        auditLogService.logActivity(AuditActionType.DELETE, day, ActionResult.SUCCESS, details, userSession.getCurrentUser());
 
-        JSF.addSuccessMessageWithSummary("Successful","Time access for " + day + " removed successfully.");
+        JSF.addSuccessMessageWithSummary("Successful", "Time access for " + day + " removed successfully.");
     }
-
 
     // Getters and Setters
     public List<Employee> getEmployees() {

@@ -48,6 +48,7 @@ public class AccessLevelsService {
 
     public void deleteAccessLevel(int id) {
         Access_Levels accessLevel = findAccessLevelById(id);
-        entityManager.remove(accessLevel);
+        accessLevel.setDeleted(true);
+        entityManager.merge(accessLevel);
     }
 }

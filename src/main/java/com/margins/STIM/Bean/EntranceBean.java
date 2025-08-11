@@ -5,7 +5,10 @@
 package com.margins.STIM.Bean;
 
 import com.margins.STIM.entity.Entrances;
+import com.margins.STIM.entity.enums.ActionResult;
+import com.margins.STIM.entity.enums.AuditActionType;
 import com.margins.STIM.entity.enums.EntranceMode;
+import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.EntrancesService;
 import java.util.List;
 import jakarta.annotation.PostConstruct;
@@ -34,6 +37,11 @@ public class EntranceBean implements Serializable {
 
     @Inject
     private BreadcrumbBean breadcrumbBean;
+    
+    @Inject
+    private AuditLogService auditLogService;
+    @Inject
+    private UserSession userSession;
 
     private List<Entrances> entrances;
     private Entrances selectedEntrance;
@@ -84,10 +92,18 @@ public class EntranceBean implements Serializable {
 
             System.out.println("Adding new entrance with ID: " + selectedEntrance.getEntranceDeviceId());
             entranceService.addEntrance(selectedEntrance); // Save the new entrance
+            
+            String successDetail = "Successfully added entrance with ID: " + selectedEntrance.getEntranceDeviceId() + " and name " + selectedEntrance.getEntranceName();
+            auditLogService.logActivity(AuditActionType.CREATE, "Manage Entrances", ActionResult.SUCCESS, successDetail, userSession.getCurrentUser());
+            
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Entrance created successfully!"));
             loadEntrances(); // Refresh the list of entrances
             selectedEntrance = new Entrances(); // Reset the form after adding
         } catch (Exception e) {
+            String errorDetail = "Failed to add entrance with ID: " + (selectedEntrance.getEntranceDeviceId() != null ? selectedEntrance.getEntranceDeviceId() : "Unknown") + ". Error: " + e.getMessage();
+            auditLogService.logActivity(AuditActionType.CREATE, "Manage Entrances", ActionResult.FAILED, errorDetail, userSession.getCurrentUser());
+
+
             System.out.println("Error adding entrance: " + e.getMessage());
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to add entrance."));
             e.printStackTrace();
@@ -98,16 +114,25 @@ public class EntranceBean implements Serializable {
         try {
             // Ensure the entrance ID is valid before updating
             if (selectedEntrance.getEntranceDeviceId() == null || selectedEntrance.getEntranceDeviceId().isEmpty()) {
+                String details = "Entrance ID is required for updating.";
+                auditLogService.logActivity(AuditActionType.UPDATE, "Manage Entrances", ActionResult.FAILED, details, userSession.getCurrentUser());
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Entrance ID is required."));
                 return; // Prevent updating if ID is missing
             }
 
             System.out.println("Updating entrance with ID: " + selectedEntrance.getEntranceDeviceId());
             entranceService.updateEntrance(selectedEntrance.getId(), selectedEntrance); // Update the entrance
+            
+            String successDetail = "Successfully updated entrance with ID: " + selectedEntrance.getEntranceDeviceId();
+            auditLogService.logActivity(AuditActionType.UPDATE, "Manage Entrances", ActionResult.SUCCESS, successDetail, userSession.getCurrentUser());
+            
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Entrance updated successfully!"));
             loadEntrances(); // Refresh the list
             selectedEntrance = new Entrances(); // Reset form after updating
         } catch (Exception e) {
+            String errorDetail = "Failed to update entrance with ID: " + (selectedEntrance.getEntranceDeviceId() != null ? selectedEntrance.getEntranceDeviceId() : "Unknown") + ". Error: " + e.getMessage();
+            auditLogService.logActivity(AuditActionType.UPDATE, "Manage Entrances", ActionResult.FAILED, errorDetail, userSession.getCurrentUser());
+
             System.out.println("Error updating entrance: " + e.getMessage());
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to update entrance."));
             e.printStackTrace();
@@ -136,10 +161,23 @@ public class EntranceBean implements Serializable {
 
     public void deleteEntrance() {
         try {
+            if (selectedEntrance == null) {
+                String details = "No entrance selected for deletion.";
+                auditLogService.logActivity(AuditActionType.DELETE, "Manage Entrances", ActionResult.FAILED, details, userSession.getCurrentUser());
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No entrance selected for deletion."));
+                return;
+            }
+
             entranceService.deleteEntrance(selectedEntrance.getId());
+            String successDetail = "Successfully deleted entrance with ID: " + selectedEntrance.getId();
+            auditLogService.logActivity(AuditActionType.DELETE, " Manage Entrances", ActionResult.SUCCESS, successDetail, userSession.getCurrentUser());
+
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Entrance deleted successfully!"));
             loadEntrances();
         } catch (Exception e) {
+            String errorDetail = "Failed to delete entrance with ID: " + selectedEntrance.getId() + ". Error: " + e.getMessage();
+            auditLogService.logActivity(AuditActionType.DELETE, "Manage Entrances", ActionResult.FAILED, errorDetail, userSession.getCurrentUser());
+
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to delete entrance."));
         }
     }

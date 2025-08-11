@@ -7,8 +7,8 @@ package com.margins.STIM.service;
 import com.margins.STIM.entity.EmployeeRole;
 import com.margins.STIM.entity.Entrances;
 import com.margins.STIM.entity.RoleTimeAccess;
-import com.margins.STIM.util.RoleCount;
-import com.margins.STIM.util.RoleCountDTO;
+import com.margins.STIM.DTO.RoleCount;
+import com.margins.STIM.DTO.RoleCountDTO;
 import jakarta.ejb.EJB;
 import java.util.List;
 import java.util.Set;
@@ -81,13 +81,15 @@ public class EmployeeRole_Service {
 
     public EmployeeRole findRoleWithEmployeesById(int roleId) {
         return em.createQuery(
-                "SELECT r FROM EmployeeRole r LEFT JOIN FETCH r.employees WHERE r.id = :id", EmployeeRole.class)
+                "SELECT DISTINCT r FROM EmployeeRole r LEFT JOIN FETCH r.employees WHERE r.id = :id"
+                + " AND r.deleted = false", EmployeeRole.class)
                 .setParameter("id", roleId)
                 .getSingleResult();
     }
 
     public List<EmployeeRole> findEmployeeRolesByIds(Set<Integer> roleIds) {
-        return em.createQuery("SELECT r FROM EmployeeRole r WHERE r.id IN :roleIds", EmployeeRole.class)
+        return em.createQuery("SELECT r FROM EmployeeRole r WHERE r.id IN :roleIds"
+                + " AND r.deleted = false", EmployeeRole.class)
                 .setParameter("roleIds", roleIds)
                 .getResultList();
     }
@@ -98,12 +100,13 @@ public class EmployeeRole_Service {
      * @return A list of all EmployeeRoles.
      */
     public List<EmployeeRole> findAllEmployeeRoles() {
-        return em.createQuery("SELECT r FROM EmployeeRole r", EmployeeRole.class).getResultList();
+        return em.createQuery("SELECT r FROM EmployeeRole r WHERE r.deleted = false", EmployeeRole.class).getResultList();
     }
 
     public List<EmployeeRole> findEmployeeRoleByName(String searchQuery) {
         return em.createQuery(
-                "SELECT r FROM EmployeeRole r WHERE LOWER(r.roleName) LIKE LOWER(:searchQuery)", EmployeeRole.class)
+                "SELECT r FROM EmployeeRole r WHERE LOWER(r.roleName) LIKE LOWER(:searchQuery)"
+                + " AND r.deleted = false", EmployeeRole.class)
                 .setParameter("searchQuery", "%" + searchQuery + "%")
                 .getResultList();
     }
@@ -122,21 +125,22 @@ public class EmployeeRole_Service {
     public void deleteEmployeeRole(int roleId) {
         EmployeeRole employeeRole = em.find(EmployeeRole.class, roleId);
         if (employeeRole != null) {
-            em.remove(employeeRole);
+            employeeRole.setDeleted(true);
+            em.merge(employeeRole);
         } else {
             throw new EntityNotFoundException("EmployeeRole with ID " + roleId + " not found.");
         }
     }
 
     public int getTotalRoles() {
-        Long count = em.createQuery("SELECT COUNT(r) FROM EmployeeRole r", Long.class)
+        Long count = em.createQuery("SELECT COUNT(r) FROM EmployeeRole r WHERE r.deleted = false", Long.class)
                 .getSingleResult();
         return count.intValue();
     }
 
     public List<RoleCount> getTopRolesByEmployeeCount(int limit) {
         TypedQuery<Object[]> query = em.createQuery(
-                "SELECT r.roleName, COUNT(e) FROM Employee e JOIN e.role r GROUP BY r.roleName ORDER BY COUNT(e) DESC",
+                "SELECT r.roleName, COUNT(e) FROM Employee e JOIN e.role r WHERE r.deleted = false GROUP BY r.roleName ORDER BY COUNT(e) DESC",
                 Object[].class);
         List<Object[]> results = query.setMaxResults(limit).getResultList();
         return results.stream()
@@ -148,6 +152,7 @@ public class EmployeeRole_Service {
         TypedQuery<Object[]> query = em.createQuery(
                 "SELECT r.roleName, COUNT(e) "
                 + "FROM Employee e JOIN e.role r "
+                + "WHERE r.deleted = false "
                 + "GROUP BY r.roleName "
                 + "ORDER BY COUNT(e) DESC",
                 Object[].class
@@ -160,10 +165,7 @@ public class EmployeeRole_Service {
                 .collect(Collectors.toList());
     }
 
-    public void removeRoleAccessWithTimeRules(int roleId, int entranceId) {
-        EmployeeRole role = findEmployeeRoleById(roleId);
-        Entrances entrance = entranceService.findEntranceById(entranceId);
-
+    public void removeRoleAccessWithTimeRules(EmployeeRole role, Entrances entrance) {
         if (role != null && entrance != null) {
             // Step 1: Delete time rules
             List<RoleTimeAccess> timeAccessList = timeAccessService.findByRoleAndEntrance(role, entrance);
@@ -175,7 +177,8 @@ public class EmployeeRole_Service {
                         + ", Day: " + rta.getDayOfWeek()
                         + ", Start: " + rta.getStartTime()
                         + ", End: " + rta.getEndTime());
-                em.remove(rta);
+                rta.setDeleted(true);
+                em.merge(rta);
             }
 
             // Step 2: Remove role-entrance access (ManyToMany)
@@ -208,6 +211,7 @@ public class EmployeeRole_Service {
                 + "FROM EmployeeRole r "
                 + "LEFT JOIN r.employees emp "
                 + "LEFT JOIN r.accessibleEntrances ent "
+                + "WHERE r.deleted = false "
                 + "GROUP BY r "
                 + "ORDER BY COUNT(emp) DESC",
                 Object[].class

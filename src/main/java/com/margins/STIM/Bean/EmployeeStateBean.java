@@ -7,12 +7,15 @@ package com.margins.STIM.Bean;
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.EmployeeEntranceState;
 import com.margins.STIM.entity.Entrances;
+import com.margins.STIM.entity.enums.ActionResult;
+import com.margins.STIM.entity.enums.AuditActionType;
 import com.margins.STIM.entity.enums.LocationState;
+import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.EmployeeEntranceStateService;
 import com.margins.STIM.service.Employee_Service;
 import com.margins.STIM.service.EntrancesService;
+import com.margins.STIM.util.JSF;
 import jakarta.annotation.PostConstruct;
-import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -42,6 +45,14 @@ public class EmployeeStateBean implements Serializable {
 
     @Inject
     private EntrancesService entranceService;
+
+    @Inject
+    private AuditLogService auditLogService;
+    @Inject
+    private UserSession userSession;
+
+    @Inject
+    private BreadcrumbBean breadcrumbBean;
 
     private List<EmployeeEntranceState> allStates;
     private List<EmployeeEntranceState> filteredStates;
@@ -78,16 +89,37 @@ public class EmployeeStateBean implements Serializable {
     }
 
     public void confirmReset() {
-        if (selectedState != null && newState != null) {
-            LocationState newLocationState = LocationState.valueOf(newState);
-            stateService.resetEmployeeState(
-                    selectedState.getEmployee().getId(),
-                    selectedState.getEntrance().getId(),
-                    newLocationState,
-                    getCurrentAdminUsername(), // implement this method
-                    resetReason
-            );
-            refresh();
+        try {
+            if (selectedState != null && newState != null) {
+                LocationState oldLocationState = selectedState.getCurrentState();
+
+                LocationState newLocationState = LocationState.valueOf(newState);
+                stateService.resetEmployeeState(
+                        selectedState.getEmployee().getId(),
+                        selectedState.getEntrance().getId(),
+                        newLocationState,
+                        getCurrentAdminUsername(), // implement this method
+                        resetReason,
+                        selectedState.getDeviceUsed()
+                );
+                String successDetail = "Successfully reset employee state from " + oldLocationState + " to " + newLocationState
+                        + " for employee: " + selectedState.getEmployee().getFullName();
+                auditLogService.logActivity(AuditActionType.UPDATE, "State Reset Page", ActionResult.SUCCESS, successDetail, userSession.getCurrentUser());
+
+                refresh();
+            } else {
+                String details = "Selected state or new state is null.";
+                auditLogService.logActivity(AuditActionType.UPDATE, "State Reset Page", ActionResult.FAILED, details, userSession.getCurrentUser());
+                JSF.addErrorMessage("Error: Selected state or new state cannot be null.");
+            }
+        } catch (Exception e) {
+            String errorDetail = "Failed to reset state for employee ID: "
+                    + (selectedState != null ? selectedState.getEmployee().getId() : "Unknown")
+                    + ". Error: " + e.getMessage();
+            auditLogService.logActivity(AuditActionType.UPDATE, "State Reset Page", ActionResult.FAILED, errorDetail, userSession.getCurrentUser());
+
+            JSF.addErrorMessage("Error resetting state: " + e.getLocalizedMessage());
+
         }
     }
 
@@ -97,14 +129,15 @@ public class EmployeeStateBean implements Serializable {
     }
 
     private String getCurrentAdminUsername() {
-        String username = (String) FacesContext.getCurrentInstance()
-                .getExternalContext()
-                .getSessionMap()
-                .get("username");
+        String username = userSession.getUsername();
         return (username != null) ? username : "ADMIN";
     }
 
     public List<Employee> completeEmployees(String query) {
         return employeeService.searchEmployees(query);
+    }
+
+    public void setupBreadcrumb() {
+        breadcrumbBean.setEntranceStateBreadCrumb();
     }
 }

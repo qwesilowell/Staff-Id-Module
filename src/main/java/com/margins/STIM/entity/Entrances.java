@@ -53,7 +53,7 @@ public class Entrances extends EntityModel implements Serializable {
     @PrePersist
     public void prePersist() {
         if (entranceMode == null) {
-            entranceMode = EntranceMode.FULL_ACCESS;
+            entranceMode = EntranceMode.STRICT;
         }
     }
     public Entrances(String entranceDeviceId, String entranceName, String entranceLocation) {

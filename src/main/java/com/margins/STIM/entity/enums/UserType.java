@@ -9,6 +9,5 @@ package com.margins.STIM.entity.enums;
  * @author PhilipManteAsare
  */
 public enum UserType {
-    ADMIN, USER
-    
+    ADMIN, USER   
 }

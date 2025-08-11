@@ -4,11 +4,14 @@
  */
 package com.margins.STIM.service;
 
+import com.margins.STIM.Bean.UserSession;
+import com.margins.STIM.entity.Devices;
 import com.margins.STIM.entity.Entrances;
+import com.margins.STIM.entity.enums.DevicePosition;
 import com.margins.STIM.entity.enums.EntranceMode;
 import java.util.List;
 import jakarta.ejb.Stateless;
-import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
@@ -23,19 +26,11 @@ import jakarta.transaction.Transactional;
 @Transactional
 public class EntrancesService {
 
+    @Inject
+    private UserSession userSession;
+
     @PersistenceContext(name = "STIM_persistence_unit")
     private EntityManager entityManager;
-
-    /**
-     * Create a new entrance.
-     *
-     * @param entrance The entrance to create.
-     * @return The created entrance.
-     */
-    public Entrances createEntrance(Entrances entrance) {
-        entityManager.persist(entrance);
-        return entrance;
-    }
 
     /**
      * Retrieve all entrances.
@@ -43,7 +38,7 @@ public class EntrancesService {
      * @return A list of all entrances.
      */
     public List<Entrances> findAllEntrances() {
-        return entityManager.createQuery("SELECT e FROM Entrances e", Entrances.class).getResultList();
+        return entityManager.createQuery("SELECT e FROM Entrances e WHERE e.deleted = false ORDER BY e.createdAt DESC ", Entrances.class).getResultList();
     }
 
     /**
@@ -55,7 +50,7 @@ public class EntrancesService {
     public Entrances findEntranceById(int id) {
         return entityManager.find(Entrances.class, id);
     }
-    
+
     public Entrances findEntranceByIdFresh(int id) {
         return entityManager.createQuery(
                 "SELECT e FROM Entrances e LEFT JOIN FETCH e.employees WHERE e.id = :id",
@@ -63,7 +58,7 @@ public class EntrancesService {
                 .setParameter("id", id)
                 .getSingleResult();
     }
-    
+
     public List<Entrances> findEntranceByIds(List<Integer> ids) {
         return entityManager.createQuery(
                 "SELECT e FROM Entrances e WHERE e.id IN :ids", Entrances.class)
@@ -103,12 +98,12 @@ public class EntrancesService {
     public void deleteEntrance(int id) {
         Entrances entrance = entityManager.find(Entrances.class, id);
         if (entrance != null) {
-            entityManager.remove(entrance);
+            entrance.setDeleted(true);
+            entityManager.merge(entrance);
         } else {
             throw new EntityNotFoundException("Entrance with ID " + id + " not found.");
         }
     }
-
 
     public List<Entrances> searchEntrances(String query) {
         return entityManager.createQuery("SELECT e FROM Entrances e WHERE LOWER(e.entranceName) LIKE :query OR e.entranceDeviceId "
@@ -124,17 +119,15 @@ public class EntrancesService {
     public void addEntrance(Entrances entrance) {
         entityManager.persist(entrance);
     }
-    
-  public int getTotalEntrances() {
+
+    public int getTotalEntrances() {
         Long count = entityManager.createQuery("SELECT COUNT(e) FROM Entrances e", Long.class)
                 .getSingleResult();
         return count.intValue();
     }
 
-   
-    public List<Entrances> getEntrancesForUser(String username) {
+    public List<Entrances> getEntrancesForUser(String ghanaCardNumber) {
         // Get ghanaCardNumber from session
-        String ghanaCardNumber = (String) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("ghanaCardNumber");
         if (ghanaCardNumber == null) {
             return List.of(); // Return empty list if no ghanaCardNumber
         }
@@ -150,11 +143,21 @@ public class EntrancesService {
         query.setParameter("ghanaCardNumber", ghanaCardNumber);
         return query.getResultList();
     }
-    
+
     public List<Entrances> findByMode(EntranceMode mode) {
         return entityManager.createQuery("SELECT e FROM Entrances e WHERE e.entranceMode = :mode", Entrances.class)
                 .setParameter("mode", mode)
                 .getResultList();
     }
 
+    public List<Devices> findDevicesByEntranceAndPosition(Entrances entrance, DevicePosition position) {
+        return entityManager.createQuery(
+                "SELECT d FROM Devices d "
+                + "WHERE d.entrance = :entrance "
+                + "AND d.devicePosition = :position "
+                + "AND d.deleted = false", Devices.class)
+                .setParameter("entrance", entrance)
+                .setParameter("position", position)
+                .getResultList();
+    }
 }

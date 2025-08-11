@@ -10,6 +10,7 @@ package com.margins.STIM.Bean;
  */
 import com.margins.STIM.Charts.BaseLineChart;
 import com.margins.STIM.Charts.EntranceAccessBarChart;
+import com.margins.STIM.Charts.LineCharts;
 import com.margins.STIM.Charts.RolePieChart;
 import com.margins.STIM.entity.AccessLog;
 import com.margins.STIM.entity.ActivityLog;
@@ -21,18 +22,27 @@ import com.margins.STIM.service.EmployeeRole_Service;
 import com.margins.STIM.service.Employee_Service;
 import com.margins.STIM.service.EntrancesService;
 import com.margins.STIM.util.DateFormatter;
-import com.margins.STIM.util.RoleCount;
+import com.margins.STIM.DTO.RoleCount;
+import com.margins.STIM.entity.AuditLog;
+import com.margins.STIM.entity.EmployeeEntranceState;
+import com.margins.STIM.entity.enums.ActionResult;
+import com.margins.STIM.entity.enums.AuditActionType;
+import com.margins.STIM.service.AuditLogService;
+import com.margins.STIM.service.EmployeeEntranceStateService;
 import java.io.Serializable;
 import java.util.List;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,6 +76,16 @@ public class DashboardBean implements Serializable {
     private EmployeeRole_Service roleService;
     @EJB
     private EntrancesService entrancesService;
+    @Inject
+    private UserSession userSession;
+    @Inject
+    private AuditLogService auditLogService;
+    @Inject
+    private EmployeeEntranceStateService empEntStateService;
+    @Inject
+    private LineCharts lineCharts;
+    @Inject
+    private BreadcrumbBean breadcrumbBean;
 
     // Admin metrics
     private int totalEmployees;
@@ -76,30 +96,34 @@ public class DashboardBean implements Serializable {
     private int employeesOnboardedMonth;
     private int employeesOnboardedYear;
     private int successfulLoginsToday;
+    private Integer entranceId;
     private double verificationSuccessRate;
     private double accessSuccessRate;
-    private List<ActivityLog> recentLogins;
+    private List<AuditLog> recentLogins;
+    private List<AuditLog> recentActivities;
     private List<Employee> recentEmployees;
     private List<AccessLog> recentAccessAttempts;
     private List<RoleCount> rolesWithMostEmployeesLimit = new ArrayList<>();
     private List<RoleCount> rolesWithMostEmployees = new ArrayList<>();
+    private LocalDate[] dateRange;
+    private LocalDate startFrom;
+    private LocalDate endAt;
 
     private Map<String, String> employeeNameMap;
 
-    // User metrics
+    // Other metrics
     private int userSuccessfulLoginsToday;
     private String userRole;
     private List<Entrances> userAssignedEntrances;
-    private List<Employee> userRecentEmployees;
     private List<AccessLog> userRecentAccessAttempts;
+    private LineChartModel mostAccessedEntrance;
+    private List<EmployeeEntranceState> currentStates;
 
-    @Getter
     private int employeesUserOnboardedToday;
 
     // Filters
     private String selectedEntranceId;
     private List<Entrances> allEntrances;
-    private String dateRange = "today";
 
     // Charts
     private PieChartModel rolePieChartModel;
@@ -112,16 +136,21 @@ public class DashboardBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        String userRole = (String) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("userRole");
-        String username = (String) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("username");
+        userRole = userSession.userRoleName();
+        String username = userSession.getUsername();
         LocalDate today = LocalDate.now();
 
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = LocalDateTime.now();
         LocalDateTime endofMonth = endOfDay.minusDays(30);
 
-        // Admin metrics
-        if ("ADMIN".equals(userRole)) {
+        endAt = LocalDate.now();
+        startFrom = endAt.minusDays(30);
+        updateMostAccessed();
+
+        currentStates = empEntStateService.findRecentEmployeeEntranceStates(20);
+        // Admin metrics {find a way to make it run if the role is admin or consider using the usertype you get ?}
+        if (userSession.checkAdmin()) {
             totalEmployees = employeeService.getTotalEmployees();
             totalRoles = roleService.getTotalRoles();
             totalEntrances = entrancesService.getTotalEntrances();
@@ -129,11 +158,11 @@ public class DashboardBean implements Serializable {
             employeesOnboardedWeek = employeeService.countEmployeesOnboarded(today.minusDays(6).atStartOfDay(), endOfDay);
             employeesOnboardedMonth = employeeService.countEmployeesOnboarded(today.withDayOfMonth(1).atStartOfDay(), endOfDay);
             employeesOnboardedYear = employeeService.countEmployeesOnboarded(today.withDayOfYear(1).atStartOfDay(), endOfDay);
-            successfulLoginsToday = activityLogService.countByActionAndResultInPeriod(
-                    List.of("login"), "Success", startOfDay, endOfDay);
+            successfulLoginsToday = auditLogService.countByActionAndResultInPeriod(
+                    AuditActionType.LOGIN, ActionResult.SUCCESS, startOfDay, endOfDay);
             verificationSuccessRate = calculateVerificationSuccessRate(startOfDay, endOfDay);
             accessSuccessRate = calculateAccessSuccessRate(endofMonth, endOfDay);
-            recentLogins = activityLogService.getRecentActivities("login", 5);
+            recentLogins = auditLogService.getRecentActivities(5);
             recentEmployees = employeeService.getRecentEmployees(5);
             recentAccessAttempts = accessLogService.getRecentAccessAttempts(5);
             rolesWithMostEmployeesLimit = roleService.getTopRolesByEmployeeCount(5);
@@ -141,17 +170,15 @@ public class DashboardBean implements Serializable {
             allEntrances = entrancesService.findAllEntrances();
 
             //G'S IMPLEMENTATIO 
-            rolesWithMostEmployees = roleService.getAllRolesWithEmployeeCount();
+            rolesWithMostEmployees = roleService.getTopRolesByEmployeeCount(5);
             createRolePieChart();
             lineChartModel = buildGrantedDeniedLineChart(endofMonth, endOfDay);
         }
 
         // User metrics
-        userSuccessfulLoginsToday = activityLogService.countByActionAndResultAndUser(
-                List.of("login"), "Success", username, startOfDay, endOfDay);
-        userRole = userRole;
-        userAssignedEntrances = entrancesService.getEntrancesForUser(username);
-        userRecentEmployees = employeeService.getRecentEmployeesByUser(username, 5);
+        userSuccessfulLoginsToday = auditLogService.countByActionAndResultAndUser(
+                AuditActionType.LOGIN, ActionResult.SUCCESS, userSession.getCurrentUser(), startOfDay, endOfDay);
+        userAssignedEntrances = entrancesService.getEntrancesForUser(userSession.getGhanaCardNumber());
         userRecentAccessAttempts = accessLogService.getRecentAccessAttemptsByUser(username, 5);
         employeesUserOnboardedToday = activityLogService.countEmployeesOnboardedByLoggedInUserInDay(today);
 
@@ -162,11 +189,11 @@ public class DashboardBean implements Serializable {
         employeesOnboardedWeek = employeeService.countEmployeesOnboarded(today.minusDays(6).atStartOfDay(), endOfDay);
         employeesOnboardedMonth = employeeService.countEmployeesOnboarded(today.withDayOfMonth(1).atStartOfDay(), endOfDay);
         employeesOnboardedYear = employeeService.countEmployeesOnboarded(today.withDayOfYear(1).atStartOfDay(), endOfDay);
-        successfulLoginsToday = activityLogService.countByActionAndResultInPeriod(
-                List.of("login"), "Success", startOfDay, endOfDay);
+        successfulLoginsToday = auditLogService.countByActionAndResultInPeriod(
+                AuditActionType.LOGIN, ActionResult.SUCCESS, startOfDay, endOfDay);
         verificationSuccessRate = calculateVerificationSuccessRate(startOfDay, endOfDay);
         accessSuccessRate = calculateAccessSuccessRate(endofMonth, endOfDay);
-        recentLogins = activityLogService.getRecentActivities("login", 5);
+        recentActivities = auditLogService.getRecentActivitiesByUser(userSession.getCurrentUser(), 7);
         recentEmployees = employeeService.getRecentEmployees(5);
         recentAccessAttempts = accessLogService.getRecentAccessAttempts(5);
         rolesWithMostEmployeesLimit = roleService.getTopRolesByEmployeeCount(5);
@@ -178,13 +205,26 @@ public class DashboardBean implements Serializable {
 
         rolePieChartModel = RolePieChart.generatechart(rolesWithMostEmployees);
         LocalDateTime end = LocalDateTime.now();
-//       LocalDateTime start = end.minusDays(30);
         topEntrancesChartModel = BaseLineChart.generateChart(accessLogService.getTop5RecentEntrancesByGrantedAccess(endofMonth, end));
 
-//       System.out.println("Map>>>>" + accessLogService.getTop5RecentEntrancesByGrantedAccess(start, end));
-        barChartModelEntrance = EntranceAccessBarChart.generateChart(accessLogService.countAccessResultsForAllEntrances(startOfDay, endOfDay));
+        barChartModelEntrance = EntranceAccessBarChart.generateChart(accessLogService.countAccessResultsForAllEntrances(endofMonth, endOfDay));
 
 //        initLoginTrendChart();
+    }
+
+    public void updateMostAccessed() {
+        if (startFrom != null && endAt != null) {
+
+            mostAccessedEntrance = lineCharts.buildEntryExitLineChart(startFrom.atStartOfDay(), endAt.atTime(LocalTime.MAX));
+        } else {
+            LocalDateTime end = endAt.atTime(LocalTime.MAX);
+            LocalDateTime start = startFrom.atTime(LocalTime.MAX);
+
+            mostAccessedEntrance = lineCharts.buildEntryExitLineChart(start, end);
+
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Date range not specified. Defaulting to the last 7 days.", null));
+        }
     }
 
     public void createRolePieChart() {
@@ -245,20 +285,20 @@ public class DashboardBean implements Serializable {
 
         for (String entrance : labels) {
             Map<String, Integer> resultCounts = accessData.get(entrance);
-            grantedCounts.add(resultCounts.getOrDefault("granted", 0));
-            deniedCounts.add(resultCounts.getOrDefault("denied", 0));
+            grantedCounts.add(resultCounts.getOrDefault("GRANTED", 0));
+            deniedCounts.add(resultCounts.getOrDefault("DENIED", 0));
         }
 
         // Dataset for Granted
         LineChartDataSet grantedSet = new LineChartDataSet();
-        grantedSet.setLabel("Granted");
+        grantedSet.setLabel("GRANTED");
         grantedSet.setData(grantedCounts);
         grantedSet.setBorderColor("#4CAF50"); // green
         grantedSet.setFill(false);
 
         // Dataset for Denied
         LineChartDataSet deniedSet = new LineChartDataSet();
-        deniedSet.setLabel("Denied");
+        deniedSet.setLabel("DENIED");
         deniedSet.setData(deniedCounts);
         deniedSet.setBorderColor("#F44336"); // red
         deniedSet.setFill(false);
@@ -287,11 +327,10 @@ public class DashboardBean implements Serializable {
             System.out.println("ItemSelected>>>>>>>>>>>>>>>>>> " + event.getDataSetIndex());
             System.out.println("ItemSelected>>>>>>>>>>>>>>>>>> " + event.getItemIndex());
             System.out.println("ItemSelected>>>>>>>>>>>>>>>>>> " + event.getSource());
-            
+
             org.primefaces.component.linechart.LineChart chart = (org.primefaces.component.linechart.LineChart) event.getSource();
-           
-                    // > org.primefaces.component.linechart.LineChart@6f99863e|
-            
+
+            // > org.primefaces.component.linechart.LineChart@6f99863e|
 //            LineChartModel model = (LineChartModel) lineChartModel;
 //            ChartData data = model.getData();
 //
@@ -371,12 +410,20 @@ public class DashboardBean implements Serializable {
     }
 
     public String getFormattedTimestamp(AccessLog log) {
-        return DateFormatter.formatDateTime(log.getTimestamp());
+        return DateFormatter.forDateTimes(log.getTimestamp());
+    }
+
+    public String timeString(LocalDateTime dt) {
+        return DateFormatter.forDateTimes(dt);
     }
 
     // Format ActivityLog timestamp (for Recent Successful Logins)
     public String getFormattedActivityLogTimestamp(ActivityLog log) {
         return DateFormatter.formatDateTime(log.getTimestamp());
+    }
+
+    public String getFormattedTime(AuditLog log) {
+        return DateFormatter.formatDateTime(log.getCreatedOn());
     }
 
     private double calculateVerificationSuccessRate(LocalDateTime start, LocalDateTime end) {
@@ -409,11 +456,26 @@ public class DashboardBean implements Serializable {
     }
 
     public void entranceaccessupdate() {
-        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
-        LocalDateTime endOfDay = LocalDate.now().atTime(23, 59, 59);
+        LocalDate entStartDate;
+        LocalDate entEndDate;
+        if (dateRange != null && dateRange.length == 2) {
+            entStartDate = dateRange[0];
+            entEndDate = dateRange[1];
+        } else {
+            LocalDate today = LocalDate.now();
+            entEndDate = today;
+            entStartDate = today.minusDays(7);
+        }
+        LocalDateTime startOfDay = entStartDate.atStartOfDay();
+        LocalDateTime endOfDay = entEndDate.atTime(23, 59, 59);
 
-        if (selectedEntranceId != null) {
-            barChartModelEntrance = EntranceAccessBarChart.generateChart(accessLogService.countAccessResultsByEntrance(startOfDay, endOfDay, selectedEntranceId));
+        if (entranceId != null) {
+            System.out.println("Selected Entrance ID: " + entranceId);
+            barChartModelEntrance = EntranceAccessBarChart.generateChart(
+                    accessLogService.countAccessResultsByEntrance(startOfDay, endOfDay, entranceId));
+        } else {
+            barChartModelEntrance = EntranceAccessBarChart.generateChart(
+                    accessLogService.countAccessResultsForAllEntrances(startOfDay, endOfDay));
         }
     }
 
@@ -425,7 +487,7 @@ public class DashboardBean implements Serializable {
 
     public String getEntranceName(int entranceId) {
         Entrances entrance = entrancesService.findEntranceById(entranceId);
-        return entrance != null ? entrance.getEntranceName(): "Entrance not found";
+        return entrance != null ? entrance.getEntranceName() : "Entrance not found";
     }
 
     public String getEmployeeName(Employee employee) {
@@ -441,4 +503,23 @@ public class DashboardBean implements Serializable {
         ec.redirect(ec.getRequestContextPath() + "/login.xhtml"); // Redirects to login page
     }
 
+    ///Trial
+    private Map<Integer, Boolean> entranceExpansionMap = new HashMap<>();
+
+    public Map<Integer, Boolean> getEntranceExpansionMap() {
+        return entranceExpansionMap;
+    }
+
+    public void toggleEntranceExpansion(Integer entranceId) {
+        boolean current = entranceExpansionMap.getOrDefault(entranceId, false);
+        entranceExpansionMap.put(entranceId, !current);
+    }
+
+    public boolean getEntranceExpanded(Integer entranceId) {
+        return entranceExpansionMap.getOrDefault(entranceId, false);
+    }
+
+    public void setupBreadcrumb() {
+        breadcrumbBean.resetToDashboard();
+    }
 }

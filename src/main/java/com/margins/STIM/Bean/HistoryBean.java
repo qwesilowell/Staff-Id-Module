@@ -63,7 +63,7 @@ public class HistoryBean implements Serializable {
     //Filters
     private String employeeName;
     private String ghanaCardNumber;
-    private String selectedEntranceId;
+    private int selectedEntranceId;
     private List<Entrances> allEntrances;
     private String employeeId;
     private String entranceId;
@@ -103,7 +103,7 @@ public class HistoryBean implements Serializable {
 
             if (entranceIdParam != null && !entranceIdParam.isEmpty()) {
                 // Set the selected entrance from URL parameter
-                this.selectedEntranceId = entranceIdParam;
+                this.selectedEntranceId = Integer.parseInt(entranceIdParam);
 
                 if (resultParam != null && !resultParam.isEmpty()) {
                     this.result = resultParam;
@@ -150,9 +150,11 @@ public class HistoryBean implements Serializable {
     public void reset() {
         timeRange = null;
         result = null;
-        selectedEntranceId = null;
+        selectedEntranceId = 0;
         ghanaCardNumber = "";
         employeeName = "";
+        selectedRole = null;
+        selectedRoleId = null; 
         fetchCriteria();
     }
 
@@ -169,6 +171,6 @@ public class HistoryBean implements Serializable {
     }
 
     public String getFormattedTimestamp(AccessLog log) {
-        return DateFormatter.formatDateTime(log.getTimestamp());
+        return DateFormatter.forDateTimes(log.getTimestamp());
     }
 }

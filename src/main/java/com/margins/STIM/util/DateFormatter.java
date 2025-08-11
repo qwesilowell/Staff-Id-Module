@@ -17,6 +17,7 @@ import java.util.Date;
  * @author PhilipManteAsare
  */
 public class DateFormatter {
+
     public static String formatDate(Date date) {
         SimpleDateFormat dayFormat = new SimpleDateFormat("d");
         SimpleDateFormat monthYearFormat = new SimpleDateFormat("MMMM, yyyy");
@@ -31,14 +32,37 @@ public class DateFormatter {
         // Combine them to get the final formatted date
         return day + ordinalSuffix + " " + monthYear;
     }
-    
+
+    public static String forDateTime(LocalDateTime dateTime) {
+        // Format for day
+        int day = dateTime.getDayOfMonth();
+        String ordinalSuffix = getOrdinalSuffix(day);
+
+        // Format month and year
+        String month = dateTime.format(DateTimeFormatter.ofPattern("MMMM"));
+        int year = dateTime.getYear();
+
+        // Format time (24-hour or 12-hour format)
+        String time = dateTime.format(DateTimeFormatter.ofPattern("hh:mm a")); // 12-hour
+        // for 24-hour: String time = dateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+
+        // Combine them
+        return day + ordinalSuffix + " " + month + " " + year + " at " + time;
+    }
+
+    public static String forDateTimes(LocalDateTime time) {
+        if (time != null) {
+            return forDateTime(time);
+        }
+        return "No Record";
+    }
     
     public static LocalTime toLocalTime(Date date) {
         return date.toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalTime();  //ignores Jan-1970
     }
-    
+
     public static String formatDateTime(LocalDateTime dateTime) {
         if (dateTime == null) {
             return "";
@@ -52,13 +76,17 @@ public class DateFormatter {
             return "th"; // Special case for 11th, 12th, 13th
         }
         switch (day % 10) {
-            case 1: return "st";
-            case 2: return "nd";
-            case 3: return "rd";
-            default: return "th";
+            case 1:
+                return "st";
+            case 2:
+                return "nd";
+            case 3:
+                return "rd";
+            default:
+                return "th";
         }
     }
-    
+
     public static Date toDate(LocalTime localTime) {
         if (localTime == null) {
             return null;
@@ -66,5 +94,9 @@ public class DateFormatter {
         LocalDate today = LocalDate.now();
         LocalDateTime ldt = LocalDateTime.of(today, localTime);
         return Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    private String getFirstChar(String word) {
+        return (word != null && word.length() >= 1) ? word.substring(0, 1).toUpperCase() : "?";
     }
 }

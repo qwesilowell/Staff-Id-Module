@@ -25,7 +25,7 @@
             <h:form id="wizardForm" prependId="false">
                 <p:growl widgetVar="fgrowl" id="growl" showSummary= "false" showDetail="true" life="3000" />
 
-                <h3 style="font-family: Roboto,sans-serif;">ONBOARDING EMPLOYEE</h3>
+                <h1>Onboard Employee</h1>
 
                 <p:steps activeIndex="#{wizardBean.currentStep}" >
                     <p:menuitem value="Select Verification Type"/>
@@ -198,10 +198,11 @@
 
                                     <div class="button-container">
                                         <div class="capture-buttons">
-                                            <p:commandButton value="Open Camera" onclick="openCamera();" type="button" 
-                                                             styleClass="ui-button-secondary capture-button"/>
-                                            <p:commandButton value="Capture Face" onclick="capture();" type="button" 
-                                                             styleClass="ui-button-secondary capture-button"/>
+                                            <p:commandButton id="cameraButton" value="Open Camera"  type="button" icon="pi pi-camera" iconPos="left"
+                                                             styleClass="ui-button-secondary capture-button" onclick="toggleCamera()" />
+
+                                            <p:commandButton id="captureButton" value="Capture Face" onclick="capture();" type="button" 
+                                                             styleClass="ui-button-secondary capture-button" style="display: none;"/>
                                         </div>
                                         <p:commandButton value="Submit Verification" onclick="saveCroppedImage()" 
                                                          action="#{wizardBean.verifyFace()}" update="growl" 
@@ -348,26 +349,6 @@
                                              style="width:100%; padding:5px; margin-bottom:1rem;" />
                             </h:panelGroup>
                         </h:panelGroup>
-
-                        <!-- Updated CSS -->
-                        <style>
-                            .form-container {
-                                display: flex;
-                                justify-content: space-between;
-                                width: 80%; /* Matches your original panelGrid width */
-                                margin: 0 auto; /* Centers the container */
-                            }
-                            .form-left {
-                                width: 48%;
-                                vertical-align: top;
-                                padding-right: 2%;
-                            }
-                            .form-right {
-                                width: 48%;
-                                vertical-align: top;
-                            }
-                        </style>
-
 
                         <!-- Role Selection Dialog -->
                         <p:dialog id="roleSelectionDialog" 
@@ -516,7 +497,58 @@
                 background-color: #28a745 !important;
                 color: white !important;
             }
+            .form-container {
+                display: flex;
+                justify-content: space-between;
+                width: 80%; /* Matches your original panelGrid width */
+                margin: 0 auto; /* Centers the container */
+            }
+            .form-left {
+                width: 48%;
+                vertical-align: top;
+                padding-right: 2%;
+            }
+            .form-right {
+                width: 48%;
+                vertical-align: top;
+            }
+            .camera-button-red {
+                background-color: #dc3545 !important;
+                border-color: #dc3545 !important;
+                color: white !important;
+            }
+
+            .camera-button-red:hover {
+                background-color: #c82333 !important;
+                border-color: #bd2130 !important;
+            }
+
         </style>
+
+
+        <script>
+            let cameraOpen = false;
+
+            function toggleCamera() {
+                const cameraBtn = document.getElementById('cameraButton');
+                const captureBtn = document.getElementById('captureButton');
+
+                if (!cameraOpen) {
+                    openCamera(); // existing camera logic
+                    captureBtn.style.display = 'inline-block';
+
+                    cameraBtn.classList.add('camera-button-red');
+                    const buttonSpan = cameraBtn.querySelector('.ui-button-text');
+                    buttonSpan.textContent = 'Reset Camera';
+
+                    
+                    cameraOpen = true;
+                } else {
+                    
+                    openCamera();
+                }
+            }
+        </script>
 
     </ui:define>
 </ui:composition>

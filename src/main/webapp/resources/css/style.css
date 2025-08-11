@@ -14,6 +14,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    
 /*    font-family: 'Nunito', sans-serif;*/
 }
 /*i, .pi, .fa {
@@ -39,6 +40,18 @@ body {
     text-align: center !important;
     font-family: 'Nunito', sans-serif !important;
 }*/
+
+
+.camera-button-red {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: white !important;
+}
+
+.camera-button-red:hover {
+    background-color: #c82333 !important;
+    border-color: #bd2130 !important;
+}
 
 /* Container styles */
 .cont {

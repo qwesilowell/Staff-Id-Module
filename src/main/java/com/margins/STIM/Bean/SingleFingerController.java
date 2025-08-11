@@ -7,10 +7,13 @@ package com.margins.STIM.Bean;
 import com.google.gson.Gson;
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.EmploymentStatus;
+import com.margins.STIM.entity.enums.ActionResult;
+import com.margins.STIM.entity.enums.AuditActionType;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.entity.websocket.FingerCaptured;
 import com.margins.STIM.model.CapturedFinger;
+import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.Employee_Service;
 import com.margins.STIM.util.FingerprintProcessor;
 import com.margins.STIM.util.JSF;
@@ -52,6 +55,11 @@ public class SingleFingerController implements Serializable {
 
     @EJB
     private Employee_Service employeeService;
+    
+    @Inject
+    private AuditLogService auditLogService;
+    @Inject
+    private UserSession userSession;
 
     @Inject 
     private BreadcrumbBean breadcrumbBean;
@@ -513,10 +521,15 @@ public class SingleFingerController implements Serializable {
 
             employeeService.updateEmployee(cardNumber, existingEmployee);
             foundEmployee = existingEmployee; // Update UI reference
+            
+            String detail= "Personnel Details Updated for " + existingEmployee.getFullName() + ".";
+            auditLogService.logActivity(AuditActionType.UPDATE, "Update Employee Details", ActionResult.SUCCESS, detail, userSession.getCurrentUser());
             JSF.addSuccessMessage("Employee " + newFirstName + " " + newLastName + " updated succesfully ");
             resetWizard();
 
         } catch (Exception e) {
+            String detail = "Failed to Update Personnel Details for " + newFirstName + " " + newLastName + "(" +cardNumber+ ").";
+            auditLogService.logActivity(AuditActionType.UPDATE, "Update Employee Details", ActionResult.SUCCESS, detail, userSession.getCurrentUser());
             JSF.addErrorMessage("Error updating employee.");
             e.printStackTrace();
             resetWizard();

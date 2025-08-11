@@ -65,7 +65,7 @@
                                             var="role" itemLabel="#{role.roleName}" itemValue="#{role}"
                                             converter="employeeRoleConverter"  style="width: 100%"
                                             forceSelection="true" dropdown="true"
-                                            placeholder="Search or Select Entrance" panelStyle="max-height: 200px; overflow-y:auto;"/>
+                                            placeholder="Search or Select Role" panelStyle="max-height: 200px; overflow-y:auto;"/>
                         </p:outputPanel>
 
                         <p:outputPanel>
@@ -131,7 +131,7 @@
                     <!-- Result Filter -->
                     <p:column headerText="Result" sortBy="#{log.result}">
                         <h:outputText value="#{log.result.toUpperCase()}"
-                                      styleClass="#{log.result eq 'granted' ? 'granted-box' : 'denied-box'}" />
+                                      styleClass="#{log.result eq 'GRANTED' ? 'granted-box' : 'denied-box'}" />
                     </p:column>
 
                     <p:column headerText="Time" sortBy="#{log.timestamp}">

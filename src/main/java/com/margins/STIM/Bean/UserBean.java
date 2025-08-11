@@ -7,11 +7,14 @@ import java.io.Serializable;
 import jakarta.ejb.EJB;
 import com.margins.STIM.service.User_Service;
 import com.margins.STIM.entity.Users;
+import com.margins.STIM.entity.enums.ActionResult;
+import com.margins.STIM.entity.enums.AuditActionType;
 import com.margins.STIM.entity.enums.UserType;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.entity.websocket.FingerCaptured;
 import com.margins.STIM.model.CapturedFinger;
+import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.util.DateFormatter;
 import com.margins.STIM.util.FingerprintProcessor;
 import com.margins.STIM.util.JSF;
@@ -48,6 +51,8 @@ public class UserBean implements Serializable {
 
     @EJB
     private User_Service userService;
+    @Inject 
+    private AuditLogService auditLogService;
 
     @Inject 
     private BreadcrumbBean breadcrumbBean;
@@ -144,6 +149,9 @@ public class UserBean implements Serializable {
     public void setupBreadcrumb() {
         breadcrumbBean.setCreateNewUserBreadcrumb();
     }
+    public void setBreadcrumb() {
+        breadcrumbBean.setDeveloperTools();
+    }    
 
     private void clearForm() {
         this.ghanaCardNumber = null;
@@ -452,6 +460,7 @@ public class UserBean implements Serializable {
         }
         
 
+        Users currentUser = userService.getCurrentUser();
         try {
 
             // Create new user entity
@@ -469,6 +478,8 @@ public class UserBean implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_INFO, "User " + username + " created successfully!", null));
             
             
+            auditLogService.logActivity(AuditActionType.CREATE, "User Creation Page", ActionResult.SUCCESS, "Created new user " + username , currentUser);
+                    
             // Clear form fields
             clearForm();
 
@@ -478,6 +489,8 @@ public class UserBean implements Serializable {
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error creating new user: " + e.getMessage(), null));
+            
+            auditLogService.logActivity(AuditActionType.CREATE, "User Creation Page", ActionResult.FAILED, "Failed Creating new user " + username + ": " + e.getMessage(), currentUser);
             e.printStackTrace();
         }
     }

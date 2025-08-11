@@ -16,11 +16,11 @@
     
     <ui:define name="title">Assign Roles to Entrance</ui:define>
 
-    <ui:define name="metadata">             
+<!--    <ui:define name="metadata">             
         <f:metadata>
             <f:viewAction action="#{loginBean.checkAccess('ADMIN')}" />
         </f:metadata>
-    </ui:define>
+    </ui:define>-->
 
 
     <ui:define name ="content">
@@ -39,9 +39,10 @@
                                             var="entrance" itemLabel="#{entrance.entranceName}" 
                                             itemValue="#{entrance}"
                                             converter="entranceConverter"
+                                            scrollHeight="200"
                                             forceSelection="true" dropdown="true"
                                             placeholder="Search or Select Entrance" 
-                                            style="width: 100%; ">
+                                            style="width: 100%; overflow: hidden">
                                 <!-- Automatically load assigned roles when an entrance is selected -->
                                 <p:ajax event="itemSelect" listener="#{assignRoleBean.loadAssignedRoles}" update="assignedRolesTable roles" />
                             </p:autoComplete>

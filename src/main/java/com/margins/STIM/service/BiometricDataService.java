@@ -86,6 +86,7 @@ public class BiometricDataService {
         if (biometricData == null) {
             throw new EntityNotFoundException("BiometricData with ID " + id + " not found.");
         }
-        entityManager.remove(biometricData);
+        biometricData.setDeleted(true);
+        entityManager.merge(biometricData);
     }
 }

@@ -56,7 +56,7 @@ public class BiometricDataRest {
     public Response createBiometricData2(String data) {
         try {
             
-            System.out.println("createBiometricData2 >>>>>>>>>>> " + data);
+//            System.out.println("createBiometricData2 >>>>>>>>>>> " + data);
             JSONObject jsono = new JSONObject(data);
             JSONArray jsona = jsono.getJSONArray("finger_data");
             System.out.println("createBiometricData33333 >>>>>>>>>>> " + data);

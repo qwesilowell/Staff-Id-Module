@@ -5,6 +5,7 @@
 package com.margins.STIM.entity;
 
 import com.margins.STIM.entity.enums.LocationState;
+import com.margins.STIM.util.DateFormatter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -51,6 +52,10 @@ public class EmployeeEntranceState implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "entrance_device_id", referencedColumnName = "id", nullable = false)
     private Entrances entrance;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "device_used_id")
+    private Devices deviceUsed;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "current_state", nullable = false)
@@ -69,13 +74,23 @@ public class EmployeeEntranceState implements Serializable {
     @Column(name = "reset_reason", length = 500)
     private String resetReason; // Why was this state reset? (admin override, mode change, etc.)
 
+    @Column(name = "is_deleted")
+    private boolean deleted = false;
+    
+    public String getFormattedLastModifiedDate() {
+        return lastModifiedDate != null
+                ? DateFormatter.forDateTimes(lastModifiedDate)
+                : "N/A";
+    }
+    
     public EmployeeEntranceState() {
     }
 
-    public EmployeeEntranceState(Employee employee, Entrances entrance, LocationState currentState) {
+    public EmployeeEntranceState(Employee employee, Entrances entrance, LocationState currentState, Devices device) {
         this.employee = employee;
         this.entrance = entrance;
         this.currentState = currentState;
+        this.deviceUsed = device;
     }
 
     @PrePersist

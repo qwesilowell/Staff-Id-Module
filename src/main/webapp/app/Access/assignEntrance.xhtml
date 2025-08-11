@@ -6,7 +6,7 @@
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets">
-    
+
     <ui:define name="metadata">
         <f:metadata>
             <f:viewAction action="#{assignEntranceBean.setupBreadcrumb}" />
@@ -15,18 +15,18 @@
 
     <ui:define name="title">Assign Custom Entrances to Employees</ui:define>
 
-    <ui:define name="metadata">
+<!--    <ui:define name="metadata">
         <f:metadata>
             <f:viewAction action="#{loginBean.checkAccess('ADMIN')}" />
         </f:metadata>
-    </ui:define>
+    </ui:define>-->
 
     <ui:define name="content">
         <div class="main-content">
             <h:form id="assignEntranceForm">
                 <p:growl id="messages" showSummary= "true" showDetail="true" life="6000" />
 
-                <p:panel header="Assign Custom Entrances" style="background: white; padding: 20px; border-radius: 8px;">
+                <p:panel header="Assign Custom Entrances" style="background: white; border-radius: 8px;">
                     <!-- Search Bar -->
                     <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
                         <p:inputText id="searchQuery" value="#{assignEntranceBean.searchQuery}"
@@ -36,7 +36,7 @@
                     </div>
 
                     <!-- Employee Table -->
-                    <p:dataTable id="employeeTable" value="#{assignEntranceBean.employees}" var="employee" paginator="true" rows="10">
+                    <p:dataTable id="employeeTable" value="#{assignEntranceBean.employees}" var="employee" paginator="true" paginatorPosition="bottom" rows="10">
                         <p:column headerText="Name">
                             <h:outputText value="#{employee.fullName}"/>
                         </p:column>
@@ -51,7 +51,9 @@
                                              action="#{assignEntranceBean.openAssignPopup(employee)}"
                                              update=":assignEntranceForm:assignEntranceDialog"
                                              oncomplete="PF('assignEntranceDialog').show()"
-                                             style="background: #007bff; color: white; border-radius: 4px;"/>
+                                             style="#{employee.customEntrances.isEmpty() 
+                                                      ? 'background: #007bff; color: white; border-radius: 4px;' 
+                                                      : 'background: #28a745; color: white; border-radius: 4px;'}"/>
                         </p:column>
                     </p:dataTable>
                 </p:panel>

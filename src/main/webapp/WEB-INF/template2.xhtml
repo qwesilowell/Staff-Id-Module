@@ -34,7 +34,7 @@
                 <div class="logo">
                     <div class="logo-text">
                         STAFF ID_MODULE<br/>
-                        <span><strong>#{sessionScope.userRole}</strong></span>
+                        <span><strong>#{userSession.userRoleName()}</strong></span>
                     </div>
                 </div>
             </div>
@@ -98,7 +98,7 @@
                 <h:form>
                     <div class="header-right">
                         <p:menu overlay="true" trigger="userMenu" my="left top" at="left bottom">
-                            <p:submenu label="#{sessionScope.username}">
+                            <p:submenu label="#{userSession.username}">
                                 <p:menuitem value="Profile" url="profile.xhtml" icon="pi pi-user" />
                                 <p:menuitem value="Settings" url="settings.xhtml" icon="pi pi-cog" />
                                 <p:separator />
@@ -119,10 +119,10 @@
         </div>
 
         <!--Footer-->
-        <div class="layout-footer"> 
+<!--        <div class="layout-footer"> 
             <div class="footer-content"> <span>Version 1.0.0</span> 
             </div> 
-        </div>
+        </div>-->
 
 
     </h:body>

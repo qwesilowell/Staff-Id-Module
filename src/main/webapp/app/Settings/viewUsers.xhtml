@@ -1,0 +1,965 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
+-->
+<!DOCTYPE html>
+
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{viewUsers.setupBreadcrumb}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="title">System User</ui:define>
+
+    <ui:define name ="content">
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="user-management-container">
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <i class="pi pi-users"></i>
+                        User Management
+                    </h1>
+                    <p class="page-subtitle">Manage system users, roles, and status</p>
+                </div>
+
+                <h:form id="userManagementForm">
+                    <p:growl id="messages" widgetVar="userGrowl" showSummary="false" showDetail="true" life="6000" globalOnly="true" />
+
+                    <!-- Filter Cards Section -->
+                    <h:panelGroup id="filterCards" layout="block" styleClass="filter-cards">
+                        <p:commandLink styleClass="filter-card #{viewUsers.filterType == 'ALL' ? 'active' : ''}" 
+                                       action="#{viewUsers.applyFilter('ALL')}" 
+                                       update=":userManagementForm :userManagementForm:filterCards">
+                            <div class="filter-icon all-users">
+                                <i class="pi pi-users"></i>
+                            </div>
+                            <div class="filter-info">
+                                <div class="filter-count">#{viewUsers.totalUsers}</div>
+                                <div class="filter-label">All Users</div>
+                            </div>
+                        </p:commandLink>
+
+                        <p:commandLink styleClass="filter-card #{viewUsers.filterType == 'ACTIVE' ? 'active' : ''}" 
+                                       action="#{viewUsers.applyFilter('ACTIVE')}" 
+                                       update=":userManagementForm :userManagementForm:filterCards">
+                            <div class="filter-icon active-users">
+                                <i class="pi pi-check-circle"></i>
+                            </div>
+                            <div class="filter-info">
+                                <div class="filter-count">#{viewUsers.activeUsers}</div>
+                                <div class="filter-label">Active Users</div>
+                            </div>
+                        </p:commandLink>
+
+                        <p:commandLink styleClass="filter-card #{viewUsers.filterType == 'INACTIVE' ? 'active' : ''}" 
+                                       action="#{viewUsers.applyFilter('INACTIVE')}" 
+                                       update=":userManagementForm :userManagementForm:filterCards">
+                            <div class="filter-icon inactive-users">
+                                <i class="pi pi-times-circle"></i>
+                            </div>
+                            <div class="filter-info">
+                                <div class="filter-count">#{viewUsers.inactiveUsers}</div>
+                                <div class="filter-label">Inactive Users</div>
+                            </div>
+                        </p:commandLink>
+
+
+                        <!-- Hidden input for filter type -->
+                        <p:inputText id="filterType" value="#{viewUsers.filterType}" style="display: none;" />
+
+                    </h:panelGroup>
+
+                    <!-- Users Grid -->
+                    <p:outputPanel id="userCardsPanel">
+                        <div class="users-grid">
+                            <ui:repeat value="#{viewUsers.filteredUsers}" var="user">
+                                <div class="user-card">
+                                    <div class="card-actions">
+                                        <p:commandButton icon="pi pi-pencil"
+                                                         title="Edit User"
+                                                         styleClass="card-action-btn edit-action"
+                                                         action="#{viewUsers.openEditDialog(user)}"
+                                                         update="editUserForm:editUserDialog"
+                                                         oncomplete="PF('editUserDialog').show()" />
+
+                                        <p:commandButton icon="pi pi-trash"
+                                                         title="Delete User"
+                                                         styleClass="card-action-btn delete-action"
+                                                         action="#{viewUsers.deleteUser(user)}"
+                                                         update="userManagementForm:userCardsPanel userManagementForm:messages"
+                                                         process="@this">   
+                                            <p:confirm header="Confirm Deletion" 
+                                                       message="Are you sure you want to delete #{user.username}?" 
+                                                       icon="pi pi-exclamation-triangle" />
+                                        </p:commandButton>
+                                    </div>
+
+                                    <div class="user-avatar">
+                                        #{viewUsers.getUserInitials(user)}
+                                    </div>
+
+                                    <div class="user-info">
+                                        <div class="user-name">#{user.username}</div>
+                                        <div class="user-id">ID: #{user.id}</div>
+                                    </div>
+
+                                    <div class="user-details">
+                                        <div class="detail-row">
+                                            <span class="detail-label">
+                                                <i class="pi pi-id-card"></i>
+                                                Ghana Card:
+                                            </span>
+                                            <span class="detail-value">#{user.ghanaCardNumber}</span>
+                                        </div>
+
+                                        <div class="detail-row">
+                                            <span class="detail-label">
+                                                <i class="pi pi-info-circle"></i>
+                                                Status:
+                                            </span>
+                                            <span class="detail-value">
+                                                <span class="status-badge status-#{user.status.name().toLowerCase()}">
+                                                    #{user.status.name()}
+                                                </span>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="role-section">
+                                        <div class="section-header">
+                                            <i class="pi pi-shield"></i>
+                                            <span>Current Role</span>
+                                        </div>
+
+                                        <div class="current-role">
+                                            <span class="role-badge role-#{user.userRole != null ? user.userRole.userRolename.toLowerCase() : 'none'}">
+                                                #{user.userRole != null ? user.userRole.userRolename : 'No Role Assigned'}
+                                            </span>
+                                        </div>
+                                    </div>  
+                                </div>
+                            </ui:repeat>
+
+                            <h:panelGroup rendered="#{empty viewUsers.filteredUsers}">
+                                <div class="no-users">
+                                    <i class="pi pi-users" style="font-size: 3rem; margin-bottom: 20px; display: block;"></i>
+                                    <h3>No users found</h3>
+                                    <p>#{viewUsers.filterType == 'ALL' ? 'No users in the system' : 'No ' += viewUsers.filterType.toLowerCase() += ' users found'}</p>
+                                </div>
+                            </h:panelGroup>
+                        </div>
+                    </p:outputPanel>
+
+                    <!-- Permissions Dialog -->
+                    <p:dialog id="permissionsDialog" 
+                              header="User Permissions" 
+                              widgetVar="permissionsDialog" 
+                              modal="true" 
+                              width="600"
+                              styleClass="permissions-dialog">
+                        <div id="permissionsDialogContent">
+                            <div class="permissions-header">
+                                <div class="user-info-dialog">
+                                    <i class="pi pi-user"></i>
+                                    <div>
+                                        <h4>#{viewUsers.selectedUser.username}</h4>
+                                        <span>Role: #{viewUsers.selectedUser.userRole != null ? viewUsers.selectedUser.userRole.userRolename : 'No Role'}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="permissions-list">
+                                <ui:repeat value="#{viewUsers.selectedUserPermissions}" var="permission">
+                                    <div class="permission-item">
+                                        <i class="pi pi-check permission-icon"></i>
+                                        <div class="permission-details">
+                                            <span class="permission-name">#{permission.displayName}</span>
+                                            <span class="permission-desc">#{permission.pagePath}</span>
+                                        </div>
+                                    </div>
+                                </ui:repeat>
+
+                                <h:panelGroup rendered="#{empty viewUsers.selectedUserPermissions}">
+                                    <div class="no-permissions">
+                                        <i class="pi pi-exclamation-triangle"></i>
+                                        <span>No permissions assigned</span>
+                                    </div>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </p:dialog>
+
+                    <!-- Confirmation Dialog -->
+                    <p:confirmDialog global="true" showEffect="fade" styleClass="modern-confirm-dialog">
+                        <p:commandButton type="button" value="Yes" styleClass="ui-confirmdialog-yes modern-btn primary-btn"/>
+                        <p:commandButton type="button" value="No" styleClass="ui-confirmdialog-no modern-btn secondary-btn"/>
+                    </p:confirmDialog>
+                </h:form>    
+            </div>
+
+            <h:form id="editUserForm">
+                <!-- NEW EDIT USER DIALOG - Single dialog for editing both role and status -->
+                <p:dialog id="editUserDialog" 
+                          header="Edit User" 
+                          widgetVar="editUserDialog" 
+                          modal="true" 
+                          width="500"
+                          styleClass="edit-user-dialog">
+                    <div id="editUserDialogContent">
+                        <div class="edit-dialog-content">
+                            <div class="user-info">
+                                <div class="user-avatar">
+                                    #{viewUsers.selectedUser != null ? viewUsers.getUserInitials(viewUsers.selectedUser) : ''}
+                                </div>
+                                <div>
+                                    <h4>#{viewUsers.selectedUser.username}</h4>
+                                    <span>ID: #{viewUsers.selectedUser.id}</span>
+                                </div>
+                            </div>
+
+                            <!-- ROLE SELECTION -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="pi pi-shield"></i>
+                                    System Role:
+                                </label>
+                                <p:selectOneMenu value="#{viewUsers.selectedUser.userRole}" 
+                                                 styleClass="modern-select"
+                                                 filter="true"
+                                                 filterMatchMode="contains"
+                                                 converter="systemUserRoleConverter">
+                                    <f:selectItem itemLabel="Select Role..." itemValue="#{null}"  noSelectionOption="true"/>
+                                    <f:selectItems value="#{viewUsers.allSystemRoles}"
+                                                   var="role"
+                                                   itemLabel="#{role.userRolename}"
+                                                   itemValue="#{role}" />
+                                </p:selectOneMenu>
+                            </div>
+
+                            <!-- STATUS SELECTION -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="pi pi-info-circle"></i>
+                                    Status:
+                                </label>
+                                <p:selectOneRadio value="#{viewUsers.selectedUser.status}" 
+                                                  styleClass="status-radio"
+                                                  layout="responsive"
+                                                  columns="2">
+                                    <f:selectItem itemLabel="Active" itemValue="ACTIVE" />
+                                    <f:selectItem itemLabel="Inactive" itemValue="INACTIVE" />
+                                </p:selectOneRadio>
+                            </div>
+                        </div>
+                    </div>
+
+                    <f:facet name="footer">
+                        <div class="dialog-footer">
+                            <p:commandButton value="Save Changes" 
+                                             icon="pi pi-save"
+                                             styleClass="modern-btn primary-btn"
+                                             action="#{viewUsers.updateUserRole()}"
+                                             update="userManagementForm:messages :userManagementForm"
+                                             oncomplete="PF('editUserDialog').hide()">
+                            </p:commandButton>
+
+                            <p:commandButton value="Cancel" 
+                                             icon="pi pi-times"
+                                             styleClass="modern-btn secondary-btn"
+                                             type="button"
+                                             onclick="PF('editUserDialog').hide()" />
+                        </div>
+                    </f:facet>
+                </p:dialog> 
+            </h:form>
+
+
+            <style>
+                /* CSS Variables for Consistent Theming */
+                :root {
+                    --primary-color: #667eea;
+                    --primary-hover: #764ba2;
+                    --success-color: #10b981;
+                    --success-hover: #059669;
+                    --danger-color: #ef4444;
+                    --danger-hover: #dc2626;
+                    --warning-color: #f59e0b;
+                    --info-color: #3b82f6;
+                    --gray-50: #f9fafb;
+                    --gray-100: #f3f4f6;
+                    --gray-200: #e5e7eb;
+                    --gray-300: #d1d5db;
+                    --gray-400: #9ca3af;
+                    --gray-500: #6b7280;
+                    --gray-600: #4b5563;
+                    --gray-700: #374151;
+                    --gray-800: #1f2937;
+                    --gray-900: #111827;
+                    --border-radius: 8px;
+                    --border-radius-lg: 12px;
+                    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+                    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+
+                /* Main Container */
+                .user-management-container {
+                    padding: 2rem;
+                    background: var(--gray-50);
+                    min-height: 100vh;
+                    max-width: 1400px;
+                    margin: 0 auto;
+                }
+
+                /* Page Header */
+                .page-header {
+                    text-align: center;
+                    margin-bottom: 2rem;
+                }
+
+                .page-title {
+                    font-size: 2.5rem;
+                    font-weight: 700;
+                    margin-bottom: 0.5rem;
+                    color: var(--gray-800);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 1rem;
+                }
+
+                .page-title i {
+                    color: var(--primary-color);
+                    font-size: 2.25rem;
+                }
+
+                .page-subtitle {
+                    font-size: 1.1rem;
+                    color: var(--gray-600);
+                    font-weight: 400;
+                    margin: 0;
+                }
+
+                /* Filter Cards */
+                .filter-cards {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 1.5rem;
+                    margin-bottom: 2rem;
+                }
+
+                .filter-card {
+                    background: white;
+                    border-radius: var(--border-radius-lg);
+                    padding: 1.5rem;
+                    box-shadow: var(--shadow-md);
+                    border: 2px solid transparent;
+                    cursor: pointer;
+                    transition: var(--transition);
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                }
+
+                .filter-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: var(--shadow-lg);
+                }
+
+                .filter-card.active {
+
+                    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+                }
+
+                .filter-icon {
+                    width: 4rem;
+                    height: 4rem;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.5rem;
+                    color: white;
+                }
+
+                .filter-icon.all-users {
+                    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+                }
+
+                .filter-icon.active-users {
+                    background: linear-gradient(135deg, var(--success-color), var(--success-hover));
+                }
+
+                .filter-icon.inactive-users {
+                    background: linear-gradient(135deg, var(--danger-color), var(--danger-hover));
+                }
+
+                .filter-info {
+                    flex: 1;
+                }
+
+                .filter-count {
+                    font-size: 2rem;
+                    font-weight: 700;
+                    color: var(--gray-800);
+                    line-height: 1;
+                }
+
+                .filter-label {
+                    font-size: 0.875rem;
+                    color: var(--gray-600);
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    letter-spacing: 0.025em;
+                }
+
+                /* Users Grid */
+                .card-actions {
+                    position: absolute;
+                    top: 1rem;
+                    right: 1rem;
+                    display: flex !important;
+                    align-items: center  !important;
+                    justify-content: space-between !important;
+                    gap: 0.5rem;
+                    opacity: 0;
+                    transform: translateY(-10px);
+                    transition: var(--transition);
+                    z-index: 10;
+                }
+
+                .user-card:hover .card-actions {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+
+                .card-action-btn {
+                    width: 2.25rem !important;
+                    height: 2.25rem !important;
+                    border-radius: 50% !important;
+                    border: none !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    transition: var(--transition) !important;
+                    font-size: 0.875rem !important;
+                    box-shadow: var(--shadow-md) !important;
+                    backdrop-filter: blur(10px) !important;
+                }
+
+                .edit-action {
+                    background: rgba(59, 130, 246, 0.9) !important;
+                    color: white !important;
+                }
+
+                .edit-action:hover {
+                    background: var(--primary-color) !important;
+                    transform: scale(1.1) !important;
+                    box-shadow: var(--shadow-lg) !important;
+                }
+
+                .delete-action {
+                    background: rgba(239, 68, 68, 0.9) !important;
+                    color: white !important;
+                }
+
+                .delete-action:hover {
+                    background: var(--danger-color) !important;
+                    transform: scale(1.1) !important;
+                    box-shadow: var(--shadow-lg) !important;
+                }
+
+                .users-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+                    gap: 1.5rem;
+                }
+
+                /* User Card Enhancements */
+                .user-card {
+                    background: rgba(255, 255, 255, 0.95);
+                    border-radius: 20px;
+                    padding: 2rem;
+                    box-shadow: var(--shadow-lg);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    transition: var(--transition);
+                    position: relative;
+                    overflow: hidden;
+                }
+
+                .user-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 4px;
+                    background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
+                    border-radius: 20px 20px 0 0;
+                }
+
+                .user-avatar {
+                    width: 80px;
+                    height: 80px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 1.5rem;
+                    color: white;
+                    font-size: 2rem;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+                }
+
+                .user-info {
+                    text-align: center;
+                    margin-bottom: 1.5rem;
+                }
+
+                .user-name {
+                    font-size: 1.4rem;
+                    font-weight: 600;
+                    color: var(--gray-800);
+                    margin-bottom: 0.5rem;
+                }
+
+                .user-id {
+                    font-size: 0.875rem;
+                    color: var(--gray-500);
+                    font-family: 'Courier New', monospace;
+                    background: var(--gray-100);
+                    padding: 0.25rem 0.5rem;
+                    border-radius: var(--border-radius);
+                    display: inline-block;
+                }
+
+                /* User Details */
+                .user-details {
+                    margin-bottom: 1.5rem;
+                }
+
+                .detail-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 0.75rem;
+                    padding: 0.75rem;
+                    background: var(--gray-50);
+                    border-radius: var(--border-radius);
+                    transition: background-color 0.2s;
+                }
+
+                .detail-row:hover {
+                    background: var(--gray-100);
+                }
+
+                .detail-label {
+                    font-weight: 600;
+                    color: var(--gray-700);
+                    font-size: 0.875rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+
+                .detail-label i {
+                    color: var(--primary-color);
+                }
+
+                .detail-value {
+                    color: var(--gray-600);
+                    font-size: 0.875rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+
+                /* Status Toggle */
+                .status-toggle {
+                    margin-right: 0.5rem;
+                }
+
+                .status-badge {
+                    padding: 0.375rem 0.75rem;
+                    border-radius: 9999px;
+                    font-size: 0.75rem;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    letter-spacing: 0.025em;
+                }
+
+                .status-active {
+                    background: #d1fae5;
+                    color: #065f46;
+                    border: 1px solid #a7f3d0;
+                }
+
+                .status-inactive {
+                    background: #fee2e2;
+                    color: #991b1b;
+                    border: 1px solid #fecaca;
+                }
+
+                /* Role Section */
+                .role-section {
+                    border-top: 1px solid var(--gray-200);
+                    padding-top: 1.5rem;
+                }
+
+                .section-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    margin-bottom: 1rem;
+                    font-weight: 600;
+                    color: var(--gray-700);
+                    font-size: 0.875rem;
+                }
+
+                .section-header i {
+                    color: var(--primary-color);
+                }
+
+                .current-role {
+                    display: flex;
+                    justify-content: center;
+                    margin-bottom: 1.5rem;
+                }
+
+                .role-badge {
+                    padding: 0.5rem 1rem;
+                    border-radius: 9999px;
+                    font-weight: 600;
+                    font-size: 0.75rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.025em;
+                    text-align: center;
+                }
+
+                /*                .role-admin {
+                                    background: linear-gradient(135deg, var(--danger-color), var(--danger-hover));
+                                    color: white;
+                                    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+                                }
+                
+                                .role-user {
+                                    background: linear-gradient(135deg, var(--info-color), #1d4ed8);
+                                    color: white;
+                                    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+                                }
+                
+                                .role-manager {
+                                    background: linear-gradient(135deg, var(--warning-color), #d97706);
+                                    color: white;
+                                    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+                                }*/
+
+                .role-none {
+                    background: var(--gray-200);
+                    color: var(--gray-700);
+                }
+
+                /* Role Assignment */
+                .role-assignment {
+                    space-y: 1rem;
+                }
+
+                .form-group {
+                    margin-bottom: 1rem;
+                }
+
+                .form-label {
+                    display: block;
+                    font-weight: 600;
+                    color: var(--gray-700);
+                    margin-bottom: 0.5rem;
+                    font-size: 0.875rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+
+                .form-label i {
+                    color: var(--primary-color);
+                }
+
+                .modern-select {
+                    width: 100% !important;
+                    padding: 0.75rem !important;
+                    border: 2px solid var(--gray-200) !important;
+                    border-radius: var(--border-radius) !important;
+                    font-size: 0.875rem !important;
+                    transition: var(--transition) !important;
+                    background: white !important;
+                }
+
+                .modern-select:focus {
+                    outline: none !important;
+                    border-color: var(--primary-color) !important;
+                    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+                }
+
+                /* Action Buttons */
+                .action-buttons {
+                    display: flex;
+                    gap: 0.5rem;
+                    flex-wrap: wrap;
+                }
+
+                .update-btn, .view-btn {
+                    padding: 0.75rem 1rem !important;
+                    border-radius: var(--border-radius) !important;
+                    font-weight: 600 !important;
+                    font-size: 0.75rem !important;
+                    transition: var(--transition) !important;
+                    border: none !important;
+                    cursor: pointer !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    gap: 0.5rem !important;
+                    flex: 1;
+                    justify-content: center !important;
+                }
+
+                .update-btn {
+                    background: linear-gradient(135deg, var(--success-color), var(--success-hover)) !important;
+                    color: white !important;
+                }
+
+                .update-btn:hover:not(:disabled) {
+                    background: linear-gradient(135deg, var(--success-hover), #047857) !important;
+                    transform: translateY(-1px) !important;
+                }
+
+                .update-btn:disabled {
+                    opacity: 0.5 !important;
+                    cursor: not-allowed !important;
+                }
+
+                .view-btn {
+                    background: linear-gradient(135deg, var(--info-color), #1d4ed8) !important;
+                    color: white !important;
+                }
+
+                .view-btn:hover {
+                    background: linear-gradient(135deg, #1d4ed8, #1e40af) !important;
+                    transform: translateY(-1px) !important;
+                }
+
+                /* Permissions Dialog */
+                .permissions-dialog .ui-dialog {
+                    border-radius: var(--border-radius-lg) !important;
+                    box-shadow: var(--shadow-lg) !important;
+                    border: none !important;
+                }
+
+                .permissions-header {
+                    padding: 1.5rem;
+                    border-bottom: 1px solid var(--gray-200);
+                    background: var(--gray-50);
+                }
+
+                .user-info-dialog {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                }
+
+                .user-info-dialog i {
+                    width: 3rem;
+                    height: 3rem;
+                    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+                    color: white;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.25rem;
+                }
+
+                .user-info-dialog h4 {
+                    margin: 0;
+                    color: var(--gray-800);
+                    font-size: 1.125rem;
+                }
+
+                .user-info-dialog span {
+                    color: var(--gray-600);
+                    font-size: 0.875rem;
+                }
+
+                .permissions-list {
+                    padding: 1.5rem;
+                    max-height: 400px;
+                    overflow-y: auto;
+                }
+
+                .permission-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    padding: 1rem;
+                    margin-bottom: 0.5rem;
+                    background: var(--gray-50);
+                    border-radius: var(--border-radius);
+                    transition: var(--transition);
+                }
+
+                .permission-item:hover {
+                    background: var(--gray-100);
+                }
+
+                .permission-icon {
+                    color: var(--success-color);
+                    font-size: 1.125rem;
+                }
+
+                .permission-details {
+                    flex: 1;
+                }
+
+                .permission-name {
+                    display: block;
+                    font-weight: 600;
+                    color: var(--gray-800);
+                    margin-bottom: 0.25rem;
+                }
+
+                .permission-desc {
+                    display: block;
+                    font-size: 0.875rem;
+                    color: var(--gray-600);
+                }
+
+                .no-permissions {
+                    text-align: center;
+                    padding: 2rem;
+                    color: var(--gray-500);
+                }
+
+                .no-permissions i {
+                    font-size: 2rem;
+                    margin-bottom: 1rem;
+                    display: block;
+                }
+
+                /* No Users State */
+                .no-users {
+                    text-align: center;
+                    color: var(--gray-500);
+                    padding: 3rem 1rem;
+                    grid-column: 1 / -1;
+                }
+
+                .no-users h3 {
+                    color: var(--gray-700);
+                    margin-bottom: 0.5rem;
+                }
+
+                .no-users p {
+                    color: var(--gray-500);
+                    margin: 0;
+                }
+
+                /* Modern Button Styles */
+                .modern-btn {
+                    padding: 0.15rem 0.5rem !important;
+                    border-radius: 5px !important;
+                    font-weight: 500 !important;
+                    font-size: 0.875rem !important;
+                    transition: var(--transition) !important;
+                    border: none !important;
+                    cursor: pointer !important;
+                    display: inline-flex !important;
+                    align-items: center !important;
+                    gap: 0.2rem !important;
+                }
+
+                .primary-btn {
+                    background: linear-gradient(135deg,  #10b981,#059669) !important;
+                    color: white !important;
+                }
+
+                .secondary-btn {
+                    background: white !important;
+                    color: var(--gray-700) !important;
+                    border: 2px solid var(--gray-300) !important;
+                }
+
+                /* Confirm Dialog */
+                .modern-confirm-dialog .ui-dialog {
+                    border-radius: var(--border-radius-lg) !important;
+                    box-shadow: var(--shadow-lg) !important;
+                }
+
+                /* Responsive Design */
+                @media (max-width: 768px) {
+                    .user-management-container {
+                        padding: 1rem;
+                    }
+
+                    .filter-cards {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .users-grid {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .page-title {
+                        font-size: 1.875rem;
+                        flex-direction: column;
+                        gap: 0.5rem;
+                    }
+
+                    .action-buttons {
+                        flex-direction: column;
+                    }
+
+                    .filter-card {
+                        flex-direction: column;
+                        text-align: center;
+                        gap: 1rem;
+                    }
+
+                    .filter-icon {
+                        width: 3rem;
+                        height: 3rem;
+                        font-size: 1.25rem;
+                    }
+                }
+
+                /* Accessibility */
+                @media (prefers-reduced-motion: reduce) {
+                    * {
+                        animation-duration: 0.01ms !important;
+                        animation-iteration-count: 1 !important;
+                        transition-duration: 0.01ms !important;
+                    }
+                }
+
+                .modern-btn:focus,
+                .filter-card:focus {
+                    outline: 2px solid var(--primary-color) !important;
+                    outline-offset: 2px !important;
+                }
+            </style>
+        </div>
+    </ui:define>
+
+</ui:composition>

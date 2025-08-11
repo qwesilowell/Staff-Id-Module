@@ -58,6 +58,7 @@ public class Employee_Service {
         existing.setEmail(updatedEmployee.getEmail());
         existing.setAddress(updatedEmployee.getAddress());
         existing.setEmploymentStatus(updatedEmployee.getEmploymentStatus());
+        existing.setRole(updatedEmployee.getRole());
 
         // Optional: update phone, role, etc.
         // existing.setPhone(updatedEmployee.getPhone());
@@ -67,7 +68,7 @@ public class Employee_Service {
     public Employee findEmployeeById(int id) {
         return entityManager.find(Employee.class, id);
     }
-    
+
     //Update Employee Custom Entrance
     public Employee updateEmployeeEnt(String ghanaCardNumber, Employee employee) {
         Employee existingEmployee = findEmployeeByGhanaCard(ghanaCardNumber);
@@ -83,7 +84,7 @@ public class Employee_Service {
 
     // Retrieve all Employees
     public List<Employee> findAllEmployees() {
-        return entityManager.createQuery("SELECT e FROM Employee e", Employee.class
+        return entityManager.createQuery("SELECT e FROM Employee e WHERE e.deleted = false ORDER BY e.createdAt DESC", Employee.class
         )
                 .getResultList();
     }
@@ -122,7 +123,8 @@ public class Employee_Service {
     public void deleteEmployee(String ghanaCardNumber) {
         Employee employee = findEmployeeByGhanaCard(ghanaCardNumber);
         if (employee != null) {
-            entityManager.remove(employee);
+            employee.setDeleted(true);
+            entityManager.merge(employee);
         } else {
             throw new EntityNotFoundException("Employee does not exist with Ghana Card number: " + ghanaCardNumber);
         }
@@ -206,19 +208,6 @@ public class Employee_Service {
                 .getResultList();
     }
 
-    public List<Employee> getRecentEmployeesByUser(String userId, int limit) {
-        return entityManager.createQuery(
-                "SELECT e FROM Employee e "
-                + "WHERE e.ghanaCardNumber IN ("
-                + "  SELECT a.targetId FROM ActivityLog a "
-                + "  WHERE a.action = 'create_employee' AND a.userId = :userId"
-                + ") "
-                + "ORDER BY e.createdAt DESC", Employee.class
-        )
-                .setParameter("userId", userId)
-                .setMaxResults(limit)
-                .getResultList();
-    }
 
     // Create
     public EmploymentStatus saveEmploymentStatus(EmploymentStatus status) {
@@ -238,7 +227,7 @@ public class Employee_Service {
 
     // Retrieve all
     public List<EmploymentStatus> findAllEmploymentStatuses() {
-        return entityManager.createQuery("SELECT es FROM EmploymentStatus es", EmploymentStatus.class
+        return entityManager.createQuery("SELECT es FROM EmploymentStatus es  WHERE es.deleted = false", EmploymentStatus.class
         )
                 .getResultList();
     }
@@ -246,7 +235,7 @@ public class Employee_Service {
     // Find by ID
     public EmploymentStatus
             findEmploymentStatusById(int statusId) {
-        return entityManager.createQuery("SELECT es FROM EmploymentStatus es WHERE es.id = :statusId", EmploymentStatus.class
+        return entityManager.createQuery("SELECT es FROM EmploymentStatus es WHERE es.id = :statusId AND es.deleted = false", EmploymentStatus.class
         )
                 .setParameter("statusId", statusId)
                 .getResultStream()
@@ -261,7 +250,8 @@ public class Employee_Service {
             if (isEmploymentStatusInUse(statusId)) {
                 throw new IllegalStateException("Cannot delete employment status in use by employees.");
             }
-            entityManager.remove(status);
+            status.setDeleted(true);
+            entityManager.merge(status);
         } else {
             throw new EntityNotFoundException("Employment status does not exist with ID: " + statusId);
         }

@@ -24,6 +24,7 @@
     <ui:define name ="content">
         <!-- Main Content -->
         <div class="main-content">
+            <h1>All Reports</h1>
             <div class="reportnav">
                 <div class="cards-container">
                     <!-- Card 1 -->
@@ -73,11 +74,11 @@
 
                     <!-- Card 5 -->
                     <div class="card purple">
-                        <h:link  styleClass="no-style" > <!-- Settings Recent logins -->
+                        <h:link outcome="/app/Reports/entranceAccessReport?faces-redirect=true"  styleClass="no-style" > <!-- INCLUDE Recent logins -->
                             <div class="card-content">
-                                <div class="card-title"> Logins Report </div>
+                                <div class="card-title">Entrance Access Report </div>
                                 <br/>
-                                <div class="card-value">Create reports based on logins into the system and times</div>
+                                <div class="card-value">View access reports showing employee entry and exit times.</div>
                             </div>
                             <div class="card-icon">
                                 <i class="fa-regular fa-circle-check"></i>

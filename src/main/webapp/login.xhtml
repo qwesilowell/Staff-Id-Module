@@ -48,6 +48,28 @@
                     console.error('Button element not found');
                 }
             });
+            
+              let cameraOpen = false;
+
+            function toggleCamera() {
+                const cameraBtn = document.getElementById('cameraButton');
+                const captureBtn = document.getElementById('captureButton');
+
+                if (!cameraOpen) {
+                    openCamera(); // existing camera logic
+                    captureBtn.style.display = 'inline-block';
+
+                    cameraBtn.classList.add('camera-button-red');
+                    const buttonSpan = cameraBtn.querySelector('.ui-button-text');
+                    buttonSpan.textContent = 'Reset Camera';
+
+                    
+                    cameraOpen = true;
+                } else {
+                    
+                    openCamera();
+                }
+            }
         </script>
 
 
@@ -56,10 +78,12 @@
     <h:body>
         <!-- Navigation Bar -->
         <div class="navbar">
-            <h2 class="nav-title">STEEL</h2>
-
+            <h2 class="nav-title">STAFF ID MODULE</h2>
+            <p:commandLink value="Login with Email/Password?" 
+                           style="color: white;white-space: nowrap;"
+                           action="#{loginBean.loginWithEmail()}" />
         </div>
-  
+
 <!--        <h:outputText value="#{flash.successMessage}" rendered="#{not empty flash.successMessage}" style="color: green; font-weight: bold; display: block; margin: 10px 0;" />-->
 
         <div class="background"></div>
@@ -153,13 +177,14 @@
 
                                             <div class="button-container">
                                                 <div class="capture-buttons">
-                                                    <p:commandButton value="Open Camera" onclick="openCamera();" type="button" 
-                                                                     styleClass="ui-button-secondary capture-button"/>
-                                                    <p:commandButton value="Capture Face" onclick="capture();" type="button" 
+                                                    <p:commandButton id="cameraButton" value="Open Camera"  type="button" icon="pi pi-camera" iconPos="left"
+                                                                     styleClass="ui-button-secondary capture-button" onclick="toggleCamera()" />
+                                                    
+                                                    <p:commandButton id="captureButton" value="Capture Face" onclick="capture();" type="button" 
                                                                      styleClass="ui-button-secondary capture-button"/>
                                                 </div>
                                                 <p:commandButton value="LOGIN" onclick="saveCroppedImage()" 
-                                                                 action="#{loginBean.verifyFace()}" update="growl" 
+                                                                 action="#{loginBean.verifyFace()}" update="@form" 
                                                                  styleClass="ui-button-success verify-button"/>
                                             </div>
                                         </div>
@@ -288,18 +313,13 @@
                                     <p:commandButton value="Capture Thumbs"  styleClass=" ui-button-secondary ui-button-raised" onclick="doSendNoId('action:start:twoThumbs');" type="button" style="font-size: medium; padding:1px; "/>
                                 </div>
 
-                                <p:commandButton value="LOGIN" action="#{loginBean.sendForVerification()}" update="@form" styleClass="ui-button-success" icon="pi pi-check" iconPos="right" style="margin-left:auto; padding:1px;"/>
+                                <p:commandButton value="LOGIN" action="#{loginBean.sendForVerification()}" update="growl" styleClass="ui-button-success" icon="pi pi-check" iconPos="right" style="margin-left:auto; padding:1px;"/>
 
                             </div>
-
-
-
                         </div>
                     </div>
                 </div>
             </h:form>
         </div>
-
-
     </h:body>
 </html>

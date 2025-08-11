@@ -8,7 +8,6 @@ package com.margins.STIM.rest;
  *
  * @author PhilipManteAsare
  */
-
 import com.margins.STIM.entity.Users;
 import com.margins.STIM.service.User_Service;
 
@@ -31,7 +30,7 @@ public class UserRest {
     @POST
     @Path("/newUser")
     public Response createUser(Users user) {
-      try {
+        try {
             Users createdUser = userService.createUser(user);
             return Response.status(Response.Status.CREATED).entity(createdUser).build();
         } catch (Exception e) {
@@ -48,7 +47,7 @@ public class UserRest {
         return Response.ok(users).build();
     }
 
-     // Retrieve User by Ghana Card Number
+    // Retrieve User by Ghana Card Number
     @GET
     @Path("/{ghanaCardNumber}")
     public Response getUserByGhanaCard(@PathParam("ghanaCardNumber") String ghanaCardNumber) {
@@ -61,7 +60,7 @@ public class UserRest {
         }
     }
 
-   // Update User
+    // Update User
     @PUT
     @Path("/{ghanaCardNumber}")
     public Response updateUser(@PathParam("ghanaCardNumber") String ghanaCardNumber, Users user) {
@@ -70,7 +69,7 @@ public class UserRest {
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity("Ghana Card number in path does not match user data").build();
             }
-            Users updatedUser = userService.updateUser(ghanaCardNumber, user);
+            Users updatedUser = userService.updateUser(user);
             return Response.ok(updatedUser).build();
         } catch (EntityNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
@@ -80,16 +79,24 @@ public class UserRest {
         }
     }
 
- // Delete User
+    // Delete User
     @DELETE
     @Path("/{ghanaCardNumber}")
     public Response deleteUser(@PathParam("ghanaCardNumber") String ghanaCardNumber) {
         try {
-            userService.deleteUser(ghanaCardNumber);
+            Users user = userService.findUserByGhanaCard(ghanaCardNumber);
+            if (user == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity("User not found with Ghana Card number: " + ghanaCardNumber).build();
+            }
+
+            userService.deleteUser(user);
             return Response.ok("User deleted successfully with Ghana Card number: " + ghanaCardNumber).build();
-        } catch (EntityNotFoundException e) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity("User not found with Ghana Card number: " + ghanaCardNumber).build();
+
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error deleting user: " + e.getMessage()).build();
         }
     }
+
 }

@@ -69,7 +69,7 @@ public class LiveMonitoringBean implements Serializable {
     }
 
     public String getFormattedTimestamp(AccessLog log) {
-        return DateFormatter.formatDateTime(log.getTimestamp());
+        return DateFormatter.forDateTimes(log.getTimestamp());
     }
 
 }

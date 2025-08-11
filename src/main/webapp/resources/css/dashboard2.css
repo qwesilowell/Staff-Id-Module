@@ -8,13 +8,100 @@ body {
     height: 100vh; /* Ensure the body fills the viewport */
 }
 
+/* Header right section - contains notification and user menu */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 25px; 
+}
+
+.notification-bell {
+    position: relative;
+    font-size: 24px;
+    color: #ffcc00;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.notification-bell-button {
+    position: relative;
+    background: none !important;
+    border: none !important;
+    padding: 5px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.notification-bell .notification-badge,
+.notification-bell-button .notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    z-index: 1003;
+}
+
+.notification-bell:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 50% !important;
+}
+
+.notification-badge {
+    position: absolute !important;
+    top: 5px !important;
+    right: -10px !important;
+    font-size: 0.75rem !important;
+    font-weight: bold !important;
+    background-color: red !important;
+    color: white !important;
+    border-radius: 8px !important;
+    min-width: 12px !important;
+    height: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 2px 4px !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+    line-height: 1 !important;
+    z-index: 1000 !important; /* Ensure it stays on top */
+}
+
+.initials-button {
+    width: 40px !important;
+    height: 40px !important;
+    background-color: #0d3c61 !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.initials-button:hover {
+    background-color: #0a2d47 !important;
+}
+
 .custom-label {
-    font-weight: bold; /* Make the text bold */
-    background-color: #f0f8ff; /* Light background color */
-    padding: 10px; /* Add some padding */
-    border-radius: 5px; /* Rounded corners */
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3); /* Shadow effect */
-    color: #333; /* Text color */
+    font-weight: bold;
+    background-color: #f0f8ff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    color: #333;
 }
 
 /* Top Navigation Bar */
@@ -31,25 +118,38 @@ body {
     top: 0;
     left: 0;
     z-index: 1000;
+    box-sizing: border-box;
 }
 
 /* Sidebar Navigation */
+/* Sidebar hidden by default (off the screen) */
 .sidebar {
-    background-color: whitesmoke;
+    background-color: transparent !important;
     width: 280px;
     height: calc(100vh - 55px); /* Occupy full height minus the topbar */
     position: fixed;
     top: 55px;
     left: 0;
-    transition: transform 0.3s;
+    transition: transform 0.3s ease-in-out;
     overflow-y: auto;
     padding: 10px;
+
+    transform: translateX(-100%); /* Start hidden */
+    z-index: 1000;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
 }
+
+/* Sidebar when visible */
+.sidebar.active {
+    transform: translateX(0); /* Slide into view */
+    background-color: transparent !important;
+}
+
 
 /* Main Content Section */
 .main-content {
-    margin-left: 130px; /* Ensure it doesn't overlap the sidebar */
-    padding: 10px;
+/*    margin-left: 130px;  Ensure it doesn't overlap the sidebar */
+    padding: 3px;
     margin-bottom:1px !important;
 /*    position: relative; */
     min-height: calc(100vh - 55px - 50px); /* Adjust to fit the screen excluding topbar and footer */
@@ -111,7 +211,7 @@ body {
 }
 
 .dropdown-content a:hover {
-    background: red;
+    background: red !important;
     color: white;
 }
 
@@ -124,7 +224,7 @@ body {
 
 /* Sidebar Toggle Button (For Mobile) */
 .toggle-button {
-    display: none;
+    display: block;
     background: none;
     border: none;
     font-size: 24px;
@@ -139,7 +239,7 @@ body {
     padding: 10px;
     position: fixed;
     bottom: 0;
-    width: calc(100% - 280px); /* Matches main content width */
+/*    width: calc(100% - 280px);  Matches main content width */
     left: 280px;
 }
 .initials-button {
@@ -172,7 +272,7 @@ body {
     border-bottom: 1px solid #dee2e6 !important;
     padding: 10px 10px !important; 
     margin-bottom: 0 !important; 
-    margin-left: 280px !important;
+/*    margin-left: 280px !important;*/
     margin-top: 55px !important;
     transition: margin-left 0.3s ease;
 
@@ -217,7 +317,41 @@ body {
 
 
 
+.sidebar {
+    transform: translateX(-300px);
+}
 
+.sidebar.active {
+    transform: translateX(0);
+    background-color: transparent !important; /* Optional: improve visibility */
+    z-index: 1000;
+}
+
+.main-content.sidebar-active {
+    margin-left: 280px; /* Adjust to match sidebar width */
+}
+
+/*.main-content,
+.layout-footer,
+.breadcrumb-container {
+    transition: margin-left 0.3s ease-in-out;
+}*/
+
+/*.main-content.sidebar-active,
+.layout-footer.sidebar-active,
+.breadcrumb-container.sidebar-active {
+    margin-left: 280px;  match sidebar width 
+}*/
+
+
+.layout-footer.sidebar-active {
+    left: 280px;
+    width: calc(100% - 280px);
+}
+
+.breadcrumb-container.sidebar-active {
+    margin-left: 280px !important;
+}
 
 /* Responsive Design (For Smaller Screens) */
 @media (max-width: 900px) {

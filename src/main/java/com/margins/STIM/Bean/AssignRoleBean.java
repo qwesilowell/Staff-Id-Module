@@ -7,6 +7,9 @@ package com.margins.STIM.Bean;
 import com.margins.STIM.entity.EmployeeRole;
 import com.margins.STIM.entity.Entrances;
 import com.margins.STIM.entity.RoleTimeAccess;
+import com.margins.STIM.entity.enums.ActionResult;
+import com.margins.STIM.entity.enums.AuditActionType;
+import com.margins.STIM.service.AuditLogService;
 
 import com.margins.STIM.service.EmployeeRole_Service;
 import com.margins.STIM.service.EntrancesService;
@@ -51,7 +54,11 @@ public class AssignRoleBean implements Serializable {
 
     @Inject
     private TimeAccessRuleService timeAccessRuleService;
-    
+    @Inject
+    private AuditLogService auditLogService;
+    @Inject
+    private UserSession userSession;
+
     @Inject
     private BreadcrumbBean breadcrumbBean;
 
@@ -60,7 +67,6 @@ public class AssignRoleBean implements Serializable {
     private List<EmployeeRole> assignedRoles;
     private EmployeeRole selectedEmployeeRoleId;
 
-   
     private List<String> selectedEntranceIds;
 
     private List<EmployeeRole> allRoles;
@@ -103,7 +109,6 @@ public class AssignRoleBean implements Serializable {
         breadcrumbBean.setAssignRolesToEntrancesBreadcrumb();
     }
 
-    
     public List<Entrances> getAllEntrances() {
         return entrancesService.findAllEntrances();
     }
@@ -130,7 +135,7 @@ public class AssignRoleBean implements Serializable {
                 // Only add if not already associated
                 if (!existingRoles.contains(role)) {
                     existingRoles.add(role);
-                    entrance.setAllowedRoles(existingRoles); // Optional but good practice
+                    entrance.setAllowedRoles(existingRoles);
 
                     Set<Entrances> accessibleEntrances = role.getAccessibleEntrances();
                     if (accessibleEntrances == null) {
@@ -145,8 +150,11 @@ public class AssignRoleBean implements Serializable {
                 }
             }
 
-            // Save the entrance (optional)
+            // Save the entrance 
             entrancesService.save(entrance);
+            String detail = "Assigned Roles to " + entrance.getEntranceName() + ".";
+            auditLogService.logActivity(AuditActionType.CREATE, "Assign Roles To Entrance", ActionResult.SUCCESS, detail, userSession.getCurrentUser());
+
             loadAssignedRoles();
 
             FacesContext.getCurrentInstance().addMessage(null,
@@ -154,6 +162,9 @@ public class AssignRoleBean implements Serializable {
         } else {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "Select an entrance and at least one role"));
+            String detail = "Failed to Assign Roles.";
+            auditLogService.logActivity(AuditActionType.CREATE, "Assign Roles To Entrance", ActionResult.FAILED, detail, userSession.getCurrentUser());
+
         }
     }
 
@@ -164,12 +175,12 @@ public class AssignRoleBean implements Serializable {
     }
 
     public void loadAssignedRoles() {
-        if (selectedEntrance != null) { 
+        if (selectedEntrance != null) {
             if (selectedEntrance != null) {
                 assignedRoles = new ArrayList<>(selectedEntrance.getAllowedRoles());
-                
+
                 availableRolesForSelection = allRoles.stream()
-                        .filter(role -> assignedRoles.stream().noneMatch(ar -> ar.getId()==(role.getId())))
+                        .filter(role -> assignedRoles.stream().noneMatch(ar -> ar.getId() == (role.getId())))
                         .collect(Collectors.toList());
                 checkTimeRulesForAssignedRoles();
             } else {
@@ -268,11 +279,16 @@ public class AssignRoleBean implements Serializable {
     public void saveDayTimeRules() {
         if (validateTimeRule()) {
             timeAccessRuleService.saveOrUpdateRoleTimeAccess(currentRole, selectedEntrance, startTimes, endTimes, selectedDays);
+
+            String details = "Created a day and time access for " + currentRole.getRoleName() + " at " + selectedEntrance.getEntranceName() + ".";
+            auditLogService.logActivity(AuditActionType.CREATE, "Assign Roles to Entrance", ActionResult.SUCCESS, details, userSession.getCurrentUser());
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_INFO, "Saved", "Day time access rules saved successfully."));
             timeRuleValid = true;
             refreshTimeRuleStatus();
         } else {
+            String details = "Failed to create a day and time access for " + currentRole.getRoleName() + " at " + selectedEntrance.getEntranceName() + ".";
+            auditLogService.logActivity(AuditActionType.CREATE, "Assign Roles to Entrance", ActionResult.FAILED, details, userSession.getCurrentUser());
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed To Save."));
             timeRuleValid = false;
@@ -328,9 +344,12 @@ public class AssignRoleBean implements Serializable {
     }
 
     public void removeRole() {
-        if (selectedEntranceId != 0 && currentRole != null) {
-            employeeRoleService.removeRoleAccessWithTimeRules(currentRole.getId(), selectedEntranceId);
-            Entrances ent = entrancesService.findEntranceById(selectedEntranceId);
+        if (selectedEntrance != null && currentRole != null) {
+            employeeRoleService.removeRoleAccessWithTimeRules(currentRole, selectedEntrance);
+            Entrances ent = selectedEntrance;
+
+            String detail = "Removed Role " + currentRole.getRoleName() + " from accesing" + selectedEntrance.getEntranceName() + ".";
+            auditLogService.logActivity(AuditActionType.CREATE, "Assign Roles To Entrance", ActionResult.SUCCESS, detail, userSession.getCurrentUser());
 
             loadAssignedRoles();
 

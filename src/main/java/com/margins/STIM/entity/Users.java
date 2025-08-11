@@ -5,9 +5,9 @@
 package com.margins.STIM.entity;
 
 //import com.margins.STIM.enums.EntityModel;
+import com.margins.STIM.entity.enums.UserStatus;
 import com.margins.STIM.entity.enums.UserType;
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,4 +32,11 @@ public class Users extends EntityModel implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "USER_ROLE")
     private UserType userType;
+    
+    @Enumerated(EnumType.STRING)
+    private UserStatus status = UserStatus.ACTIVE;
+    
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private SystemUserRoles userRole;
 }

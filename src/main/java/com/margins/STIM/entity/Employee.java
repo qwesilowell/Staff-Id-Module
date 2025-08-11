@@ -66,12 +66,15 @@ public class Employee implements Serializable {
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = true)
     private EmployeeRole role;
+    
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted = false;
 
     @ManyToMany
     @JoinTable(
             name = "employee_entrance_access",
-            joinColumns = @JoinColumn(name = "GHANA_CARD_NUMBER"),
-            inverseJoinColumns = @JoinColumn(name = "entrance_device_id")
+            joinColumns = @JoinColumn(name = "EMPLOYEE_ID"),
+            inverseJoinColumns = @JoinColumn(name = "ENTRANCE_DEVICE_ID")
     )
     private List<Entrances> customEntrances = new ArrayList<>();
 

@@ -76,7 +76,7 @@ public class DeviceServiceImpl implements DeviceService {
     
     @Override
     public List<Devices> getAllDevices() {
-        return em.createQuery("SELECT d FROM Devices d WHERE d.deleted = false", Devices.class)
+        return em.createQuery("SELECT d FROM Devices d WHERE d.deleted = false ORDER BY d.createdAt DESC", Devices.class)
                 .getResultList();
     }
 
@@ -88,7 +88,7 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     public List<Devices> getDevicesByEntrance(int id) {
-        return em.createQuery("SELECT d FROM Devices d WHERE d.entrance.id = :id AND d.deleted = false", Devices.class)
+        return em.createQuery("SELECT d FROM Devices d WHERE d.entrance.id = :id AND d.deleted = false ORDER BY d.createdAt DESC", Devices.class)
                 .setParameter("id", id)
                 .getResultList();
     }
@@ -104,7 +104,7 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
-    public void deleteDevice(String deviceId) {
+    public void deleteDevice(int deviceId) {
         Devices device = em.find(Devices.class, deviceId);
         if (device != null) {
             device.setDeleted(true);

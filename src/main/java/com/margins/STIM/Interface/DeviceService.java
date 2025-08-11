@@ -25,5 +25,5 @@ public interface DeviceService {
     
     List<Devices> searchDevices(String query);
 
-    void deleteDevice(String deviceId);
+    void deleteDevice(int deviceId);
 }

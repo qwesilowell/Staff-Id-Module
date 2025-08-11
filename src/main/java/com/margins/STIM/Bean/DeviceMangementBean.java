@@ -7,7 +7,10 @@ package com.margins.STIM.Bean;
 import com.margins.STIM.Interface.DeviceService;
 import com.margins.STIM.entity.Devices;
 import com.margins.STIM.entity.Entrances;
+import com.margins.STIM.entity.enums.ActionResult;
+import com.margins.STIM.entity.enums.AuditActionType;
 import com.margins.STIM.entity.enums.DevicePosition;
+import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.EntrancesService;
 import com.margins.STIM.util.JSF;
 import jakarta.annotation.PostConstruct;
@@ -15,8 +18,11 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.Serializable;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,7 +46,12 @@ public class DeviceMangementBean implements Serializable {
 
     @Inject
     private DeviceService deviceService;
-
+    @Inject
+    private BreadcrumbBean breadcrumbBean;
+    @Inject
+    private AuditLogService auditLogService;
+    @Inject
+    private UserSession userSession;
     @Inject
     private EntrancesService entranceService;
 
@@ -75,6 +86,8 @@ public class DeviceMangementBean implements Serializable {
     public void saveDevice() {
         try {
             if (!validateDeviceData()) {
+                String details = "Device data validation failed.";
+                auditLogService.logActivity(isNewDevice() ? AuditActionType.CREATE : AuditActionType.UPDATE, "Manage Devices", ActionResult.FAILED, details, userSession.getCurrentUser());
                 return;
             }
 
@@ -86,10 +99,14 @@ public class DeviceMangementBean implements Serializable {
                 // This is a new device - use registerDevice (persist)
                 deviceService.registerDevice(device);
                 devices.add(device);
+                String successDetail = "Successfully added new "+ device.getDevicePosition()+" device with ID: " + device.getId()+ " for "+ device.getEntrance().getEntranceName();
+                auditLogService.logActivity(AuditActionType.CREATE, "Manage Devices", ActionResult.SUCCESS, successDetail, userSession.getCurrentUser());
                 JSF.addSuccessMessage("Device added successfully.");
             } else {
                 // This is an existing device - use updateDevice (merge)
                 deviceService.updateDevice(device);
+                String successDetail = "Successfully updated " + device.getDevicePosition() + " device with ID: " + device.getId() + " for "+ device.getEntrance().getEntranceName();
+                auditLogService.logActivity(AuditActionType.UPDATE, "Save Device", ActionResult.SUCCESS, successDetail, userSession.getCurrentUser());
                 // Update the device in the list
                 updateDeviceInList(device);
                 JSF.addSuccessMessage("Device updated successfully.");
@@ -98,6 +115,10 @@ public class DeviceMangementBean implements Serializable {
             reset();
            filterDevices("all");
         } catch (Exception e) {
+            String errorDetail = "Failed to save device with ID: " + (device.getId() != 0 ? device.getId() : "Unknown") + ". Error: " + e.getMessage();
+            auditLogService.logActivity(isNewDevice() ? AuditActionType.CREATE : AuditActionType.UPDATE, "Save Device", ActionResult.FAILED, errorDetail, userSession.getCurrentUser());
+
+            
             JSF.addErrorMessage("Error saving device: " + e.getLocalizedMessage());
             e.printStackTrace(); // Add this for debugging
         }
@@ -145,11 +166,29 @@ public class DeviceMangementBean implements Serializable {
         this.selectedEntrance = selected.getEntrance();
     }
 
-    public void deleteDevice(Devices selected) {
-        deviceService.deleteDevice(selected.getDeviceId());
+   public void deleteDevice(Devices selected) {
+    try {
+        if (selected == null || selected.getId()== 0) {
+            String details = "No device selected for deletion.";
+            auditLogService.logActivity(AuditActionType.DELETE, "Delete Device", ActionResult.FAILED, details, userSession.getCurrentUser());
+            JSF.addErrorMessage("No device selected for deletion.");
+            return;
+        }
+
+        deviceService.deleteDevice(selected.getId());
+        
+        String successDetail = "Successfully deleted "+selected.getDevicePosition() + " device with ID: " + selected.getDeviceId() + " for "+ selected.getEntrance().getEntranceName();
+        auditLogService.logActivity(AuditActionType.DELETE, "Delete Device", ActionResult.SUCCESS, successDetail, userSession.getCurrentUser());
+        
         devices = deviceService.getAllDevices();
         JSF.addWarningMessage("Device is deleted.");
+    } catch (Exception e) {
+        String errorDetail = "Failed to delete device with ID: " + (selected != null ? selected.getDeviceId() : "Unknown") + ". Error: " + e.getMessage();
+        auditLogService.logActivity(AuditActionType.DELETE, "Delete Device", ActionResult.FAILED, errorDetail, userSession.getCurrentUser());
+        
+        JSF.addErrorMessage("Error deleting device: " + e.getLocalizedMessage());
     }
+}
 
     public void saveAllDevices() {
         try {
@@ -216,30 +255,43 @@ public class DeviceMangementBean implements Serializable {
         return devices.stream().filter(d -> d.getEntrance() == null).count();
     }
 
-    public void filterDevices(String filterType) {
-        this.currentFilter = filterType;
+   public void filterDevices(String filterType) {
+    this.currentFilter = filterType;
 
-        switch (filterType.toLowerCase()) {
-            case "entry":
-                filteredDevices = devices.stream()
-                        .filter(d -> d.getDevicePosition() == DevicePosition.ENTRY)
-                        .collect(Collectors.toList());
-                break;
-            case "exit":
-                filteredDevices = devices.stream()
-                        .filter(d -> d.getDevicePosition() == DevicePosition.EXIT)
-                        .collect(Collectors.toList());
-                break;
-            case "unassigned":
-                filteredDevices = devices.stream()
-                        .filter(d -> d.getEntrance() == null)
-                        .collect(Collectors.toList());
-                break;
-            default:
-                filteredDevices = new ArrayList<>(devices);
-                break;
-        }
+    Comparator<Devices> byRecentActivityDesc = Comparator
+        .comparing(
+            d -> Optional.ofNullable(d.getUpdatedAt())
+                         .orElse(d.getCreatedAt().toInstant()
+                                          .atZone(ZoneId.systemDefault())
+                                          .toLocalDateTime()),
+            Comparator.reverseOrder()
+        );
+
+    switch (filterType.toLowerCase()) {
+        case "entry":
+            filteredDevices = devices.stream()
+                    .filter(d -> d.getDevicePosition() == DevicePosition.ENTRY)
+                    .sorted(byRecentActivityDesc)
+                    .collect(Collectors.toList());
+            break;
+        case "exit":
+            filteredDevices = devices.stream()
+                    .filter(d -> d.getDevicePosition() == DevicePosition.EXIT)
+                    .sorted(byRecentActivityDesc)
+                    .collect(Collectors.toList());
+            break;
+        case "unassigned":
+            filteredDevices = devices.stream()
+                    .filter(d -> d.getEntrance() == null)
+                    .sorted(byRecentActivityDesc)
+                    .collect(Collectors.toList());
+            break;
+        default:
+            filteredDevices = new ArrayList<>(devices);
+            filteredDevices.sort(byRecentActivityDesc);
+            break;
     }
+}
 
     public List<Devices> getFilteredDevices() {
         if (filteredDevices == null) {
@@ -278,4 +330,7 @@ public class DeviceMangementBean implements Serializable {
         JSF.addSuccessMessageWithSummary("Reset.....", "Form reseted.");
     }
 
+    public void setupBreadcrumb() {
+        breadcrumbBean.setManageEntrancesDevices();
+    }
 }

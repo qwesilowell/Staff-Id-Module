@@ -8,14 +8,14 @@
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets">
-    
+
     <ui:define name="metadata">
         <f:metadata>
             <f:viewAction action="#{employeeRoleAssignmentBean.setupBreadcrumb}" />
         </f:metadata>
     </ui:define>
-    
-    <ui:define name="title">Assign Role to Employee</ui:define>
+
+    <ui:define name="title">Update Employee Role</ui:define>
 
     <ui:define name="metadata"></ui:define>
     <ui:define name ="content">
@@ -23,76 +23,77 @@
         <!-- Main Content -->
         <div class="main-content">
             <h:form id="assignRoleForm">
-                <h3>Assign Role to Employee</h3>
+                <h2>Update Employee Role</h2>
 
-                
-                    <h:panelGroup layout="block" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
 
-                        <p:inputText id="searchQuery" value="#{employeeRoleAssignmentBean.searchQuery}"
-                                     placeholder="Search by Name or Ghana Card"
-                                     styleClass="search-box">
-                            <p:ajax event="keyup" listener="#{employeeRoleAssignmentBean.findEmployee}" update="employeeTable"/>
-                        </p:inputText>
-                        <p:button value="Add New Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" styleClass="add-role-btn"/>
-                    </h:panelGroup>
+                <h:panelGroup layout="block" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+
+                    <p:inputText id="searchQuery" value="#{employeeRoleAssignmentBean.searchQuery}"
+                                 placeholder="Search by Name or Ghana Card"
+                                 styleClass="search-box">
+                        <p:ajax event="keyup" listener="#{employeeRoleAssignmentBean.findEmployee}" update="employeeTable"/>
+                    </p:inputText>
+                    <p:button value="Add New Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" styleClass="add-role-btn" 
+                              icon="pi pi-plus" iconPos="left"/>
+                </h:panelGroup>
 
                 <p:spacer height="30px"/>
 
-           
 
-                 
 
-                 
 
-                    <p:dataTable id="employeeTable" value="#{employeeRoleAssignmentBean.employees}" var="employee" paginator="true" paginatorPosition="bottom" rows="10" 
-                                 rowIndexVar="rowIndex"  rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">  
-                        <p:column headerText="Ghana Card Number">
-                            <h:outputText value="#{employee.ghanaCardNumber}"/>
-                        </p:column>
-                        <p:column headerText="Employee Name">
-                            <h:outputText value="#{employee.firstname} #{employee.lastname}"/>
-                        </p:column>
-                        <p:column headerText="Current Role">
-                            <h:outputText value="#{employee.role != null ? employee.role.roleName : 'No Role Assigned'}"/>
-                        </p:column>
-                        <p:column headerText="Action">
-                            <p:commandButton value="Update Role" icon="pi pi-user-edit"
-                                             actionListener="#{employeeRoleAssignmentBean.prepareAssignRole(employee)}"
-                                             update=":assignRoleForm:assignRoleDialog :assignRoleForm:selectedEmployeeName :assignRoleForm:roleSelect"
-                                             oncomplete="PF('assignRoleDialogWidget').show()"/>
-                        </p:column>
-                    </p:dataTable>
 
-                    <p:dialog id="assignRoleDialog" widgetVar="assignRoleDialogWidget" header="Assign Role" modal="true" closable="false">
-                        <h:panelGrid columns="2" cellpadding="5">
-                            <h:outputLabel value="Employee:"/>
-                            <h:outputText id="selectedEmployeeName" value="#{employeeRoleAssignmentBean.selectedEmployee != null ? employeeRoleAssignmentBean.selectedEmployee.firstname.concat(' ').concat(employeeRoleAssignmentBean.selectedEmployee.lastname) : 'No Employee Selected'}"/>
 
-                            <h:outputLabel for="roleSelect" value="Select Role:"/>
-                            <p:selectOneMenu id="roleSelect" value="#{employeeRoleAssignmentBean.selectedRoleId}" style="width: 100%;">
-                                <f:selectItem itemLabel="Select Role" itemValue="" noSelectionOption="true"/>
-                                <f:selectItems value="#{employeeRoleAssignmentBean.roles}" var="role" itemLabel="#{role.roleName}" itemValue="#{role.id}"/>
-                            </p:selectOneMenu>
-                        </h:panelGrid>
 
-                        <f:facet name="footer">
-                            <p:commandButton value="Confirm" icon="pi pi-check"
-                                             actionListener="#{employeeRoleAssignmentBean.assignRoleToEmployee}" 
-                                             update="assignRoleForm employeeTable messages"
-                                             oncomplete="PF('assignRoleDialogWidget').hide()"/>
+                <p:dataTable id="employeeTable" value="#{employeeRoleAssignmentBean.employees}" var="employee" paginator="true" paginatorPosition="bottom" rows="10" 
+                             rowIndexVar="rowIndex"  rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">  
+                    <p:column headerText="Ghana Card Number">
+                        <h:outputText value="#{employee.ghanaCardNumber}"/>
+                    </p:column>
+                    <p:column headerText="Employee Name">
+                        <h:outputText value="#{employee.firstname} #{employee.lastname}"/>
+                    </p:column>
+                    <p:column headerText="Current Role">
+                        <h:outputText value="#{employee.role != null ? employee.role.roleName : 'No Role Assigned'}"/>
+                    </p:column>
+                    <p:column headerText="Action">
+                        <p:commandButton value="Update Role" icon="pi pi-user-edit"
+                                         actionListener="#{employeeRoleAssignmentBean.prepareAssignRole(employee)}"
+                                         update=":assignRoleForm:assignRoleDialog :assignRoleForm:selectedEmployeeName :assignRoleForm:roleSelect"
+                                         oncomplete="PF('assignRoleDialogWidget').show()"/>
+                    </p:column>
+                </p:dataTable>
 
-                            <p:commandButton value="Cancel" icon="pi pi-times" style="margin-left:10px" styleClass="ui-button-secondary"
-                                             onclick="PF('assignRoleDialogWidget').hide()" type="button"/>
-                        </f:facet>
-                    </p:dialog>
+                <p:dialog id="assignRoleDialog" widgetVar="assignRoleDialogWidget" header="Assign Role" modal="true" closable="false">
+                    <h:panelGrid columns="2" cellpadding="5">
+                        <h:outputLabel value="Employee:"/>
+                        <h:outputText id="selectedEmployeeName" value="#{employeeRoleAssignmentBean.selectedEmployee != null ? employeeRoleAssignmentBean.selectedEmployee.firstname.concat(' ').concat(employeeRoleAssignmentBean.selectedEmployee.lastname) : 'No Employee Selected'}"/>
 
-                    <p:growl id="messages" widgetVar="fgrowl" showSummary= "false" showDetail="true"  life="6000" globalOnly="true" />
+                        <h:outputLabel for="roleSelect" value="Select Role:"/>
+                        <p:selectOneMenu id="roleSelect" value="#{employeeRoleAssignmentBean.selectedRoleId}" style="width: 100%;">
+                            <f:selectItem itemLabel="Select Role" itemValue="" noSelectionOption="true"/>
+                            <f:selectItems value="#{employeeRoleAssignmentBean.roles}" var="role" itemLabel="#{role.roleName}" itemValue="#{role.id}"/>
+                        </p:selectOneMenu>
+                    </h:panelGrid>
+
+                    <f:facet name="footer">
+                        <p:commandButton value="Confirm" icon="pi pi-check"
+                                         actionListener="#{employeeRoleAssignmentBean.assignRoleToEmployee}" 
+                                         update="assignRoleForm employeeTable messages"
+                                         oncomplete="PF('assignRoleDialogWidget').hide()"/>
+
+                        <p:commandButton value="Cancel" icon="pi pi-times" style="margin-left:10px" styleClass="ui-button-secondary"
+                                         onclick="PF('assignRoleDialogWidget').hide()" type="button"/>
+                    </f:facet>
+                </p:dialog>
+
+                <p:growl id="messages" widgetVar="fgrowl" showSummary= "false" showDetail="true"  life="6000" globalOnly="true" />
             </h:form>
         </div>
 
         <style>
             body {
-                font-family: Arial, sans-serif;         
+                font-family: Arial, sans-serif;
                 margin: 0;
                 padding: 20px 20px 20px 0px;
             }
@@ -115,15 +116,17 @@
                 border: 1px solid #ccc;
             }
             .add-role-btn {
-                background: #28a745;
-                color: white;
-                padding: 5px 10px;
-                border-radius: 4px;
+                background: linear-gradient(to bottom, #28a745, #218838)!important;
+                color: white !important;
+                padding: 5px 10px !important;
+                border-radius: 4px !important;
+                border: none !important;
             }
+
             .add-role-btn:hover {
-                background: #218838;
+                background: linear-gradient(to bottom, #218838, #1e7e34) !important;
             }
-           
+
             .assign-role-btn {
                 background: #ffc107;
                 color: black;

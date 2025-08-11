@@ -114,18 +114,30 @@ public class BreadcrumbBean implements Serializable {
         addBreadcrumb("Entrances", null);
         addBreadcrumb("Manage Entrances", null, true);
     }
+    
+    public void setManageEntrancesDevices() {
+        resetToDashboard();
+        addBreadcrumb("Entrances", null);
+        addBreadcrumb("Manage Entrance Devices", null, true);
+    }
 
     public void setAccessControlBreadcrumb() {
         resetToDashboard();
         addBreadcrumb("Entrance Test", null);
         addBreadcrumb("Entrance Access Test", null, true);
     }
+    
+    public void setEntranceStateBreadCrumb() {
+        resetToDashboard();
+        addBreadcrumb("Entrances", null);
+        addBreadcrumb("Manage Employee States", null, true);
+    }
 
     // Users Section
     public void setCreateNewUserBreadcrumb() {
         resetToDashboard();
-        addBreadcrumb("Users", null);
-        addBreadcrumb("Create New User", null, true);
+        addBreadcrumb("Settings", contextPath + "/app/Settings/settingsPage.xhtml?faces-redirect=true");
+        addBreadcrumb("Create Users", null, true);
     }
 
     // Monitoring and Reports Section
@@ -174,5 +186,49 @@ public class BreadcrumbBean implements Serializable {
         addBreadcrumb("Monitoring and Reports", contextPath + "/app/Reports/Reports?faces-redirect=true");
         addBreadcrumb("Reports", contextPath + "/app/Reports/Reports?faces-redirect=true");
         addBreadcrumb("Logins Report", null, true);
+    }
+
+    //Settings Page
+    public void setSettingsPage() {
+        resetToDashboard();
+        addBreadcrumb("Settings", null,true);
+    }
+    
+    public void setUserManagementPage() {
+        resetToDashboard();
+        addBreadcrumb("Settings", contextPath + "/app/Settings/settingsPage.xhtml?faces-redirect=true");
+        addBreadcrumb("User Management", null, true);
+    }
+    
+    public void setActivityLogPage() {
+        resetToDashboard();
+        addBreadcrumb("Settings", contextPath + "/app/Settings/settingsPage.xhtml?faces-redirect=true");
+        addBreadcrumb("Activity Log", null, true);
+    }
+    
+    public void setAnomalyInformationPage() {
+        resetToDashboard();
+        addBreadcrumb("Settings", contextPath + "/app/Settings/settingsPage.xhtml?faces-redirect=true");
+        addBreadcrumb("Anomaly Information", null, true);
+    }
+    
+    public void setDeveloperTools() {
+        resetToDashboard();
+        addBreadcrumb("Settings", contextPath + "/app/Settings/settingsPage.xhtml?faces-redirect=true");
+        addBreadcrumb("Developer Tools", null, true);
+    }
+    
+    public void setCreateUserRole() {
+        resetToDashboard();
+        addBreadcrumb("Settings", contextPath + "/app/Settings/settingsPage.xhtml?faces-redirect=true");
+        addBreadcrumb("User Role and Page Management", null, true);
+    }
+    
+    
+    
+     //Anomaly BreadCrumb
+    public void setAnomalyPage() {
+        resetToDashboard();
+        addBreadcrumb("Anomaly page", null, true);
     }
 }

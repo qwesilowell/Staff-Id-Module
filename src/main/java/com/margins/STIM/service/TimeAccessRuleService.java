@@ -61,7 +61,8 @@ public class TimeAccessRuleService {
     
     private RoleTimeAccess findByRoleEntranceAndDay(EmployeeRole role, Entrances entrance, DayOfWeek day) {
         try {
-            return em.createQuery("SELECT r FROM RoleTimeAccess r WHERE r.employeeRole = :role AND r.entrances = :entrance AND r.dayOfWeek = :day", RoleTimeAccess.class)
+            return em.createQuery("SELECT r FROM RoleTimeAccess r WHERE r.employeeRole = :role AND r.entrances = :entrance AND r.dayOfWeek = :day"
+                    + " AND r.deleted = false", RoleTimeAccess.class)
                     .setParameter("role", role)
                     .setParameter("entrance", entrance)
                     .setParameter("day", day)
@@ -72,17 +73,11 @@ public class TimeAccessRuleService {
     }
     
     public List<RoleTimeAccess> findByRoleAndEntrance(EmployeeRole role, Entrances entrance) {
-        return em.createQuery("SELECT r FROM RoleTimeAccess r WHERE r.employeeRole = :role AND r.entrances = :entrance", RoleTimeAccess.class)
+        return em.createQuery("SELECT r FROM RoleTimeAccess r WHERE r.employeeRole = :role AND r.entrances = :entrance"
+                + " AND r.deleted = false", RoleTimeAccess.class)
                 .setParameter("role", role)
                 .setParameter("entrance", entrance)
                 .getResultList();
-    }
-    
-    public void deleteTimeRules(EmployeeRole role, Entrances entrance) {
-        List<RoleTimeAccess> timeAccessList = findByRoleAndEntrance(role, entrance);
-        for (RoleTimeAccess rta : timeAccessList) {
-            em.remove(rta);
-        }
     }
     
     public void saveOrUpdateCustomTimeAccess(Employee employee, Entrances entrance,
@@ -151,4 +146,11 @@ public class TimeAccessRuleService {
         }
     }
 
+    public long countCustomTimeAccessRules() {
+        return em.createQuery("SELECT COUNT(c) FROM CustomTimeAccess c", Long.class).getSingleResult();
+    }
+
+    public long countRoleTimeAccessRules() {
+        return em.createQuery("SELECT COUNT(r) FROM RoleTimeAccess r", Long.class).getSingleResult();
+    }
 }

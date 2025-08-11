@@ -17,11 +17,11 @@
 
     <ui:define name ="title">Manage Entrances</ui:define>
 
-    <ui:define name ="metadata">
+<!--    <ui:define name ="metadata">
         <f:metadata>
-            <f:viewAction action="#{loginBean.checkAccess('ADMIN')}" />
+            <f:viewAction action="#-{loginBean.checkAccess('ADMIN')}" />
         </f:metadata>
-    </ui:define>
+    </ui:define>-->
 
     <ui:define name ="content">
         <!-- Main Content -->
@@ -96,7 +96,7 @@
                 <!-- Add/Edit Entrance Dialog -->
                 <p:dialog id="entranceDialog" widgetVar="entranceDialogWidget" header="Entrance Details" modal="true" closable="false">
                     <h:panelGrid columns="2">
-                        <h:outputLabel value="Device ID:"/>
+                        <h:outputLabel value="ENTRANCE ID:"/>
                         <p:inputText value="#{entranceBean.selectedEntrance.entranceDeviceId}"/>
 
                         <h:outputLabel value="Name:"/>
@@ -117,14 +117,14 @@
                                          actionListener="#{entranceBean.saveOrUpdateEntrance}"
                                          update="messages entranceTable"
                                          oncomplete="PF('entranceDialogWidget').hide()"
-                                         style="background: #007bff; color: white; border-radius: 4px;"
+                                         style="background: #28a745; color: white; border-radius: 4px;"
                                          rendered="#{empty entranceBean.selectedEntrance.entranceDeviceId}" />
 
                         <p:commandButton value="Update" icon="pi pi-check"
                                          actionListener="#{entranceBean.updateEntrance}"
                                          update="messages entranceTable"
                                          oncomplete="PF('entranceDialogWidget').hide()"
-                                         style="background: #007bff; color: white; border-radius: 4px;"
+                                         style="background: linear-gradient(to bottom, #28a745, #218838); color: white; border-radius: 4px;"
                                          rendered="#{not empty entranceBean.selectedEntrance.entranceDeviceId}" /> <!-- Only show when editing -->
 
                         <p:commandButton value="Cancel" icon="pi pi-times" onclick="PF('entranceDialogWidget').hide()" style="margin-left: 5px;"/>
@@ -137,7 +137,7 @@
                     <p:commandButton value="No" onclick="PF('deleteConfirmDialogWidget').hide()" style="margin-left: 5px;"/>
                 </p:confirmDialog>
 
-                <p:messages id="messages" showSummary= "false" showDetail="true" closable="true"/>
+                <p:growl id="messages" showSummary= "false" showDetail="true" />
             </h:form>
         </div>
 

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
+-->
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{auditLogBean.setupBreadcrumb}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="title">System Settings</ui:define>
+
+    <ui:define name ="content">
+        <!-- Main Content -->
+        <div class="main-content">
+            <h:form id="auditLogForm">
+                <h1>All Activities</h1>
+                <p:panel header="Filters" id="filterPanel" 
+                         styleClass="filter-panel" toggleable="true" collapsed="false">
+                    <p:panelGrid columns="4">
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter by Users</p:outputLabel>
+                            <p:autoComplete id="userSelect" value="#{auditLogBean.selectedUser}" 
+                                            completeMethod="#{auditLogBean.completeUsers}"
+                                            var="user" itemLabel="#{user.username}- #{user.userType}" itemValue="#{user}"
+                                            forceSelection="true" 
+                                            dropdown="true"
+                                            cache="false"
+                                            scrollHeight="200" 
+                                            converter="userConverter"
+                                            placeholder="Filter by User" style="width: 100%;"/>
+                        </p:outputPanel>
+
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter by ActionType: </p:outputLabel>
+                            <p:selectOneMenu value="#{auditLogBean.selectedAction}" style="width: 100%;">
+                                <f:selectItem itemLabel="All Actions" itemValue="#{null}" />
+                                <f:selectItems value="#{auditLogBean.actionTypes}" var="action" 
+                                               itemLabel="#{action}" itemValue="#{action}" />
+                            </p:selectOneMenu>
+                        </p:outputPanel>
+
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter by Result</p:outputLabel>
+                            <p:selectOneMenu value="#{auditLogBean.selectedResult}" style="width: 100%;">
+                                <f:selectItem itemLabel="All Results" itemValue="#{null}" />
+                                <f:selectItems value="#{auditLogBean.resultTypes}" var="res" 
+                                               itemLabel="#{res}" itemValue="#{res}" />
+                            </p:selectOneMenu>
+                        </p:outputPanel>
+
+                        <p:outputPanel>
+                            <p:outputLabel for="@next">Filter  by date</p:outputLabel>
+                            <p:datePicker selectionMode="range" monthNavigator="true" yearNavigator="true" showButtonBar="true" value="#{auditLogBean.timeRange}" style="width: 100%"/>
+                        </p:outputPanel>
+
+                    </p:panelGrid>
+
+                    <br/>
+                    <div style="display: flex; justify-content: space-between;">
+                        <p:commandButton value="Reset" action="#{auditLogBean.reset()}" update="@form" 
+                                         icon="fa fa-spinner" iconPos="left" 
+                                         styleClass="ui-button-raised ui-button-danger" style="margin-left: 1%"/>
+                        <!-- Search Button -->
+                        <p:commandButton value="Filter" actionListener="#{auditLogBean.filterLogs}" 
+                                         icon="pi pi-search" 
+                                         update="@form" styleClass="ui-button-raised ui-button-success" style="margin-right: 1%"/>
+                    </div>
+                </p:panel>
+
+
+                <p:panel header="Activity Logs" styleClass="glass-panel">
+
+                    <p:dataTable value="#{auditLogBean.allLogs}" var="log" paginator="true" paginatorPosition="bottom" rows="10"
+                                 styleClass="modern-table" rowKey="#{log.id}" >
+
+                        <p:column headerText="ID" width="4%">
+                            #{log.id}
+                        </p:column>
+
+                        <p:column headerText="Action" width="10%">
+                            #{log.action}
+                        </p:column>
+
+                        <p:column headerText="Timestamp" width="20%">
+                            <h:outputText value="#{auditLogBean.getFormatTime(log)}">
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Details" width="25%">
+                            #{log.details}
+                        </p:column>
+
+                        <p:column headerText="Page" width="15%">
+                            #{log.entityName}
+                        </p:column>
+
+                        <p:column headerText="Result" width="10%">
+                            <span style="color: #{log.result eq 'SUCCESS' ? 'green' : 'red'}">
+                                #{log.result}
+                            </span>
+                        </p:column>
+
+                        <p:column headerText="Performed By" width="15%">
+                            #{log.performedBy.username}
+                        </p:column>
+
+                    </p:dataTable>
+
+                </p:panel>
+            </h:form>
+        </div>
+
+        <style>
+            .modern-table {
+                border-radius: 12px;
+                box-shadow: var(--shadow-medium);
+                background: var(--glass-bg);
+            }
+
+            .glass-panel {
+                backdrop-filter: blur(8px);
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 16px;
+                padding: 1rem;
+                margin-top: 1rem;
+            }
+
+        </style>
+    </ui:define>
+
+</ui:composition>

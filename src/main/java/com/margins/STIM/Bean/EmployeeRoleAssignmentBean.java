@@ -6,6 +6,9 @@ package com.margins.STIM.Bean;
 
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.EmployeeRole;
+import com.margins.STIM.entity.enums.ActionResult;
+import com.margins.STIM.entity.enums.AuditActionType;
+import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.EmployeeRole_Service;
 import com.margins.STIM.service.Employee_Service;
 import java.io.Serializable;
@@ -30,6 +33,11 @@ public class EmployeeRoleAssignmentBean implements Serializable {
     
     @Inject 
     private BreadcrumbBean breadcrumbBean;
+    
+    @Inject
+    private AuditLogService auditLogService;
+    @Inject
+    private UserSession userSession;
 
     private List<Employee> employees;
     private List<EmployeeRole> roles;
@@ -90,9 +98,13 @@ public class EmployeeRoleAssignmentBean implements Serializable {
                 return;
             }
 
+            String oldRole = selectedEmployee.getRole().getRoleName();
             selectedEmployee.setRole(role);
             employeeService.updateEmployee(selectedEmployee.getGhanaCardNumber(), selectedEmployee);
 
+           String details = "Role updated for " +selectedEmployee.getFullName() + " from " +oldRole+ " to " + selectedEmployee.getRole().getRoleName() + ".";
+           auditLogService.logActivity(AuditActionType.UPDATE, "Update Employee Role", ActionResult.SUCCESS, details, userSession.getCurrentUser());
+           
             // Update employees list to reflect change
             employees = employeeService.findAllEmployees();
 
@@ -101,6 +113,10 @@ public class EmployeeRoleAssignmentBean implements Serializable {
 
         } catch (Exception e) {
             String errorMessage = "Error assigning role: " + e.getMessage();
+            
+            String details = "Failed to Update Role for " + selectedEmployee.getFullName() + " reason "+e.getMessage()+ ".";
+            auditLogService.logActivity(AuditActionType.UPDATE, "Update Employee Role", ActionResult.FAILED, details, userSession.getCurrentUser());
+            
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", errorMessage));
             e.printStackTrace();

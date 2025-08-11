@@ -1,15 +1,442 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
--->
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <title>TODO supply a title</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    </head>
-    <body>
-        <div>TODO write content</div>
-    </body>
-</html>
+
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{anomalyBean.setupBreadcrumb()}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="title">System Settings</ui:define>
+
+    <ui:define name ="content">
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1>Settings</h1>
+            <div class="reportnav">
+                <div class="cards-container">
+                    <!-- Card 1 -->
+                    <h:panelGroup>
+
+                        <div class="card blue expandable-card"  data-card-id="user-management">
+                            <div class="card-header" onclick="toggleCardExpansion('user-management')">
+                                <div class="card-content">
+                                    <div class="card-title">User Management</div>
+                                    <div class="card-description">
+                                        Manage system users
+                                    </div>
+                                </div>
+
+                                <div class="card-icon">
+                                    <i class="pi pi-users"></i>
+                                </div>
+                                <i class="pi pi-chevron-down dropdown-toggle-icon"></i>
+
+                            </div>
+                        </div>
+
+                        <!-- Sub-cards for User Management -->
+                        <div class="sub-card" data-parent="user-management">
+                            <h:link outcome="/app/Settings/newuser?faces-redirect=true" styleClass="sub-card-header">
+                                <div class="sub-card-icon">
+                                    <i class="pi pi-user-plus"></i>
+                                </div>
+                                <div class="sub-card-content">
+                                    <div class="sub-card-title">Create New User</div>
+                                    <div class="sub-card-description">Add new users to the system with role assignments</div>
+                                </div>
+                            </h:link>
+                        </div>
+
+
+                        <div class="sub-card" data-parent="user-management">
+                            <h:link outcome="/app/Settings/viewUsers?faces-redirect=true" styleClass="sub-card-header">
+                                <div class="sub-card-icon">
+                                    <i class="pi pi-users"></i>
+                                </div>
+                                <div class="sub-card-content">
+                                    <div class="sub-card-title">View/Edit Users</div>
+                                    <div class="sub-card-description">Browse and modify existing user accounts</div>
+                                </div>
+                            </h:link>
+                        </div>
+
+                        <div class="sub-card" data-parent="user-management">
+                            <h:link outcome="/app/Settings/createUserRoles?faces-redirect=true" styleClass="sub-card-header">
+                                <div class="sub-card-icon">
+                                    <i class="pi pi-lock"></i>
+                                </div>
+                                <div class="sub-card-content">
+                                    <div class="sub-card-title">Role Permissions</div>
+                                    <div class="sub-card-description">Configure access levels and permissions for user roles</div>
+                                </div>
+                            </h:link>
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- Card 2 -->
+                    <div class="card orange">
+                        <h:link outcome="/app/Settings/activitylog?faces-redirect=true" styleClass="no-style" >
+                            <div class="card-content">
+                                <div class="card-title">Activity Log </div>
+                                <br/>
+                                <div class="card-value">View all users recent activity </div>
+                            </div>
+                            <div class="card-icon">
+                                <i class="fa fa-chart-line"></i>
+                            </div>
+                        </h:link>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="card green">
+                        <h:link outcome="/app/Reports/entrancesReport?faces-redirect=true" styleClass="no-style" >
+                            <div class="card-content">
+                                <div class="card-title">Anomaly Information </div>
+                                <br/>
+                                <div class="card-value">Description of anomaly</div>
+                            </div>
+                            <div class="card-icon">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                        </h:link>
+                    </div>
+
+                    <!-- Card 5 -->
+                    <ui:fragment rendered="#{userSession.userRoleName() == 'SUPER ADMIN'}">
+                        <div class="card purple">
+                            <h:link outcome="/app/Settings/developerTools?faces-redirect=true"  styleClass="no-style" > <!-- INCLUDE Recent logins -->
+                                <div class="card-content">
+                                    <div class="card-title">Developer Tools  </div>
+                                    <br/>
+                                    <div class="card-value">For Super Admin eyes only.</div>
+                                </div>
+                                <div class="card-icon">
+                                    <i class="fa-solid fa-screwdriver-wrench"></i>
+                                </div>
+                            </h:link>
+                        </div>
+                    </ui:fragment>
+                </div>
+            </div>
+
+            <style>
+
+
+                /* Enhanced expandable cards system */
+                .reportnav {
+                    max-width: 100%;
+                    margin-top: 50px;
+                    margin-bottom: 3rem;
+                }
+
+
+                .cards-container {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
+
+                }
+
+                .card {
+                    background-color: #FBFCF8;
+                    border-radius: 10px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                    padding: 20px;
+                    justify-content: space-between;
+                    align-items: center;
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                    height: 170px;
+                    margin-left: 20px;
+                    width: 70%;
+                }
+
+                .card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+                }
+                .card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    bottom: 0;
+                    width: 5px; /* Width of the border */
+                    background: linear-gradient(to bottom, #0000FF, #87CEEB); /* Gradient from dark blue to light blue */
+                    border-top-left-radius: 8px; /* Match the card's border radius */
+                    border-bottom-left-radius: 8px; /* Match the card's border radius */
+                }
+
+                .card-header {
+                    padding: 1rem !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    position: relative;
+                    transition: all 0.3s ease;
+                    min-height: 120px;
+                    text-decoration: none !important;
+                    color: inherit !important;
+                    width: 100%;
+                }
+
+                .expandable-card .card-header {
+                    cursor: pointer;
+                }
+
+                .expandable-card .card-header:hover {
+                    background: rgba(255, 255, 255, 0.1);
+                }
+
+                .card-icon {
+                    font-size: 24px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 50%;
+                }
+
+                .card-content {
+                    flex: 1;
+                }
+
+                .card-title {
+                    font-size: 1.6rem !important;
+                    font-weight: 700 !important;
+                    color: #2d3748 !important;
+                    margin-bottom: 0.5rem;
+                }
+
+                .card-description {
+                    font-size: 1.1rem;
+                    color: #718096 !important;
+                    line-height: 1.5;
+                }
+
+                .card-value {
+                    font-size: 1.1rem;
+                    color: #718096 !important;
+                    line-height: 1.5;
+                }
+
+                .dropdown-toggle-icon {
+                    font-size: 1.3rem !important;
+                    color: #4a5568 !important;
+                    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    margin-left: 1rem;
+                    flex-shrink: 0;
+                }
+
+                .expandable-card.expanded .dropdown-toggle-icon {
+                    transform: rotate(180deg);
+                }
+
+                /* Sub-cards that appear underneath */
+                .sub-card {
+                    background: rgba(255, 255, 255, 0.85);
+                    backdrop-filter: blur(8px);
+                    border-radius: 16px;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    margin-left: 2rem;
+                    margin-right: 2rem;
+                    overflow: hidden;
+                    transform: translateY(-20px) scale(0.95);
+                    opacity: 0;
+                    max-height: 0;
+                    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+
+                .sub-card.show {
+                    transform: translateY(0) scale(1);
+                    opacity: 1;
+                    max-height: 200px;
+                    margin-top: -0.5rem;
+                    margin-bottom: 1rem;
+                }
+
+                .sub-card:hover {
+                    transform: translateY(-3px) scale(1);
+                    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+                    background: rgba(255, 255, 255, 0.95);
+                }
+
+                .sub-card-header {
+                    padding: 1.5rem 2rem !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    text-decoration: none !important;
+                    color: inherit !important;
+                    transition: all 0.3s ease;
+                    width: 100%;
+                }
+                .sub-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    bottom: 0;
+                    width: 5px; /* Width of the border */
+                    background: linear-gradient(to bottom, #0000FF, #87CEEB); /* Gradient from dark blue to light blue */
+                    border-top-left-radius: 8px; /* Match the card's border radius */
+                    border-bottom-left-radius: 8px; /* Match the card's border radius */
+                }
+
+                .sub-card-icon {
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.3rem;
+                    margin-right: 1rem;
+                    color: #4299e1;
+                    background: linear-gradient(135deg, #ebf8ff, #bee3f8);
+                    flex-shrink: 0;
+                }
+
+                .sub-card-content {
+                    flex: 1;
+                }
+
+                .sub-card-title {
+                    font-size: 1.2rem;
+                    font-weight: 600;
+                    color: #2d3748;
+                    margin-bottom: 0.25rem;
+                }
+
+                .sub-card-description {
+                    font-size: 0.9rem;
+                    color: #718096;
+                }
+
+                /* Color variations for main cards */
+                .card.blue .card-icon {
+                    color: #4299e1 !important;
+                    background: linear-gradient(135deg, #ebf8ff, #bee3f8) !important;
+                }
+
+                .card.green .card-icon {
+                    color: red !important;
+                    background: linear-gradient(135deg, #f0fff4, #c6f6d5) !important;
+                }
+
+                .card.orange .card-icon {
+                    color: #ed8936 !important;
+                    background: linear-gradient(135deg, #fffaf0, #fbd38d) !important;
+                }
+
+                .card.purple .card-icon {
+                    color: #9f7aea !important;
+                    background: linear-gradient(135deg, #faf5ff, #e9d8fd) !important;
+                }
+
+                .card.teal .card-icon {
+                    color: #38b2ac !important;
+                    background: linear-gradient(135deg, #e6fffa, #81e6d9) !important;
+                }
+
+                /* Remove conflicting styles */
+                .no-style {
+                    display: flex !important;
+                    justify-content: space-between !important;
+                    text-decoration: none !important;
+                    color: inherit !important;
+                    width: 100%;
+                    height: 100%;
+                }
+
+                /* Responsive design */
+                @media (max-width: 768px) {
+                    .main-content h2 {
+                        font-size: 2rem;
+                        margin-bottom: 2rem;
+                    }
+
+                    .card-header {
+                        display: flex;
+                        flex-wrap: wrap;
+                        align-items: center;
+                        justify-content: space-between;
+                        gap: 10px;
+                    }
+
+                    .card-content {
+                        flex: 1;
+                        min-width: 200px;
+                    }
+                    .card-icon {
+                        margin-right: 0 !important;
+                        margin-bottom: 0.5rem;
+                    }
+
+                    .card-title {
+                        font-size: 1.4rem !important;
+                    }
+
+                    .sub-card {
+                        margin-left: 1rem;
+                        margin-right: 1rem;
+                    }
+
+                    .sub-card-header {
+                        padding: 1.25rem 1.5rem !important;
+                    }
+
+                    .dropdown-toggle-icon {
+                        font-size: 1.5rem;
+                        margin-left: 10px;
+                        color: white;
+                    }
+                }
+
+                /* Loading animation for cards */
+                .card {
+                    animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+                }
+
+                .card:nth-child(1) {
+                    animation-delay: 0s;
+                }
+                .card:nth-child(2) {
+                    animation-delay: 0.1s;
+                }
+                .card:nth-child(3) {
+                    animation-delay: 0.2s;
+                }
+                .card:nth-child(4) {
+                    animation-delay: 0.3s;
+                }
+                .card:nth-child(5) {
+                    animation-delay: 0.4s;
+                }
+
+                @keyframes slideInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(30px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+            </style>
+
+            <h:outputScript library="js" name="settingsMenu.js"/>
+            <script>
+
+            </script>
+
+        </div>
+    </ui:define>
+</ui:composition>

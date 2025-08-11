@@ -19,40 +19,67 @@
 
     <ui:define name ="content">
         <h:outputStylesheet library="css" name= "roleReport.css"/>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0">
+
+        </script>
+        <h:outputScript library="js" name="roleReport.js" target="body"/>
+        <h:outputScript library="js" name="chartExport.js" target="body"/>
+
+
         <!--Main Content --> 
         <div class="main-content">
             <h:form id="roleForm">
                 <p:growl id="messages" showSummary= "true" showDetail="true" life="3000" />
-                <h3>ROLES REPORT</h3>
+
+                <div style="display: flex; justify-content: space-between;">
+                    <h3>ROLES REPORT</h3>
+                    <p:inputText class="top5RolesHidden" value="#{roleReportController.employeeRoles}" style="display: none;" />
+                    <p:inputText class="top5entranceAccessToRolesHidden" value="#{roleReportController.entrancePerRole}" style="display: none;"   />
+                    
+                    <div style="text-align: center; margin-top: 1rem;">
+                    <p:commandButton value="Export to PDF" 
+                                     icon="pi pi-file-pdf" 
+                                     styleClass="ui-button-success"
+                                     action="#{roleReportController.export()}"
+                                     ajax="false"/>
+                    </div>
+                </div>
+
 
                 <h:outputLabel styleClass="LABEL">ROLES OVERVIEW</h:outputLabel>
-                <br/><br/>
-                <p:panel header="Number of Employees per Role" style="margin-bottom:2em;" toggleable="true" >
-                    <p:barChart model="#{roleReportController.employeeCountBarModel}" style="height: 400px;"
-                                widgetVar="roleChart" >
-                        <p:ajax event="itemSelect"
-                                listener="#{roleReportController.onChartItemSelect}"
-                                update="roleForm:roleTable"
-                                oncomplete="scrollToSelectedRow()" /> <!--PF('roleTable').filter();-->
-                    </p:barChart>                
-                </p:panel>
+                <p:spacer height="30px"/>
 
-                <p:panel header="Accessible Entrances per Role" style="margin-bottom:2em;" toggleable="true">
-                    <p:barChart model="#{roleReportController.entranceCountBarModel}"  style="height: 400px;">
-                        <p:ajax event="itemSelect"
-                                listener="#{roleReportController.onChartItemSelect}"
-                                update="roleForm:roleTable"
-                                oncomplete="scrollToSelectedRow()" />
-                    </p:barChart>
-                </p:panel>
+                <br/><br/>
+                <div style="display: flex; justify-content: space-between">
+                    <p:panel header="Top 5 Employees Role Distribution" style="margin-bottom:2em;" toggleable="true" >
+                        <p:pieChart class="top5Roles" model="#{roleReportController.top5roles}" style="height: 300px;">
+                            <p:ajax event="itemSelect"
+                                    listener="#{roleReportController.onChartItemSelect}"
+                                    update="roleForm:roleTable roleForm:selectedRowIndex"
+                                    oncomplete="scrollToSelectedRow()" /> 
+                        </p:pieChart>
+                    </p:panel>
+
+                    <p:panel header="Top 5 Roles With Most Entrance Access" style="margin-bottom:2em;" toggleable="true" >
+                        <p:pieChart class="top5entranceAccessToRoles" model="#{roleReportController.top5entranceAccessToRoles}" style="height: 300px;">
+                            <p:ajax event="itemSelect"
+                                    listener="#{roleReportController.onChartItemSelect}"
+                                    update="roleForm:roleTable roleForm:selectedRowIndex"
+                                    oncomplete="scrollToSelectedRow()" /> 
+                        </p:pieChart>
+                    </p:panel>
+                </div>
+
+                <h:inputHidden id="selectedRowIndex" value="#{roleReportController.selectedRowIndex}" />
 
                 <p:dataTable id="roleTable" widgetVar="roleTable" value="#{roleReportController.allRoles}" var="rc" styleClass="ui-datatable" 
                              paginator="true" paginatorPosition="bottom"  
                              rowIndexVar="rowIndex"   rows="10" rowKey="#{rc.role.id}"
                              rowStyleClass="#{rc.role.roleName eq roleReportController.selectedRoleName ? 'highlighted-row scroll-target' : (rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row')}"
                              filteredValue="#{roleReportController.filteredRoles}">
+                    <p:ajax event="page" oncomplete="scrollToSelectedRow()" />
 
-                    <f:attribute name="selectedRoleId" value="#{rc.role.roleName}" />
+<!--                    <f:attribute name="selectedRoleId" value="#{rc.role.roleName}" />-->
 
 
                     <p:column headerText="Role Name" 
@@ -122,6 +149,15 @@
                         </ui:repeat>
                     </div>
                     <br/>
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <p:commandButton value="Export to PDF" 
+                                         icon="pi pi-file-pdf" 
+                                         styleClass="ui-button-success"
+                                         action="#{roleReportController.exportEmployeesInRole()}"
+                                         ajax="false"
+                                         oncomplete="PF('employeesDialog').hide();">
+                        </p:commandButton>
+                    </div>
                 </p:dialog>
 
                 <p:dialog header="ACCESSIBLE ENTRANCES" widgetVar="entranceDialog" id="entranceDialog" modal="true" class="custom-dialog">
@@ -148,6 +184,16 @@
                         </ui:repeat>
                     </div>
                     <br/>
+                    
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <p:commandButton value="Export to PDF" 
+                                         icon="pi pi-file-pdf" 
+                                         styleClass="ui-button-success"
+                                         action="#{roleReportController.exportAccessibleEntrancePerRole()}"
+                                         ajax="false"
+                                         oncomplete="PF('entranceDialog').hide();">
+                        </p:commandButton>
+                    </div>
                 </p:dialog>
 
 
@@ -179,16 +225,6 @@
                     </div>
                 </p:dialog>
 
-                <h:outputScript>
-                    function scrollToSelectedRow() {
-                    setTimeout(function() {
-                    let row = document.querySelector('.scroll-target');
-                    if (row) {
-                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                    }, 300);
-                    }
-                </h:outputScript>
             </h:form>
         </div>
     </ui:define>

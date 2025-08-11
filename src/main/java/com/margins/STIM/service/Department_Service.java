@@ -85,7 +85,8 @@ public class Department_Service {
     public void deleteDepartment(Long departmentId) {
         Department department = entityManager.find(Department.class, departmentId);
         if (department != null) {
-            entityManager.remove(department);
+            department.setDeleted(true);
+            entityManager.merge(department);
         } else {
             throw new EntityNotFoundException("Department with ID " + departmentId + " not found.");
         }

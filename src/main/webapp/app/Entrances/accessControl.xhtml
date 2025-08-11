@@ -20,6 +20,7 @@
             <h:form id="theForm" class="ui-container" prependId="false">
                 <p:growl widgetVar="fgrowl" id="growl" showDetail="true" life="3000" />
 
+                <h1 style="display: flex; align-content: center; justify-content: center;">Access Control Test</h1>
                 <p:panel header="ACCESS CONTROL TEST" style="width: 600px; margin: auto; margin-top:50px; height:auto; text-align: center;">
 
                     <!-- Searchable Dropdown for Entrances -->
@@ -33,9 +34,10 @@
                                     forceSelection="true"
                                     dropdown="true"
                                     placeholder="Type to search devices..."
+                                    scrollHeight="200"
                                     minQueryLength="1"
-                                    style="width: 100%;">
-                        <f:converter converterId="deviceConverter" />
+                                    style="width: 100%; overflow: hidden">
+                    <f:converter converterId="deviceConverter" />
                     </p:autoComplete>
 
                     <br/><br/><br/>

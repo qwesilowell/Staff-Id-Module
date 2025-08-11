@@ -85,7 +85,8 @@ public class Office_Service {
     public void deleteOffice(Long officeId) {
         Office office = entityManager.find(Office.class, officeId);
         if (office != null) {
-            entityManager.remove(office);
+            office.setDeleted(true);
+            entityManager.merge(office);
         } else {
             throw new EntityNotFoundException("Office with ID " + officeId + " not found.");
         }

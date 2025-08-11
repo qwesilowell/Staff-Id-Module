@@ -4,7 +4,9 @@
  */
 package com.margins.STIM.util;
 
+import java.util.Arrays;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -22,5 +24,10 @@ public class ValidationUtil {
         return reg.matcher(ghanaCardNumber).matches();
     }
     
-    
+    public static String beautifyEnumName(Enum<?> e) {
+        String name = e.toString().toLowerCase().replace('_', ' ');
+        return Arrays.stream(name.split(" "))
+                .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1))
+                .collect(Collectors.joining(" "));
+    }
 }

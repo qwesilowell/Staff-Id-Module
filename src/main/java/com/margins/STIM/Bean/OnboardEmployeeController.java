@@ -9,11 +9,14 @@ import com.margins.STIM.entity.ActivityLog;
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.EmployeeRole;
 import com.margins.STIM.entity.EmploymentStatus;
+import com.margins.STIM.entity.enums.ActionResult;
+import com.margins.STIM.entity.enums.AuditActionType;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.entity.websocket.FingerCaptured;
 import com.margins.STIM.model.CapturedFinger;
 import com.margins.STIM.service.ActivityLogService;
+import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.EmployeeRole_Service;
 import com.margins.STIM.service.Employee_Service;
 import com.margins.STIM.util.DateFormatter;
@@ -86,6 +89,9 @@ public class OnboardEmployeeController implements Serializable {
     @Inject
     private BreadcrumbBean breadcrumbBean;
 
+    @Inject
+    private AuditLogService auditLogService;
+
     @Getter
     @Setter
     VerificationResultData callBack = new VerificationResultData();
@@ -157,6 +163,9 @@ public class OnboardEmployeeController implements Serializable {
     @Inject
     private EmployeeRole_Service roleService;
 
+    @Inject
+    private UserSession userSession;
+
     @Getter
     @Setter
     private Employee newEmployee = new Employee();
@@ -189,6 +198,12 @@ public class OnboardEmployeeController implements Serializable {
     @Getter
     @Setter
     private String secondaryPhone;
+    @Getter
+    @Setter
+    private EmployeeRole selectedRole;
+    @Getter
+    @Setter
+    private Integer assignedRoleId;
 
     @PostConstruct
     public void init() {
@@ -390,15 +405,16 @@ public class OnboardEmployeeController implements Serializable {
     public void loadAvailableRoles() {
         this.availableRoles = roleService.findAllEmployeeRoles(); // or any logic to get DB roles
     }
+
     public List<EmployeeRole> getAvailableRoles() {
         return availableRoles; // fetched once when button is clicked
     }
-    public List <EmploymentStatus> getavailableStatuses(){
+
+    public List<EmploymentStatus> getavailableStatuses() {
         this.availableStatuses = employeeService.findAllEmploymentStatuses();
         return availableStatuses;
     }
-    
-    
+
     public void sendForVerification() throws IOException {
         try {
 
@@ -512,12 +528,6 @@ public class OnboardEmployeeController implements Serializable {
         }
 
     }
-    @Getter
-    @Setter
-    private EmployeeRole selectedRole;
-    @Getter
-    @Setter
-    private Integer assignedRoleId;
 
     public void assignRole() {
 
@@ -579,9 +589,9 @@ public class OnboardEmployeeController implements Serializable {
             JSF.addErrorMessage("Enter Employee's Phone number");
             return;
         }
-  
+
         try {
-            Employee newEmployee = new Employee();
+            newEmployee = new Employee();
             newEmployee.setGhanaCardNumber(ghanaCardNumber);
             newEmployee.setFirstname(forenames);
             newEmployee.setLastname(surname);
@@ -599,21 +609,9 @@ public class OnboardEmployeeController implements Serializable {
 
             employeeService.saveEmployee(newEmployee); //
 
-            String userId = (String) FacesContext.getCurrentInstance()
-                    .getExternalContext()
-                    .getSessionMap()
-                    .get("username");
-            if (userId == null) {
-                userId = "Unknown"; // Fallback if no user is logged in
-            } // Replace with actual user ID (e.g., from session)
-            String action = "create_employee";
-            String targetId = ghanaCardNumber;
-            result = "success";
-            String details = "Created employee: " + forenames + " " + surname;
-            ActivityLog log = new ActivityLog(userId, action, targetId, result, details);
-            activityLogService.logActivity(log);
-            System.out.println("Logging activity: " + details);
-            
+            String details = "Created employee: " + forenames + " " + surname + "" + "with GhanaCardNumber " + ghanaCardNumber;
+
+            auditLogService.logActivity(AuditActionType.CREATE, "Onboard Employee Page", ActionResult.SUCCESS, details, userSession.getCurrentUser());
 
             FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             FacesContext.getCurrentInstance().addMessage(null,
@@ -621,24 +619,13 @@ public class OnboardEmployeeController implements Serializable {
 
             FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "app/employeeList.xhtml");
             resetWizard();
-            
+
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Employee Already exists in system: " + "Onboarding Aborted", null));
 
-            String userId = (String) FacesContext.getCurrentInstance()
-                    .getExternalContext()
-                    .getSessionMap()
-                    .get("username");
-            if (userId == null) {
-                userId = "Unknown"; // Fallback if no user is logged in
-            } // use seesion name
-            String action = "create_employee";
-            String targetId = ghanaCardNumber;
-            String details = "Failed to create employee: " + e.getMessage();
-            ActivityLog log = new ActivityLog(userId, action, targetId, result, details);
-            activityLogService.logActivity(log);
-            System.out.println("Logging activity: " + details);
+            String details = "Failed to create employee with GhanaCardNumber " + ghanaCardNumber + " reason: "+ e.getMessage() ;
+            auditLogService.logActivity(AuditActionType.CREATE, "Onboard Employee Page", ActionResult.FAILED, details, userSession.getCurrentUser());
             resetWizard();
             e.printStackTrace();
         }

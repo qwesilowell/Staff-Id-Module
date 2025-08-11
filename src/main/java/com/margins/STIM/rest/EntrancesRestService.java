@@ -102,7 +102,8 @@ public class EntrancesRestService {
     public Response deleteEntrance(@PathParam("id") String id) {
         Entrances entrance = entityManager.find(Entrances.class, id);
         if (entrance != null) {
-            entityManager.remove(entrance);
+            entrance.setDeleted(true);
+            entityManager.merge(entrance);
             return Response.ok("Entrance deleted successfully").build();
         }
         return Response.status(Response.Status.NOT_FOUND).entity("Entrance not found").build();

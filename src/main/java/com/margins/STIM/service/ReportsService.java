@@ -8,7 +8,8 @@ import com.margins.STIM.entity.AccessLog;
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.EmployeeRole;
 import com.margins.STIM.entity.Entrances;
-import com.margins.STIM.util.EntranceReportDTO;
+import com.margins.STIM.DTO.EntranceReportDTO;
+import com.margins.STIM.entity.enums.DevicePosition;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
@@ -42,15 +43,15 @@ public class ReportsService {
 
     @EJB
     private EntrancesService entranceService;
-    
+
     public List<Employee> filterEmployees(String employeeName, String ghanaCardNumber, EmployeeRole role, List<LocalDateTime> timeRange) {
         StringBuilder queryBuilder = new StringBuilder("SELECT e FROM Employee e WHERE 1=1 ");
         Map<String, Object> params = new HashMap<>();
 
         if (employeeName != null && !employeeName.isBlank()) {
-            queryBuilder.append("AND (CONCAT(LOWER(e.employee.firstname), ' ', LOWER(e.employee.lastname)) LIKE :employeeName ");
-            queryBuilder.append("OR LOWER(e.employee.firstname) LIKE :employeeName ");
-            queryBuilder.append("OR LOWER(e.employee.lastname) LIKE :employeeName) ");
+            queryBuilder.append("AND (CONCAT(LOWER(e.firstname), ' ', LOWER(e.lastname)) LIKE :employeeName ");
+            queryBuilder.append("OR LOWER(e.firstname) LIKE :employeeName ");
+            queryBuilder.append("OR LOWER(e.lastname) LIKE :employeeName) ");
             params.put("employeeName", "%" + employeeName.toUpperCase() + "%");
         }
 
@@ -84,7 +85,7 @@ public class ReportsService {
 
         return query.getResultList();
     }
-        
+
     public List<EntranceReportDTO> getEntranceReport1(LocalDateTime startDate, LocalDateTime endDate, int entranceId) {
         List<AccessLog> logs = em.createQuery("SELECT e FROM AccessLog e WHERE e.timestamp BETWEEN :start AND :end", AccessLog.class)
                 .setParameter("start", startDate)
@@ -101,16 +102,15 @@ public class ReportsService {
         //logs.stream().filter(log -> log.getEntranceId() != null log.getEntranceId());
         Map<String, Integer> entranceLogs = new HashMap<>();
         Map<String, Integer> resultLogs = new HashMap<>();
-        
+
         Map<String, Map<String, Integer>> entranceSpecificLogs = new HashMap<>();
-        
+
         for (AccessLog log : logs) {
-            
-            
+
             String entranceSpec = log.getDevice().getEntrance().getEntranceDeviceId();
-            if (entranceSpec!= null) {  
+            if (entranceSpec != null) {
                 Map<String, Integer> data = entranceSpecificLogs.getOrDefault(entranceSpec, new HashMap<String, Integer>());
-                
+
                 if (log.getDevice().getEntrance().getEntranceDeviceId().equals(entranceSpec)) {
                     String resultType = log.getResult();
                     if (resultType != null) {
@@ -118,18 +118,17 @@ public class ReportsService {
                         data.put(resultType, count + 1);
                     }
                     entranceSpecificLogs.put(entranceSpec, data);
-                    
-                    
+
                 }
-               
+
             }
-            
+
             String currentEntrance = log.getDevice().getEntrance().getEntranceDeviceId();
-            if (currentEntrance!= null) {  
+            if (currentEntrance != null) {
                 int count = entranceLogs.getOrDefault(currentEntrance, 0);
                 entranceLogs.put(currentEntrance, count + 1);
             }
-            
+
             String resultType = log.getResult();
             if (resultType != null) {
                 int count = resultLogs.getOrDefault(resultType, 0);
@@ -137,21 +136,18 @@ public class ReportsService {
             }
 
         }
-        
+
         System.out.println("entrance maps >>>>>>>>>>>>> " + entranceLogs.toString());
         System.out.println("results maps >>>>>>>>>>>>> " + resultLogs.toString());
         System.out.println("specific maps >>>>>>>>>>>>> " + entranceSpecificLogs.toString());
-        
+
         EntranceReportDTO dto = new EntranceReportDTO();
         dto.setDeniedAccesses(resultLogs.get("denied"));
         dto.setGrantedAccesses(resultLogs.get("granted"));
         dto.setTotalAccesses(0);
-        
-        
-        
+
         return Arrays.asList(dto);
     }
-    
 
     public List<EntranceReportDTO> getEntranceReport(LocalDateTime startDate, LocalDateTime endDate, int entranceId) {
         StringBuilder jpql = new StringBuilder("SELECT e FROM AccessLog e WHERE e.device.entrance IS NOT NULL");
@@ -182,7 +178,7 @@ public class ReportsService {
         Map<Integer, List<AccessLog>> logsByEntrance = logs.stream()
                 .filter(log -> log.getDevice() != null && log.getDevice().getEntrance() != null)
                 .collect(Collectors.groupingBy(log -> log.getDevice().getEntrance().getId()));
-        
+
         List<EntranceReportDTO> reports = new ArrayList<>();
 
         for (Map.Entry<Integer, List<AccessLog>> entry : logsByEntrance.entrySet()) {
@@ -199,6 +195,9 @@ public class ReportsService {
 
             dto.setTotalAccesses(entranceLogs.size());
 
+            dto.setEntrydevice(entranceService.findDevicesByEntranceAndPosition(entrance, DevicePosition.ENTRY));
+            dto.setExitdevice(entranceService.findDevicesByEntranceAndPosition(entrance, DevicePosition.EXIT));
+            
             dto.setGrantedAccesses(entranceLogs.stream()
                     .filter(log -> "granted".equalsIgnoreCase(log.getResult()))
                     .count());
@@ -222,6 +221,7 @@ public class ReportsService {
                 Employee lastEmp = lastAccess.get().getEmployee();
                 dto.setLastAccessedBy(lastEmp != null ? lastEmp.getFullName() : "Unknown");
                 dto.setLastAccessStatus(lastAccess.get().getResult());
+                dto.setDeviceUsed(lastAccess.get().getDevice().getDeviceName());
             }
 
             dto.setEmployeeCount(entrance.getEmployees() != null ? entrance.getEmployees().size() : 0);
@@ -233,7 +233,6 @@ public class ReportsService {
         return reports;
     }
 
-    
     private EntranceReportDTO createReport(Entrances entrance, List<AccessLog> logs) {
         EntranceReportDTO dto = new EntranceReportDTO();
         dto.setEntrances(entrance);
@@ -280,7 +279,6 @@ public class ReportsService {
 
         return dto;
     }
-
 
 //    public List<EntranceReportDTO> getEntranceReportWithAverage(LocalDateTime startDate,
 //            LocalDateTime endDate,

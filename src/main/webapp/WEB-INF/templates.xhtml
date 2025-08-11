@@ -38,22 +38,40 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
         <div class="topbar">
             <button class="toggle-button" onclick="toggleSidebar()">&#9776;</button>
 
-            <span style="display: block; text-align: center; font-size: larger"><strong>#{sessionScope.userRole}</strong></span>
+            <span style="display: block; text-align: center; font-size: larger"><strong>#{userSession.userRoleName()}</strong></span>
 
 
 
             <h:form>
                 <div class="header-right">
+                    <p:commandLink action="#{anomalyBean.navigateToAnomalyPage}" styleClass="notification-bell" ajax="false"
+                                   immediate="true">
+                        <ui:fragment rendered="#{anomalyBean.unattended > 0}">
+                            <i class="fa-solid fa-bell fa-bounce fa-xl" style="color: whitesmoke !important;"></i>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{anomalyBean.unattended == 0}">
+                            <i class="fa-solid fa-bell fa-xl" style="color: whitesmoke !important;"></i>
+                        </ui:fragment>
+                        <p:badge value="#{anomalyBean.unattendedDisplayCount}" severity="danger"
+                                 styleClass="notification-badge" rendered="#{anomalyBean.unattended > 0}" />
+                    </p:commandLink>
+
                     <p:menu overlay="true" trigger="userMenu" my="left top" at="left bottom">
-                        <p:submenu label="#{sessionScope.username}">
-                            <p:menuitem value="Profile" url="profile.xhtml" icon="pi pi-user" />
-                            <p:menuitem value="Settings" url="settings.xhtml" icon="pi pi-cog" />
+                        <p:submenu label="#{userSession.username}">
+<!--                            <p:menuitem value="Profile" url="profile.xhtml" icon="pi pi-user" />-->
+                            <p:menuitem value="Settings" outcome="/app/Settings/settingsPage?faces-redirect=true" icon="pi pi-cog" />
                             <p:separator />
-                            <p:menuitem value="Logout" action="#{dashboard2.logout()}" icon="pi pi-sign-out" />
+                            <p:menuitem value="Logout" action="#{userSession.logout()}" icon="pi pi-sign-out" />
                         </p:submenu>
                     </p:menu>
-                    <p:commandButton id="userMenu" type="button" value="#{loginBean.userInitials}" class="initials-button" />
+                    <p:commandButton id="userMenu" type="button" value="#{userSession.userInitials}" class="initials-button" />
                 </div>
+
+                <p:poll interval="5" 
+                        listener="#{anomalyBean.loadUnattendedCount}" 
+                        update="@(.notification-badge)" 
+                        global="false" 
+                        async="true" />
             </h:form>
 
 
@@ -72,51 +90,43 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
         <!-- Sidebar Navigation -->
         <div id="sidebar" class="sidebar">
             <h:form>
-                <p:panelMenu  >
+                <p:panelMenu>
                     <p:submenu label="Home" expanded="true" styleClass="custom-label">
                         <p:menuitem value="Dashboard" icon="pi pi-fw pi-chart-bar" outcome="/app/dashboard2?faces-redirect=true"/>
                     </p:submenu>
-                    <!--
-                                         Verification Menu 
-                                        <p:submenu label="Verfication" expanded="true">
-                                            <p:menuitem value="Multi Finger Verification" outcome="/app/Verification/multiFinger?faces-redirect=true" ajax="false" icon="fa-solid fa-hand"/>
-                                        </p:submenu>-->
-
+                    
+                
                     <!-- Employee Menu -->
-                    <p:submenu label="Employee" expanded="true" styleClass="custom-label">
-                        <p:menuitem value="Onboard Employee" outcome="/app/OnboardEmployee/onboardEmployee?faces-redirect=true" icon="fa-solid fa-user-large"/>
-                        <p:menuitem value="Employee Profiles" outcome="/app/employeeList?faces-redirect=true" icon="pi pi-pencil"/>
-                        <p:menuitem value="Update Employee Details" outcome="/app/Verification/singleFinger?faces-redirect= true" icon="fa-regular fa-hand-point-up"/>
+                    <p:submenu label="Employee" expanded="true" styleClass="custom-label" rendered="#{userSession.hasAnyPermission('Onboard Employee','Employee Profiles','Update Employee Details')}">
+                        <p:menuitem value="Onboard Employee" outcome="/app/OnboardEmployee/onboardEmployee?faces-redirect=true" icon="fa-solid fa-user-large" rendered="#{userSession.hasPermission('Onboard Employee')}"/>
+                        <p:menuitem value="Employee Profiles" outcome="/app/employeeList?faces-redirect=true" icon="pi pi-pencil" rendered="#{userSession.hasPermission('Employee Profiles')}"/>
+                        <p:menuitem value="Update Employee Details" outcome="/app/Verification/singleFinger?faces-redirect= true" icon="fa-regular fa-hand-point-up" rendered="#{userSession.hasPermission('Update Employee Details')}"/>
                     </p:submenu>
 
-                    <p:submenu label="Employee Roles" expanded="true" styleClass="custom-label">
-                        <p:menuitem value="Update Employee Role"  outcome="/app/EmployeeRoles/assignRole?faces-redirect=true" icon="pi pi-upload"/>
-                        <p:menuitem value="Create Employee Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" icon="fa-regular fa-pen-to-square fa-flip-vertical" style="color: black;" rendered="#{sessionScope.userRole eq 'ADMIN'}"/>
-                        <p:menuitem value="Add Employee Status" outcome="/app/OnboardEmployee/empStatusPage?faces-redirect=true" icon="fa-regular fa-plus-square" style="color: black;" rendered="#{sessionScope.userRole eq 'ADMIN'}"/>
-
+                    <p:submenu label="Employee Roles" expanded="true" styleClass="custom-label" rendered="#{userSession.hasAnyPermission('Update Employee Role','Create Employee Role','Add Employee Status')}">
+                        <p:menuitem value="Update Employee Role"  outcome="/app/EmployeeRoles/assignRole?faces-redirect=true" icon="pi pi-upload" rendered="#{userSession.hasPermission('Update Employee Role')}"/>
+                        <p:menuitem value="Create Employee Role" outcome="/app/EmployeeRoles/createRole?faces-redirect=true" icon="fa-regular fa-pen-to-square fa-flip-vertical" style="color: black;" rendered="#{userSession.hasPermission('Create Employee Role')}"/>
+                        <p:menuitem value="Add Employee Status" outcome="/app/OnboardEmployee/empStatusPage?faces-redirect=true" icon="fa-regular fa-plus-square" style="color: black;" rendered="#{userSession.hasPermission('Add Employee Status')}"/>
                     </p:submenu>
 
-                    <p:submenu label="Assign Access" expanded="true" rendered="#{sessionScope.userRole eq 'ADMIN'}" styleClass="custom-label">
-                        <p:menuitem value="Assign Roles to Entrances" outcome="/app/Access/assign-roles?facess-redirect=true" icon="fa-solid fa-building-user" />
-                        <p:menuitem value="Assign Custom Entrance " outcome="/app/Access/assignEntrance?faces-redirect=true" icon="fa-solid fa-door-closed"/>
+                    <p:submenu label="Assign Access" expanded="true"  styleClass="custom-label" rendered="#{userSession.hasAnyPermission('Assign Roles to Entrances','Assign Custom Entrance')}">
+                        <p:menuitem value="Assign Roles to Entrances" outcome="/app/Access/assign-roles?facess-redirect=true" icon="fa-solid fa-building-user" rendered="#{userSession.hasPermission('Assign Roles to Entrances')}"/>
+                        <p:menuitem value="Assign Custom Entrance " outcome="/app/Access/assignEntrance?faces-redirect=true" icon="fa-solid fa-door-closed" rendered="#{userSession.hasPermission('Assign Custom Entrance')}"/>
                     </p:submenu>
 
-                    <p:submenu label="Entrances and Devices Management" expanded="true" rendered="#{sessionScope.userRole eq 'ADMIN'}" styleClass="custom-label">
-                        <p:menuitem value="Manage Entrances" outcome="/app/Entrances/manageEntrances?faces-redirect=true" icon="fa-solid fa-door-open"/>
-                        <p:menuitem value="Manage Entrance Devices" outcome="/app/Entrances/manageDevices?faces-redirect=true" icon="fa-solid fa-mobile-screen-button"/>
-                        <p:menuitem value="Strict Mode Reset" outcome="/app/Entrances/resetEntranceState?faces-redirect=true" icon="pi pi-refresh" />
-
+                    <p:submenu label="Entrances and Devices Management" expanded="true" styleClass="custom-label"  rendered="#{userSession.hasAnyPermission('Manage Entrances','Manage Entrance Devices','Strict Mode Reset')}">
+                        <p:menuitem value="Manage Entrances" outcome="/app/Entrances/manageEntrances?faces-redirect=true" icon="fa-solid fa-door-open" rendered="#{userSession.hasPermission('Manage Entrances')}"/>
+                        <p:menuitem value="Manage Entrance Devices" outcome="/app/Entrances/manageDevices?faces-redirect=true" icon="fa-solid fa-mobile-screen-button" rendered="#{userSession.hasPermission('Manage Entrance Devices')}"/>
+                        <p:menuitem value="Strict Mode Reset" outcome="/app/Entrances/resetEmployeeEntranceState?faces-redirect=true" icon="pi pi-refresh" rendered="#{userSession.hasPermission('Strict Mode Reset')}"/>
                     </p:submenu>
-                    <p:submenu label="Users" expanded="true" rendered="#{sessionScope.userRole eq 'ADMIN'}" styleClass="custom-label">
-                        <p:menuitem value="Create New User" outcome="/app/Settings/newuser?faces-redirect=true" icon="pi pi-user-plus"/>
+                  
+                    <p:submenu label="Entrance Test" expanded="true" styleClass="custom-label" rendered="#{userSession.hasAnyPermission('Entrance Access Test')}">
+                        <p:menuitem value="Entrance Access Test" outcome="/app/Entrances/accessControl?faces-redirect=true"  icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat" rendered="#{userSession.hasPermission('Entrance Access Test')}"/>
                     </p:submenu>
-                    <p:submenu label="Entrance Test" expanded="true" styleClass="custom-label">
-                        <p:menuitem value="Entrance Access Test" outcome="/app/Entrances/accessControl?faces-redirect=true"  icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat"/>
-                    </p:submenu>
-                    <p:submenu label="Monitoring and Reports" expanded="true" styleClass="custom-label" >
-                        <p:menuitem value="Real Time Monitoring" outcome="/app/Access/liveMonitoring?faces-redirect=true"  icon="pi pi-chart-line"/>
-                        <p:menuitem value="History Monitoring" outcome="/app/Access/historyMonitoring?faces-redirect=true"  icon="pi pi-history"/>
-                        <p:menuitem value="Reports" outcome="/app/Reports/Reports?faces-redirect=true"  icon="pi pi-book"/>
+                    <p:submenu label="Monitoring and Reports" expanded="true" styleClass="custom-label" rendered="#{userSession.hasAnyPermission('Real-Time Monitoring','History Monitoring','Reports')}" >
+                        <p:menuitem value="Real Time Monitoring" outcome="/app/Access/liveMonitoring?faces-redirect=true"  icon="pi pi-chart-line"  rendered="#{userSession.hasPermission('Real-Time Monitoring')}"/>
+                        <p:menuitem value="History Monitoring" outcome="/app/Access/historyMonitoring?faces-redirect=true"  icon="pi pi-history"  rendered="#{userSession.hasPermission('History Monitoring')}"/>
+                        <p:menuitem value="Reports" outcome="/app/Reports/Reports?faces-redirect=true"  icon="pi pi-book"  rendered="#{userSession.hasPermission('Reports')}"/>
 
                     </p:submenu>
                 </p:panelMenu>
@@ -132,10 +142,10 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
         </div>
 
         <!-- Footer --> 
-        <div class="layout-footer"> 
+<!--        <div class="layout-footer"> 
             <div class="footer-content"> <span>Version 1.0.0</span> 
             </div> 
-        </div>
+        </div>-->
 
 
     </h:body>

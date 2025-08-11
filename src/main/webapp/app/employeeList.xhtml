@@ -22,7 +22,7 @@
     <ui:define name ="content">
         <!-- Main Content -->
         <div class="main-content" >
-            <h3>EMPLOYEE PROFILES</h3>
+            <h1>Employee Profiles</h1>
             <h:form id="employeeForm">
                 <h:panelGroup layout="block" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                     <p:growl widgetVar="fgrowl" id="growl" showSummary= "false" showDetail="true" life="6000" globalOnly="true"/>
@@ -46,16 +46,18 @@
                 <p:dataTable id="employeeTable" value="#{manageEmployeesBean.employees}" var="employee" 
                              paginator="true" paginatorPosition="bottom" rows="10"  rowIndexVar="rowIndex"  rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">
 
-                    <p:column headerText="First Name">
-                        <h:outputText value="#{employee.firstname}" />
-                    </p:column>
-
-                    <p:column headerText="Last Name">
-                        <h:outputText value="#{employee.lastname}" />
+                    <p:column headerText="Employee Name">
+                        <div style="font-weight: bold">
+                        <h:outputText value="#{employee.fullName}" />
+                        </div>
                     </p:column>
 
                     <p:column headerText="Ghana Card Number">
                         <h:outputText value="#{employee.ghanaCardNumber}" />
+                    </p:column>
+                    
+                    <p:column headerText="Email">
+                        <h:outputText value="#{employee.role}" />
                     </p:column>
 
                     <p:column headerText="Email">

@@ -4,18 +4,23 @@
  */
 package com.margins.STIM.service;
 
+import com.margins.STIM.entity.Devices;
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.EmployeeEntranceState;
+import com.margins.STIM.entity.EmployeeEntranceStateLog;
 import com.margins.STIM.entity.Entrances;
 import com.margins.STIM.entity.enums.DevicePosition;
 import com.margins.STIM.entity.enums.LocationState;
 import jakarta.ejb.Stateless;
-import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -24,36 +29,54 @@ import java.util.List;
 @Transactional
 @Stateless
 public class EmployeeEntranceStateService {
-    
+
     @PersistenceContext
     private EntityManager em;
-    
-    private Employee_Service employeeService;
-    
-    private EntrancesService entranceService;
-    
 
-    
+    private Employee_Service employeeService;
+
+    private EntrancesService entranceService;
+
     // Find all entrance states
     public List<EmployeeEntranceState> findAllEmployeeEntranceStates() {
-        return em.createQuery("SELECT es FROM EmployeeEntranceState es", EmployeeEntranceState.class)
+        return em.createQuery("SELECT es FROM EmployeeEntranceState es WHERE es.deleted = false", EmployeeEntranceState.class)
+                .getResultList()
+                .stream()
+                .sorted(Comparator.comparing(
+                        (EmployeeEntranceState es) -> Optional.ofNullable(es.getLastModifiedDate()).orElse(es.getCreatedDate()),
+                        Comparator.reverseOrder()
+                ))
+                .collect(Collectors.toList());
+    }
+    
+    public List<EmployeeEntranceState> findRecentEmployeeEntranceStates(int limit) {
+        return em.createQuery(
+                "SELECT es FROM EmployeeEntranceState es "
+                + "WHERE es.deleted = false "
+                + "ORDER BY COALESCE(es.lastModifiedDate, es.createdDate) DESC",
+                EmployeeEntranceState.class
+        )
+                .setMaxResults(limit)
                 .getResultList();
     }
 
+
     // Find entrance state by ID
     public EmployeeEntranceState findEmployeeEntranceStateById(Long id) {
-        return em.createQuery("SELECT es FROM EmployeeEntranceState es WHERE es.id = :id", EmployeeEntranceState.class)
+        return em.createQuery("SELECT es FROM EmployeeEntranceState es WHERE es.id = :id"
+                + " AND es.deleted = false", EmployeeEntranceState.class)
                 .setParameter("id", id)
                 .getResultStream()
                 .findFirst()
                 .orElse(null);
     }
-    
-     public EmployeeEntranceState findByEmployeeAndEntrance(int employeeId, int entranceDeviceId) {
+
+    public EmployeeEntranceState findByEmployeeAndEntrance(int employeeId, int entranceDeviceId) {
         return em.createQuery(
-                "SELECT es FROM EmployeeEntranceState es " +
-                "WHERE es.employee.id = :employeeId " +
-                "AND es.entrance.id = :entranceDeviceId", 
+                "SELECT es FROM EmployeeEntranceState es "
+                + "WHERE es.employee.id = :employeeId "
+                + "AND es.entrance.id = :entranceDeviceId"
+                + " AND es.deleted = false",
                 EmployeeEntranceState.class)
                 .setParameter("employeeId", employeeId)
                 .setParameter("entranceDeviceId", entranceDeviceId)
@@ -61,22 +84,24 @@ public class EmployeeEntranceStateService {
                 .findFirst()
                 .orElse(null);
     }
-     
-     public List<EmployeeEntranceState> findByEmployee(int employeeId) {
+
+    public List<EmployeeEntranceState> findByEmployee(int employeeId) {
         return em.createQuery(
                 "SELECT es FROM EmployeeEntranceState es "
-                + "WHERE es.employee.id = :employeeId",
+                + "WHERE es.employee.id = :employeeId"
+                + " AND es.deleted = false",
                 EmployeeEntranceState.class)
                 .setParameter("employeeId", employeeId)
                 .getResultList();
     }
-     
+
     // Find all employees at one entrance with specific state
     public List<EmployeeEntranceState> findByEntranceAndState(int entranceDeviceId, LocationState state) {
         return em.createQuery(
                 "SELECT es FROM EmployeeEntranceState es "
                 + "WHERE es.entrance.id = :entranceDeviceId "
-                + "AND es.currentState = :state",
+                + "AND es.currentState = :state"
+                + " AND es.deleted = false",
                 EmployeeEntranceState.class)
                 .setParameter("entranceDeviceId", entranceDeviceId)
                 .setParameter("state", state)
@@ -91,9 +116,9 @@ public class EmployeeEntranceStateService {
     // Get employees currently OUTSIDE at specific entrance
     public List<EmployeeEntranceState> findEmployeesOutsideAtEntrance(int entranceDeviceId) {
         return findByEntranceAndState(entranceDeviceId, LocationState.OUTSIDE);
-    } 
-    
-    public EmployeeEntranceState recordStrictEntryOrExit(Employee employee, Entrances entrance, DevicePosition position, String updatedBy) {
+    }
+
+    public EmployeeEntranceState recordStrictEntryOrExit(Employee employee, Entrances entrance, DevicePosition position, String updatedBy, Devices device) {
         LocationState newState = (position == DevicePosition.ENTRY)
                 ? LocationState.INSIDE
                 : LocationState.OUTSIDE;
@@ -106,45 +131,49 @@ public class EmployeeEntranceStateService {
 
         if (existingState == null) {
             // First time, create new record
-            EmployeeEntranceState newStateRecord = new EmployeeEntranceState(employee, entrance, newState);
+            EmployeeEntranceState newStateRecord = new EmployeeEntranceState(employee, entrance, newState, device);
             newStateRecord.updateState(newState, updatedBy, reason);
             em.persist(newStateRecord);
+
+            logStateChange(newStateRecord, newState, updatedBy, updatedBy);
             return newStateRecord;
         }
 
         // Update existing record
         existingState.updateState(newState, updatedBy, reason);
+        logStateChange(existingState, newState, updatedBy, reason);
         return em.merge(existingState);
     }
 
     // Admin reset - force set state
-    public EmployeeEntranceState resetEmployeeState(int employeeId, int entranceDeviceId,
-            LocationState newState, String adminUser, String resetReason) {
-        System.out.println("Admin reset for employee: " + employeeId + " at entrance: " + entranceDeviceId);
+    public EmployeeEntranceState resetEmployeeState(int employeeId, int entranceId, LocationState newState, String adminUser, String resetReason, Devices device) {
+        System.out.println("Admin reset for employee: " + employeeId + " at entrance: " + entranceId);
 
-        EmployeeEntranceState existingState = findByEmployeeAndEntrance(employeeId, entranceDeviceId);
+        EmployeeEntranceState existingState = findByEmployeeAndEntrance(employeeId, entranceId);
 
         if (existingState != null) {
             String reason = "Admin reset: " + (resetReason != null ? resetReason : "No reason provided");
             existingState.updateState(newState, adminUser, reason);
 
             EmployeeEntranceState updated = em.merge(existingState);
+            logStateChange(existingState, newState, adminUser, reason);
             em.flush();
 
             System.out.println("Admin " + adminUser + " reset state for employee: " + employeeId + " to: " + newState);
             return updated;
         } else {
             // Create new state if doesn't exist
-            
+
             Employee employee = employeeService.findEmployeeById(employeeId);
-            Entrances entrance = entranceService.findEntranceByIdFresh(entranceDeviceId);
+            Entrances entrance = entranceService.findEntranceByIdFresh(entranceId);
 
             if (employee == null || entrance == null) {
                 throw new EntityNotFoundException("Employee or Entrance not found");
             }
-            EmployeeEntranceState newStateRecord = new EmployeeEntranceState(employee, entrance, newState);
+            EmployeeEntranceState newStateRecord = new EmployeeEntranceState(employee, entrance, newState , device);
             String reason = "Admin reset (new): " + (resetReason != null ? resetReason : "No reason provided");
             newStateRecord.updateState(newState, adminUser, reason);
+            logStateChange(newStateRecord, newState, adminUser, reason);
 
             em.persist(newStateRecord);
             em.flush();
@@ -159,25 +188,23 @@ public class EmployeeEntranceStateService {
         return em.createQuery(
                 "SELECT COUNT(es) FROM EmployeeEntranceState es "
                 + "WHERE es.entrance.id = :entranceDeviceId "
-                + "AND es.currentState = :state", Long.class)
+                + "AND es.currentState = :state"
+                + " AND es.deleted = falsel", Long.class)
                 .setParameter("entranceDeviceId", entranceDeviceId)
                 .setParameter("state", LocationState.INSIDE)
                 .getSingleResult();
     }
-    
-    
-    // Create new entrance state
-//    public EmployeeEntranceState saveEmployeeEntranceState(EmployeeEntranceState state) {
-//        em.persist(state);
-//        return state;
-//    }
-//
-//    public EmployeeEntranceState updateEmployeeEntranceState(Long id, EmployeeEntranceState state) {
-//        EmployeeEntranceState existingState = findEmployeeEntranceStateById(id);
-//        if (existingState != null) {
-//            state.setId(id); // Ensure ID consistency
-//            return em.merge(state);
-//        }
-//        throw new EntityNotFoundException("Employee entrance state does not exist with name: " + state.getEmployee());
-//    }
+
+    private void logStateChange(EmployeeEntranceState sourceState, LocationState newState, String updatedBy, String reason) {
+        EmployeeEntranceStateLog log = new EmployeeEntranceStateLog();
+        log.setEmployee(sourceState.getEmployee());
+        log.setEntrance(sourceState.getEntrance());
+        log.setState(newState);
+        log.setUpdatedBy(updatedBy);
+        log.setReason(reason);
+        log.setCreatedDate(LocalDateTime.now());
+        log.setMode(sourceState.getEntrance().getEntranceMode());
+        log.setDevice(sourceState.getDeviceUsed());
+        em.persist(log);
+    }
 }

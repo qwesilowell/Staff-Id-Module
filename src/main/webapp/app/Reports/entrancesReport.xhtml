@@ -39,9 +39,9 @@
 
                         <p:commandButton value="Export PDF" 
                                          icon="pi pi-file-pdf" 
-                                         styleClass="ui-button-secondary">
-                            <p:dataExporter type="pdf" target="entTable" fileName="entrance_report"/>
-                        </p:commandButton>
+                                         styleClass="ui-button-secondary"
+                                         ajax="false"
+                                         action="#{entranceReportBean.exportPage()}"/>
                     </div>
                 </div>
 
@@ -55,7 +55,7 @@
                             <p:datePicker id="startDate" 
                                           value="#{entranceReportBean.startDate}" 
                                           showTime="true" 
-                                          pattern="dd/MM/yyyy HH:mm"
+                                          pattern="dd-MM-yyyy HH:mm"
                                           placeholder="Select start date"
                                           style="width: 100%;"/>
                         </p:outputPanel>
@@ -65,7 +65,7 @@
                             <p:datePicker id="endDate" 
                                           value="#{entranceReportBean.endDate}" 
                                           showTime="true" 
-                                          pattern="dd/MM/yyyy HH:mm"
+                                          pattern="dd-MM-yyyy HH:mm"
                                           placeholder="Select end date"
                                           style="width: 100%;"/>
                         </p:outputPanel>
@@ -114,7 +114,7 @@
                     <!-- Active Entrances -->
                     <div class="summary-box green">
                         <i class="pi pi-bolt icon"></i>
-<!--                        <i class="fa-solid fa-bolt fa-shake icon"></i>-->
+                        <!--                        <i class="fa-solid fa-bolt fa-shake icon"></i>-->
                         <div class="summary-info">
                             <span class="label">Active Entrances</span>
                             <span class="main-value">#{entranceReportBean.activeEntrances}</span>
@@ -178,9 +178,29 @@
                             <h:outputText value="#{report.entrances.entranceLocation}" />
                         </p:column>
 
+                        <p:column headerText="Devices Assigned" sortBy="#{report.entrances.devices}" styleClass="totalAccess">
+                            <h:outputText value="#{report.entrances.devices.size()}"  />
+                        </p:column>
+
+                        <p:column headerText="Entry Device Assigned" styleClass="totalAccess" >
+                            <p:commandButton value="#{report.entrydevice.size()}"  
+                                             action="#{entranceReportBean.viewDevice(report.entrydevice,report.entrances)}"
+                                             update="entryDevice"
+                                             styleClass="cbutton"
+                                             oncomplete="PF('entryDevice').show()"/>
+                        </p:column>
+
+                        <p:column headerText="Exit Device Assigned" styleClass="totalAccess" >
+                            <p:commandButton value="#{report.exitdevice.size()}" 
+                                             action="#{entranceReportBean.viewDevice(report.exitdevice,report.entrances)}"
+                                             update="entryDevice"
+                                             styleClass="cbutton"
+                                             oncomplete="PF('entryDevice').show()"/>
+                        </p:column>
+
                         <p:column headerText="Total Accesses" sortBy="#{report.totalAccesses}" style="text-align: center;" title="Total access attempts for the entrance">
                             <p:commandLink value="#{report.totalAccesses}" 
-                                           action="#{entranceReportBean.navigateToHistory(report.entrances.entranceDeviceId)}"
+                                           action="#{entranceReportBean.navigateToHistory(report.entrances.id)}"
                                            ajax="false"
                                            update="messages"
                                            styleClass="totalAccess" >
@@ -190,7 +210,7 @@
                         <p:column headerText="Count(Unique Accesses)" sortBy="#{report.uniqueUsers}" style="text-align: center;" 
                                   title="Distinct employees who have accessed the entrance, regardless of the number of access attempts."> <!--  Number of unique employees who have accessed the entrance, counting each employee only once regardless of multiple access attempts.-->
                             <p:commandLink value="#{report.uniqueUsers}" 
-                                           action="#{entranceReportBean.navigateToHistory(report.entrances.entranceDeviceId)}"
+                                           action="#{entranceReportBean.navigateToHistory(report.entrances.id)}"
                                            ajax="false"
                                            update="messages"
                                            styleClass="totalAccess" >
@@ -200,27 +220,27 @@
 
                         <p:column headerText="Granted" sortBy="#{report.grantedAccesses}" style="text-align: center;">                            
                             <p:commandLink value="#{report.grantedAccesses}" 
-                                           action="#{entranceReportBean.navToResult(report.entrances.entranceDeviceId,'granted')}"
+                                           action="#{entranceReportBean.navToResult(report.entrances.id,'granted')}"
                                            ajax="false"
                                            update="messages"
                                            styleClass="granted-access" >
-                                <f:param name="entranceId" value="#{report.entrances.entranceDeviceId}" />
+                                <f:param name="entranceId" value="#{report.entrances.id}" />
                             </p:commandLink>
 
                         </p:column>
 
                         <p:column headerText="Denied" sortBy="#{report.deniedAccesses}" style="text-align: center;">
                             <p:commandLink value="#{report.deniedAccesses}" 
-                                           action="#{entranceReportBean.navToResult(report.entrances.entranceDeviceId,'denied')}"
+                                           action="#{entranceReportBean.navToResult(report.entrances.id,'denied')}"
                                            ajax="false"
                                            update="messages"
                                            styleClass="denied-access" >
-                                <f:param name="entranceId" value="#{report.entrances.entranceDeviceId}" />
+                                <f:param name="entranceId" value="#{report.entrances.id}" />
                             </p:commandLink>
                         </p:column>
 
                         <p:column headerText="Time Last Accessed" sortBy="#{report.lastAccessed}" style="text-align: center;">
-                            <h:outputText value="#{report.lastAccessed}" rendered="#{report.lastAccessed != null}">
+                            <h:outputText value="#{entranceReportBean.formatTimeString(report.lastAccessed)}" rendered="#{report.lastAccessed != null}">
                                 <f:convertDateTime pattern="dd/MM/yyyy HH:mm"  type="localDateTime"/>
                             </h:outputText>
                             <h:outputText value="No Access" rendered="#{report.lastAccessed == null}" styleClass="no-access"/>
@@ -240,7 +260,7 @@
 
                         <p:column headerText="Employees With Access" sortBy="#{report.employeeCount}" style="text-align: center;">
                             <p:commandButton  value="#{report.employeeCount}"
-                                              action="#{entranceReportBean.viewEmployees(report.entrances.entranceDeviceId)}"
+                                              action="#{entranceReportBean.viewEmployees(report.entrances.id)}"
                                               title="View all employees with access to this entrance"
                                               update="empAccess"
                                               styleClass="cbutton"
@@ -249,18 +269,14 @@
 
                         <p:column headerText="Roles With Access" sortBy="#{report.roleCount}" style="text-align: center;">
                             <p:commandButton  value="#{report.roleCount}"
-                                              action="#{entranceReportBean.viewEmployees(report.entrances.entranceDeviceId)}"
+                                              action="#{entranceReportBean.viewEmployees(report.entrances.id)}"
                                               title="View all roles with access to this entrance"
                                               update="roleAccess"
                                               styleClass="cbutton"
                                               oncomplete="PF('roleAccess').show()"/>
                         </p:column>
 
-                        <p:column headerText="Avg Access/User" style="text-align: center;">
-                            <h:outputText value="#{report.uniqueUsers > 0 ? report.totalAccesses / report.uniqueUsers : 0}">
-                                <f:convertNumber pattern="#0.00" />
-                            </h:outputText>
-                        </p:column>
+
 
                         <p:column headerText="Actions" style="text-align: center; width: 120px;">
                             <!--                        <p:commandButton icon="pi pi-chart-line" 
@@ -274,7 +290,7 @@
                             <p:commandButton icon="pi pi-eye" 
                                              title="View Details"
                                              styleClass="ui-button-rounded ui-button-secondary"
-                                             action="#{entranceReportBean.viewDetails(report.entrances.entranceDeviceId)}"
+                                             action="#{entranceReportBean.viewDetails(report.entrances.id)}"
                                              update="detailDialog"
                                              oncomplete="PF('detailDialog').show()"/>
                         </p:column>
@@ -304,80 +320,129 @@
                       responsive="true" 
                       styleClass="modern-dialog"  style="max-height: 90vh; overflow-y: auto; width: 90vw;">
 
-                <p:outputPanel rendered="#{entranceReportBean.selectedEntranceDetail != null}" styleClass="p-fluid">
-                    <div class="p-grid p-nogutter p-justify-around">
-                        <!-- Entrance Basic Info Card -->
-                        <div class="p-col-12 p-md-5 entrance-card">
-                            <div class="card">
-                                <h4><i class="pi pi-id-card"></i> Entrance Info</h4>
-                                <p><strong>ID:</strong> #{entranceReportBean.selectedEntranceDetail.entrances.entranceDeviceId}</p>
-                                <p><strong>Name:</strong> #{entranceReportBean.selectedEntranceDetail.entrances.entranceName}</p>
-                                <p><strong>Location:</strong> #{entranceReportBean.selectedEntranceDetail.entrances.entranceLocation}</p>
+                <h:form>
+                    <p:outputPanel rendered="#{entranceReportBean.selectedEntranceDetail != null}" styleClass="p-fluid">
+                        <div class="p-grid p-nogutter p-justify-around">
+                            <!-- Entrance Basic Info Card -->
+                            <div class="p-col-12 p-md-5 entrance-card">
+                                <div class="card">
+                                    <h4><i class="pi pi-id-card"></i> Entrance Info</h4>
+                                    <p><strong>ID:</strong> #{entranceReportBean.selectedEntranceDetail.entrances.entranceDeviceId}</p>
+                                    <p><strong>Name:</strong> #{entranceReportBean.selectedEntranceDetail.entrances.entranceName}</p>
+                                    <p><strong>Location:</strong> #{entranceReportBean.selectedEntranceDetail.entrances.entranceLocation}</p>
+                                </div>
+                            </div>
+
+                            <!-- Access Stats Card -->
+                            <div class="p-col-12 p-md-6 entrance-card">
+                                <div class="card">
+                                    <h4><i class="pi pi-chart-bar"></i> Access Statistics </h4>
+                                    <p><strong>Total Accesses: </strong> #{entranceReportBean.selectedEntranceDetail.totalAccesses}</p>
+                                    <p><strong>Unique Users: </strong> #{entranceReportBean.selectedEntranceDetail.uniqueUsers}</p>
+                                    <p><strong>Granted: </strong> #{entranceReportBean.selectedEntranceDetail.grantedAccesses}</p>
+                                    <p><strong>Denied: </strong> #{entranceReportBean.selectedEntranceDetail.deniedAccesses}</p>
+                                    <p><strong>Success Rate: </strong>
+                                        <h:outputText value="#{entranceReportBean.selectedEntranceDetail.totalAccesses > 0 ? 
+                                                               (entranceReportBean.selectedEntranceDetail.grantedAccesses * 100.0 / 
+                                                               entranceReportBean.selectedEntranceDetail.totalAccesses) : 0}">
+                                            <f:convertNumber pattern="#0.00'%'" />
+                                        </h:outputText>
+                                    </p>
+                                    <p><strong>Average Access per User: </strong>
+                                        <h:outputText value="#{entranceReportBean.selectedEntranceDetail.uniqueUsers > 0 ? 
+                                                               entranceReportBean.selectedEntranceDetail.totalAccesses / 
+                                                               entranceReportBean.selectedEntranceDetail.uniqueUsers : 0}">
+                                            <f:convertNumber pattern="#0.00" />
+                                        </h:outputText>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Last Access Summary Card -->
+                            <div class="p-col-12 p-md-6 entrance-card">
+                                <div class="card">
+                                    <h4><i class="pi pi-clock"></i> Last Access Summary</h4>
+                                    <p><strong>Time Last Accessed: </strong>
+                                        <h:outputText value="#{entranceReportBean.selectedEntranceDetail.lastAccessed}" 
+                                                      rendered="#{entranceReportBean.selectedEntranceDetail.lastAccessed != null}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy HH:mm"  type="localDateTime"/>
+                                        </h:outputText>
+
+                                        <h:outputText value="No Access Yet" 
+                                                      rendered="#{entranceReportBean.selectedEntranceDetail.lastAccessed == null}"/>
+                                    </p>
+                                    <p><strong>Accessed By: </strong>
+                                        <h:outputText value="#{entranceReportBean.selectedEntranceDetail.lastAccessedBy}" 
+                                                      rendered="#{entranceReportBean.selectedEntranceDetail.lastAccessedBy != null}"/>
+                                        <h:outputText value="N/A" 
+                                                      rendered="#{entranceReportBean.selectedEntranceDetail.lastAccessedBy == null}"/>
+                                    </p>
+                                    <p><strong>Last Status: </strong>
+                                        <h:outputText value="#{entranceReportBean.selectedEntranceDetail.lastAccessStatus}" 
+                                                      styleClass="#{entranceReportBean.selectedEntranceDetail.lastAccessStatus eq 'GRANTED' ? 'status-granted2' : 'status-denied2'}" 
+                                                      rendered="#{entranceReportBean.selectedEntranceDetail.lastAccessStatus != null}"/>
+                                        <h:outputText value="N/A" 
+                                                      rendered="#{entranceReportBean.selectedEntranceDetail.lastAccessStatus == null}"/>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="p-col-12 p-md-5 entrance-card">
+                                <div class="card">
+                                    <h4><i class="pi pi-users"></i> Access Summary</h4>
+                                    <p><strong>Employees with Access:</strong> #{entranceReportBean.selectedEntranceDetail.employeeCount}</p>
+                                    <p><strong>Roles with Access:</strong> #{entranceReportBean.selectedEntranceDetail.roleCount}</p>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Access Stats Card -->
-                        <div class="p-col-12 p-md-6 entrance-card">
-                            <div class="card">
-                                <h4><i class="pi pi-chart-bar"></i> Access Statistics </h4>
-                                <p><strong>Total Accesses: </strong> #{entranceReportBean.selectedEntranceDetail.totalAccesses}</p>
-                                <p><strong>Unique Users: </strong> #{entranceReportBean.selectedEntranceDetail.uniqueUsers}</p>
-                                <p><strong>Granted: </strong> #{entranceReportBean.selectedEntranceDetail.grantedAccesses}</p>
-                                <p><strong>Denied: </strong> #{entranceReportBean.selectedEntranceDetail.deniedAccesses}</p>
-                                <p><strong>Success Rate: </strong>
-                                    <h:outputText value="#{entranceReportBean.selectedEntranceDetail.totalAccesses > 0 ? 
-                                                           (entranceReportBean.selectedEntranceDetail.grantedAccesses * 100.0 / 
-                                                           entranceReportBean.selectedEntranceDetail.totalAccesses) : 0}">
-                                        <f:convertNumber pattern="#0.00'%'" />
-                                    </h:outputText>
-                                </p>
-                                <p><strong>Average Access per User: </strong>
-                                    <h:outputText value="#{entranceReportBean.selectedEntranceDetail.uniqueUsers > 0 ? 
-                                                           entranceReportBean.selectedEntranceDetail.totalAccesses / 
-                                                           entranceReportBean.selectedEntranceDetail.uniqueUsers : 0}">
-                                        <f:convertNumber pattern="#0.00" />
-                                    </h:outputText>
-                                </p>
-                            </div>
+                        <div style="text-align: center; margin-top: 1rem;">
+                            <p:commandButton value="Export to PDF" 
+                                             icon="pi pi-file-pdf" 
+                                             styleClass="ui-button-success"
+                                             action="#{entranceReportBean.exportEntranceInfo()}"
+                                             ajax="false"
+                                             oncomplete="PF('detailDialog').hide();">
+                            </p:commandButton>
                         </div>
+                    </p:outputPanel>
+                </h:form>
+            </p:dialog>
 
-                        <!-- Last Access Summary Card -->
-                        <div class="p-col-12 p-md-6 entrance-card">
-                            <div class="card">
-                                <h4><i class="pi pi-clock"></i> Last Access Summary</h4>
-                                <p><strong>Time Last Accessed: </strong>
-                                    <h:outputText value="#{entranceReportBean.selectedEntranceDetail.lastAccessed}" 
-                                                  rendered="#{entranceReportBean.selectedEntranceDetail.lastAccessed != null}">
-                                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm"  type="localDateTime"/>
-                                    </h:outputText>
 
-                                    <h:outputText value="No Access Yet" 
-                                                  rendered="#{entranceReportBean.selectedEntranceDetail.lastAccessed == null}"/>
-                                </p>
-                                <p><strong>Accessed By: </strong>
-                                    <h:outputText value="#{entranceReportBean.selectedEntranceDetail.lastAccessedBy}" 
-                                                  rendered="#{entranceReportBean.selectedEntranceDetail.lastAccessedBy != null}"/>
-                                    <h:outputText value="N/A" 
-                                                  rendered="#{entranceReportBean.selectedEntranceDetail.lastAccessedBy == null}"/>
-                                </p>
-                                <p><strong>Last Status: </strong>
-                                    <h:outputText value="#{entranceReportBean.selectedEntranceDetail.lastAccessStatus}" 
-                                                  styleClass="#{entranceReportBean.selectedEntranceDetail.lastAccessStatus eq 'granted' ? 'status-granted2' : 'status-denied2'}" 
-                                                  rendered="#{entranceReportBean.selectedEntranceDetail.lastAccessStatus != null}"/>
-                                    <h:outputText value="N/A" 
-                                                  rendered="#{entranceReportBean.selectedEntranceDetail.lastAccessStatus == null}"/>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="p-col-12 p-md-5 entrance-card">
-                            <div class="card">
-                                <h4><i class="pi pi-users"></i> Access Control Summary</h4>
-                                <p><strong>Employees with Access:</strong> #{entranceReportBean.selectedEntranceDetail.employeeCount}</p>
-                                <p><strong>Roles with Access:</strong> #{entranceReportBean.selectedEntranceDetail.roleCount}</p>
-                            </div>
-                        </div>
+            <p:dialog id="entryDevice" widgetVar="entryDevice" modal="true" class="custom-dialog"
+                      header="#{entranceReportBean.assignedDeviceLabel}">
+                <div class="p-col-12">
+                    <div class="same-line-container">
+                        <i class="fa-solid fa-door-open p-mr-2 text-primary icon-style"></i>
+                        <p:outputLabel value="Entrance Name:" styleClass="label-style" />
+                        <h:outputText value="#{entranceReportBean.selectedEntrance.entranceName}" styleClass="value-style" />
                     </div>
-                </p:outputPanel>
+                    <br/>
+                    <div class="same-line-container">
+                        <i class="pi pi-map-marker p-mr-2 text-success icon-style"></i>
+                        <p:outputLabel value="Location:" styleClass="label-style" />
+                        <h:outputText value="#{entranceReportBean.selectedEntrance.entranceLocation}" styleClass="value-style" />
+                    </div>
+                </div>              
+                <br/>
+                <div style="margin-bottom: 1rem;"><br/>
+
+                    <!-- Show employees if list is not empty -->
+                    <p:outputPanel rendered="#{not empty entranceReportBean.selectedDevices}">
+                        <ui:repeat value="#{entranceReportBean.selectedDevices}" var="device">
+                            <span class="skill-tag">• #{device.deviceName} - #{device.devicePosition}</span>
+                        </ui:repeat>
+                    </p:outputPanel>
+
+                    <p:outputPanel rendered="#{empty entranceReportBean.selectedDevices}">
+                        <div style="text-align: center; padding: 20px; color: #666;">
+                            <i class="pi pi-info-circle" style="font-size: 2em; margin-bottom: 10px;"></i>
+                            <br/>
+                            <span style="font-style: italic;">No entry device assigned to this entrance</span>
+                        </div>
+                    </p:outputPanel>
+                </div>
+                <br/>
             </p:dialog>
 
             <p:dialog id="empAccess" widgetVar="empAccess" modal="true" class="custom-dialog"
@@ -457,9 +522,5 @@
         </div>
 
         <!-- Custom CSS -->
-        <style>
-
-
-        </style>
     </ui:define>
 </ui:composition>

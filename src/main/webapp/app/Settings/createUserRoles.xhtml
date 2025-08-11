@@ -1,0 +1,756 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
+-->
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{roleManagementBean.setupBreadcrumb}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="title">User Role Settings</ui:define>
+
+    <ui:define name="content">
+        <div class="main-content">
+
+            <h:form id="roleForm" prependId="false">
+                <p:growl id="messages" widgetVar="fgrowl" showSummary="false" showDetail="true" life="6000" globalOnly="true" />
+
+                <!-- Header Section -->
+                <div class="page-header">
+                    <h2 class="page-title">
+                        <i class="pi pi-users"></i>
+                        System User Roles
+                    </h2>
+                    <p class="page-subtitle">Manage user roles and permissions</p>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="action-bar">
+                    <div class="search-container">
+                        <p:inputText id="searchQuery" 
+                                     value="#{roleManagementBean.searchQuery}"
+                                     placeholder="Search roles..."
+                                     styleClass="modern-search">
+                            <p:ajax event="keyup" listener="#{roleManagementBean.findUserRole2}" update="userRole"/>
+                        </p:inputText>
+                        <i class="pi pi-search search-icon"></i>
+                    </div>
+
+                    <p:commandButton value="Create Role"
+                                     icon="pi pi-plus"
+                                     actionListener="#{roleManagementBean.openNewRoleDialog}"
+                                     update=":dialogForm"
+                                     oncomplete="PF('roleDialogWidget').show()"
+                                     styleClass="create-btn" />
+                </div>
+
+                <!-- Data Table -->
+                <div class="table-container">
+                    <p:dataTable id="userRole" 
+                                 widgetVar="userRole" 
+                                 value="#{roleManagementBean.allRoles}" 
+                                 var="role"
+                                 editable="true" 
+                                 styleClass="modern-table"
+                                 emptyMessage="No roles found"
+                                 paginator="true"
+                                 rows="10"
+                                 paginatorPosition="bottom">
+
+                        <p:column headerText="Role Name" styleClass="role-name-col">
+                            <div class="role-info">
+                                <i class="pi pi-shield role-icon"></i>
+                                <span class="role-name">#{role.userRolename}</span>
+                            </div>
+                        </p:column>
+
+                        <p:column headerText="Permissions" styleClass="permissions-col">
+                            <div class="permissions-container">
+                                <ui:repeat value="#{role.permissions}" var="perm" varStatus="status">
+                                    <span class="permission-tag">#{perm.displayName}</span>
+                                </ui:repeat>
+                            </div>
+                        </p:column>
+
+                        <p:column headerText="Actions" styleClass="actions-col">
+                            <div class="action-buttons">
+                                <p:commandButton icon="pi pi-pencil"
+                                                 title="Edit Role"
+                                                 actionListener="#{roleManagementBean.editRole(role)}"
+                                                 update=":dialogForm"
+                                                 oncomplete="PF('roleDialogWidget').show()"
+                                                 styleClass="rounded-button ui-button-success ui-button-outlined" />
+
+                                <p:commandButton icon="pi pi-trash"
+                                                 title="Delete Role"
+                                                 actionListener="#{roleManagementBean.deleteRole(role)}"
+                                                 styleClass="rounded-button ui-button-danger ui-button-outlined"
+                                                 onclick="PF('deleteConfirmDialogWidget').show()" 
+                                                 update="@form" 
+                                                 oncomplete="PF('deleteConfirmDialogWidget').hide()">
+                                    <p:confirm header="Confirm Deletion" 
+                                               message="Are you sure you want to delete role '#{role.userRolename}'?" 
+                                               icon="pi pi-exclamation-triangle" />
+                                </p:commandButton>
+                            </div>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+
+                <!-- Enhanced Confirm Dialog -->
+                <p:confirmDialog id="deleteConfirmDialog" 
+                                 global="true" 
+                                 showEffect="fade" 
+                                 widgetVar="deleteConfirmDialogWidget" 
+                                 severity="warn"
+                                 styleClass="modern-confirm-dialog">
+                    <p:commandButton type="button" 
+                                     value="Delete" 
+                                     icon="pi pi-trash"
+                                     styleClass="ui-confirmdialog-yes rounded-button danger-btn"/>
+                    <p:commandButton type="button" 
+                                     value="Cancel" 
+                                     icon="pi pi-times"
+                                     styleClass="ui-confirmdialog-no rounded-button ui-button-secondary"
+                                     onclick="PF('deleteConfirmDialogWidget').hide()"
+                                     style="margin-left: 5px;"/>
+                </p:confirmDialog>
+            </h:form>
+
+            <!-- Role Dialog Form -->
+            <h:form id="dialogForm" prependId="false">
+                <p:dialog id="roleDialog" 
+                          header="Role Management" 
+                          modal="true" 
+                          widgetVar="roleDialogWidget" 
+                          width="600"
+                          styleClass="modern-dialog"
+                          showEffect="fade"
+                          hideEffect="fade">
+
+                    <div class="dialog-content">
+                        <div class="form-group">
+                            <h:outputLabel for="name" value="Role Name" styleClass="form-label"/>
+                            <p:inputText id="name" 
+                                         value="#{roleManagementBean.selectedRole.userRolename}" 
+                                         styleClass="modern-input"
+                                         placeholder="Enter role name"/>
+                        </div>
+
+                        <div class="form-group">
+                            <h:outputLabel for="perms" value="Permissions" styleClass="form-label"/>
+                            <p:selectCheckboxMenu id="perms"
+                                                  value="#{roleManagementBean.selectedPermissions}"
+                                                  label="Select Permissions"
+                                                  multiple="true"
+                                                  converter="viewPermissionConverter"
+                                                  filter="true"
+                                                  filterMatchMode="contains"
+                                                  styleClass="modern-select">
+                                <f:selectItems value="#{roleManagementBean.allPermissions}"
+                                               var="perm"
+                                               itemLabel="#{perm.displayName}"
+                                               itemValue="#{perm}" />
+                            </p:selectCheckboxMenu>
+                        </div>
+                    </div>
+
+                    <f:facet name="footer">
+                        <div class="dialog-footer">
+                            <p:commandButton value="Save"
+                                             rendered="#{!roleManagementBean.editMode}"
+                                             icon="pi pi-check"
+                                             actionListener="#{roleManagementBean.createRole}"
+                                             process="@form"
+                                             update=":roleForm:userRole, :roleForm:messages" 
+                                             oncomplete="PF('roleDialogWidget').hide()"
+                                             styleClass="modern-btn primary-btn"/>
+
+                            <p:commandButton value="Update"
+                                             rendered="#{roleManagementBean.editMode}"
+                                             icon="pi pi-save"
+                                             actionListener="#{roleManagementBean.updateRole}"
+                                             process="@form"
+                                             update=":roleForm:userRole, :roleForm:messages" 
+                                             oncomplete="PF('roleDialogWidget').hide()"
+                                             styleClass="modern-btn primary-btn"/>
+
+                            <p:commandButton value="Cancel"
+                                             icon="pi pi-times"
+                                             type="button"
+                                             process="@form"
+                                             onclick="PF('roleDialogWidget').hide(); return false;"
+                                             styleClass="modern-btn secondary-btn" />
+                        </div>
+                    </f:facet>
+                </p:dialog>
+            </h:form>
+        </div>
+
+        <style>
+        /* Modern CSS Variables for Consistent Theming */
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --success-color: #10b981;
+            --success-hover: #059669;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --warning-color: #f59e0b;
+            --secondary-color: #6b7280;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --border-radius: 8px;
+            --border-radius-lg: 12px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            background: var(--gray-50);
+            min-height: 100vh;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .page-title {
+            color: var(--gray-800);
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .page-title i {
+            color: var(--primary-color);
+            font-size: 1.75rem;
+        }
+
+        .page-subtitle {
+            color: var(--gray-600);
+            font-size: 1rem;
+            margin: 0;
+            font-weight: 400;
+        }
+
+        /* Action Bar */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-container {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .modern-search {
+            width: 100% !important;
+            padding: 0.75rem 1rem 0.75rem 2.5rem !important;
+            border: 2px solid var(--gray-200) !important;
+            border-radius: var(--border-radius) !important;
+            font-size: 0.875rem !important;
+            background: white !important;
+            transition: var(--transition) !important;
+            box-shadow: var(--shadow-sm) !important;
+        }
+
+        .modern-search:focus {
+            outline: none !important;
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            font-size: 1rem;
+            pointer-events: none;
+        }
+
+        .create-btn {
+            background: linear-gradient(to bottom, #28a745, #218838)!important;
+            color: white !important;
+            padding: 5px 10px !important;
+            border-radius: 4px !important;
+            border: none !important;
+        }
+
+        .create-btn:hover {
+            background: linear-gradient(135deg, var(--success-hover), #047857) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: var(--shadow-lg) !important;
+        }
+
+        /* Table Container */
+        .table-container {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            border: 1px solid var(--gray-200);
+        }
+
+        /* Modern Table Styling */
+        
+        .modern-table .actions-col {
+            text-align: center !important;
+            vertical-align: middle !important;
+        }
+
+        .modern-table .actions-col th {
+            text-align: center !important;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .action-btn {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+            border-radius: 50% !important;
+            border: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: var(--transition) !important;
+            font-size: 0.875rem !important;
+        }
+        .modern-table {
+            width: 100% !important;
+            border: none !important;
+        }
+
+        .modern-table .ui-datatable-header {
+            background: var(--gray-50) !important;
+            border: none !important;
+            padding: 1rem !important;
+        }
+
+        .modern-table .ui-datatable-thead > tr > th {
+            background: var(--gray-50) !important;
+            color: var(--gray-700) !important;
+            font-weight: 600 !important;
+            padding: 1rem !important;
+            border: none !important;
+            border-bottom: 2px solid var(--gray-200) !important;
+            font-size: 0.875rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.025em !important;
+        }
+
+        .modern-table .ui-datatable-tbody > tr {
+            transition: var(--transition) !important;
+            border: none !important;
+        }
+
+        .modern-table .ui-datatable-tbody > tr:hover {
+            background: var(--gray-50) !important;
+        }
+
+        .modern-table .ui-datatable-tbody > tr > td {
+            padding: 1rem !important;
+            border: none !important;
+            border-bottom: 1px solid var(--gray-100) !important;
+            vertical-align: middle !important;
+        }
+
+        /* Role Info Styling */
+        .role-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .role-icon {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+            padding: 0.5rem;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 50%;
+        }
+
+        .role-name {
+            font-weight: 600;
+            color: var(--gray-800);
+            font-size: 0.875rem;
+        }
+
+        /* Permissions Styling */
+        .permissions-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: flex-start;
+            justify-content: flex-start;
+        }
+
+        .permission-tag {
+            background: linear-gradient(135deg, var(--success-color), var(--success-hover));
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInUp 0.5s ease forwards;
+            display: inline-block;
+            min-width: fit-content;
+        }
+
+        /* Staggered animation for multiple permission tags */
+        .permission-tag:nth-child(1) {
+        animation-delay: 0.1s;
+        }
+        .permission-tag:nth-child(2) {
+        animation-delay: 0.2s;
+        }
+        .permission-tag:nth-child(3) {
+        animation-delay: 0.3s;
+        }
+        .permission-tag:nth-child(4) {
+        animation-delay: 0.4s;
+        }
+        .permission-tag:nth-child(5) {
+        animation-delay: 0.5s;
+        }
+        .permission-tag:nth-child(6) {
+        animation-delay: 0.6s;
+        }
+        .permission-tag:nth-child(7) {
+        animation-delay: 0.7s;
+        }
+        .permission-tag:nth-child(8) {
+        animation-delay: 0.8s;
+        }
+
+        /* Keyframe animation */
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .action-btn {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+            border-radius: 50% !important;
+            border: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: var(--transition) !important;
+            font-size: 0.875rem !important;
+        }
+
+        .edit-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)) !important;
+            color: white !important;
+        }
+
+        .edit-btn:hover {
+            background: linear-gradient(135deg, var(--primary-hover), #1d4ed8) !important;
+            transform: scale(1.05) !important;
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, var(--danger-color), var(--danger-hover)) !important;
+            color: white !important;
+        }
+
+        .delete-btn:hover {
+            background: linear-gradient(135deg, var(--danger-hover), #b91c1c) !important;
+            transform: scale(1.05) !important;
+        }
+
+        /* Modern Dialog Styling */
+        .modern-dialog .ui-dialog {
+            border-radius: var(--border-radius-lg) !important;
+            box-shadow: var(--shadow-lg) !important;
+            border: none !important;
+            overflow: hidden !important;
+        }
+
+        .modern-dialog .ui-dialog-titlebar {
+            background: linear-gradient(135deg, var(--gray-50), white) !important;
+            color: var(--gray-800) !important;
+            border: none !important;
+            padding: 1.5rem !important;
+            font-weight: 600 !important;
+            border-bottom: 1px solid var(--gray-200) !important;
+        }
+
+        .dialog-content {
+            padding: 2rem;
+            background: white;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block !important;
+            color: var(--gray-700) !important;
+            font-weight: 600 !important;
+            margin-bottom: 0.5rem !important;
+            font-size: 0.875rem !important;
+        }
+
+        .modern-input {
+            width: 100% !important;
+            padding: 0.75rem !important;
+            border: 2px solid var(--gray-200) !important;
+            border-radius: var(--border-radius) !important;
+            font-size: 0.875rem !important;
+            transition: var(--transition) !important;
+            background: white !important;
+        }
+
+        .modern-input:focus {
+            outline: none !important;
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        }
+
+        .modern-select {
+            width: 100% !important;
+        }
+
+        .modern-select .ui-selectcheckboxmenu {
+            width: 100% !important;
+            border: 2px solid var(--gray-200) !important;
+            border-radius: var(--border-radius) !important;
+            transition: var(--transition) !important;
+        }
+
+        .modern-select .ui-selectcheckboxmenu:focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        }
+
+        /* Dialog Footer */
+        .dialog-footer {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            border-top: 1px solid var(--gray-200);
+            margin: 0 -2rem -2rem -2rem;
+        }
+
+        /* Modern Button Styles */
+        .modern-btn {
+            background: linear-gradient(to bottom, #28a745, #218838)!important;
+            color: white !important;
+            padding: 5px 10px !important;
+            border-radius: 4px !important;
+            border: none !important;
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)) !important;
+            color: white !important;
+        }
+
+        .primary-btn:hover {
+            background: linear-gradient(135deg, var(--primary-hover), #1d4ed8) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        .secondary-btn {
+            background: white !important;
+            color: var(--gray-700) !important;
+            border: 2px solid var(--gray-300) !important;
+        }
+
+        .secondary-btn:hover {
+            background: var(--gray-50) !important;
+            border-color: var(--gray-400) !important;
+        }
+
+        .danger-btn {
+            background: linear-gradient(135deg, var(--danger-color), var(--danger-hover)) !important;
+            color: white !important;
+        }
+
+        .danger-btn:hover {
+            background: linear-gradient(135deg, var(--danger-hover), #b91c1c) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        /* Confirm Dialog Enhancements */
+        .modern-confirm-dialog .ui-dialog {
+            border-radius: var(--border-radius-lg) !important;
+            box-shadow: var(--shadow-lg) !important;
+            border: none !important;
+        }
+
+        .modern-confirm-dialog .ui-dialog-content {
+            padding: 2rem !important;
+            text-align: center !important;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+
+            .action-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-container {
+                max-width: none;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .modern-table .ui-datatable-thead > tr > th,
+            .modern-table .ui-datatable-tbody > tr > td {
+                padding: 0.75rem !important;
+                font-size: 0.8rem !important;
+            }
+
+            .permission-tag {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .dialog-footer {
+                flex-direction: column;
+            }
+
+            .modern-btn {
+                justify-content: center !important;
+            }
+        }
+
+        /* Accessibility Improvements */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Focus Styles for Better Accessibility */
+        .modern-btn:focus,
+        .action-btn:focus {
+            outline: 2px solid var(--primary-color) !important;
+            outline-offset: 2px !important;
+        }
+
+        /* High Contrast Support */
+        @media (prefers-contrast: high) {
+            :root {
+                --gray-200: #000000;
+                --gray-300: #000000;
+                --border-radius: 4px;
+            }
+
+            .permission-tag {
+                border: 2px solid currentColor;
+            }
+        }
+
+        /* Loading States */
+        .ui-datatable-loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* Empty State Styling */
+        .ui-datatable-empty-message > td {
+            text-align: center !important;
+            padding: 3rem 1rem !important;
+            color: var(--gray-500) !important;
+            font-style: italic !important;
+        }
+
+        /* Pagination Styling */
+        .ui-paginator {
+            background: white !important;
+            border: none !important;
+            border-top: 1px solid var(--gray-200) !important;
+            padding: 1rem !important;
+        }
+
+        .ui-paginator .ui-paginator-pages .ui-paginator-page {
+            border-radius: var(--border-radius) !important;
+            border: 1px solid var(--gray-300) !important;
+            margin: 0 0.25rem !important;
+        }
+
+        .ui-paginator .ui-paginator-pages .ui-paginator-page.ui-state-active {
+            background: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: white !important;
+        }
+        </style>
+    </ui:define>
+</ui:composition>

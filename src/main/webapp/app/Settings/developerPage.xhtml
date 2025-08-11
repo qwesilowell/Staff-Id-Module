@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/template2.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{userBean.setupBreadcrumb}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="title">🛠️ Developer Console</ui:define>
+
+    <ui:define name="content">
+        <div class="main-content">
+
+            <!-- Warning Banner -->
+            <p:panel styleClass="warning-panel" style="margin-bottom: 2rem; background: #fff3cd; border: 1px solid #ffeaa7;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="pi pi-exclamation-triangle" style="color: #856404; font-size: 1.5rem;"></i>
+                    <div>
+                        <strong style="color: #856404;">⚠️ Developer Mode Active</strong>
+                        <p style="margin: 5px 0 0 0; color: #856404;">This page bypasses all security checks. Remove or secure in production!</p>
+                    </div>
+                </div>
+            </p:panel>
+
+            <h:form id="developerForm">
+
+                <!-- Database Status Panel -->
+                <p:panel header="📊 Database Status" styleClass="ui-panel-shadow status-panel" style="margin-bottom: 2rem;">
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <h:outputText value="#{dummyDataSeeder.userCount}" styleClass="status-number" />
+                            <h:outputText value="Users" styleClass="status-label" />
+                        </div>
+                        <div class="status-item">
+                            <h:outputText value="#{dummyDataSeeder.roleCount}" styleClass="status-number" />
+                            <h:outputText value="Roles" styleClass="status-label" />
+                        </div>
+                        <div class="status-item">
+                            <h:outputText value="#{dummyDataSeeder.pageCount}" styleClass="status-number" />
+                            <h:outputText value="Pages" styleClass="status-label" />
+                        </div>
+                    </div>
+                    <p:commandButton value="🔄 Refresh Status" 
+                                     action="#{dummyDataSeeder.refreshStatus}"
+                                     update="@form"
+                                     styleClass="ui-button-secondary"
+                                     style="margin-top: 1rem;" />
+                </p:panel>
+
+                <!-- Quick Setup Panel -->
+                <p:panel header="🚀 Quick Setup" styleClass="ui-panel-shadow" style="margin-bottom: 2rem;">
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank setup-grid">
+
+                        <p:commandButton value="🎯 Complete Setup"
+                                         icon="pi pi-star"
+                                         actionListener="#{dummyDataSeeder.completeSetup}"
+                                         update="@form"
+                                         styleClass="ui-button-success setup-button"
+                                         onstart="PF('setupDlg').show()"
+                                         oncomplete="PF('setupDlg').hide()"
+                                         disabled="#{dummyDataSeeder.setupComplete}" />
+
+                        <div class="setup-description">
+                            <strong>Complete Initial Setup</strong>
+                            <p>Creates admin user, roles, and scans for all pages</p>
+                        </div>
+
+                        <p:commandButton value="👤 Create Admin User"
+                                         icon="pi pi-user-plus"
+                                         actionListener="#{dummyDataSeeder.createAdminUser}"
+                                         update="@form"
+                                         styleClass="ui-button-info setup-button"
+                                         onstart="PF('userDlg').show()"
+                                         oncomplete="PF('userDlg').hide()" />
+
+                        <div class="setup-description">
+                            <strong>Create Super Admin</strong>
+                            <p>Creates the main administrator account</p>
+                        </div>
+
+                        <p:commandButton value="📄 Scan AND Load Pages"
+                                         icon="pi pi-search"
+                                         actionListener="#{dummyDataSeeder.generatePages}"
+                                         update="@form"
+                                         styleClass="ui-button-warning setup-button"
+                                         onstart="PF('pagesDlg').show()"
+                                         oncomplete="PF('pagesDlg').hide()" />
+
+                        <div class="setup-description">
+                            <strong>Scan for Pages</strong>
+                            <p>Automatically discovers and adds all XHTML pages</p>
+                        </div>
+
+                    </p:panelGrid>
+                </p:panel>
+
+                <!-- Advanced Operations Panel -->
+                <p:panel header="⚙️ Advanced Operations" styleClass="ui-panel-shadow" style="margin-bottom: 2rem;">
+                    <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank setup-grid">
+
+                        <p:commandButton value="🎲 Generate Test Data"
+                                         icon="pi pi-database"
+                                         actionListener="#{dummyDataSeeder.generateAll}"
+                                         update="@form"
+                                         styleClass="ui-button-success setup-button"
+                                         onstart="PF('generateDlg').show()"
+                                         oncomplete="PF('generateDlg').hide()" />
+
+                        <div class="setup-description">
+                            <strong>Generate Dummy Data</strong>
+                            <p>Creates sample data for testing</p>
+                        </div>
+
+                        <p:commandButton value="🔧 Create Roles Only"
+                                         icon="pi pi-users"
+                                         actionListener="#{dummyDataSeeder.createSystemRoles}"
+                                         update="@form"
+                                         styleClass="ui-button-info setup-button" />
+
+                        <div class="setup-description">
+                            <strong>Setup User Roles</strong>
+                            <p>Creates system roles and permissions</p>
+                        </div>
+
+                        <p:commandButton value="🗑️ Reset Database"
+                                         icon="pi pi-trash"
+                                         actionListener="#{dummyDataSeeder.resetDatabase}"
+                                         update="@form"
+                                         styleClass="ui-button-danger setup-button"
+                                         onclick="return confirm('⚠️ This will delete ALL data! Are you sure?')" />
+
+                        <div class="setup-description">
+                            <strong>Reset Everything</strong>
+                            <p style="color: #dc3545;">⚠️ Deletes all users, roles, and permissions</p>
+                        </div>
+
+                    </p:panelGrid>
+                </p:panel>
+
+                <!-- Navigation Panel -->
+                <p:panel header="🧭 Quick Navigation" styleClass="ui-panel-shadow">
+                    <div class="nav-buttons">
+                        <p:commandButton value="🏠 Go to BiometricLogin" 
+                                         action="/login?faces-redirect=true"
+                                         styleClass="ui-button-secondary nav-button"
+                                         immediate="true" />
+
+                        <p:commandButton value="🔐 Go to Login" 
+                                         action="/sublogin?faces-redirect=true"
+                                         styleClass="ui-button-help nav-button"
+                                         immediate="true" />
+
+                        <p:commandButton value="⚙️ System Settings" 
+                                         action="/app/Settings/developerPage?faces-redirect=true"
+                                         styleClass="ui-button-secondary nav-button"
+                                         immediate="true"
+                                         rendered="#{dummyDataSeeder.userCount > 0}" />
+                    </div>
+                </p:panel>
+
+                <!-- Progress Dialogs -->
+                <p:dialog header="🚀 Setting up system..." widgetVar="setupDlg" modal="true" closable="false" width="400">
+                    <div class="dialog-content">
+                        <p:progressBar mode="indeterminate" styleClass="gradient-loader" style="height:10px; margin-bottom: 15px;" />
+                        <h:outputText value="Creating admin user, roles, and scanning pages..." />
+                        <p><small>This may take a few moments...</small></p>
+                    </div>
+                </p:dialog>
+
+                <p:dialog header="👤 Creating admin user..." widgetVar="userDlg" modal="true" closable="false" width="400">
+                    <div class="dialog-content">
+                        <p:progressBar mode="indeterminate" styleClass="gradient-loader" style="height:10px; margin-bottom: 15px;" />
+                        <h:outputText value="Setting up administrator account..." />
+                    </div>
+                </p:dialog>
+
+                <p:dialog header="📄 Scanning pages..." widgetVar="pagesDlg" modal="true" closable="false" width="400">
+                    <div class="dialog-content">
+                        <p:progressBar mode="indeterminate" styleClass="gradient-loader" style="height:10px; margin-bottom: 15px;" />
+                        <h:outputText value="Discovering and registering pages..." />
+                    </div>
+                </p:dialog>
+
+                <p:dialog header="🎲 Generating data..." widgetVar="generateDlg" modal="true" closable="false" width="400">
+                    <div class="dialog-content">
+                        <p:progressBar mode="indeterminate" styleClass="gradient-loader" style="height:10px; margin-bottom: 15px;" />
+                        <h:outputText value="Creating test data, please wait..." />
+                    </div>
+                </p:dialog>
+
+                <!-- Success/Error Messages -->
+                <p:growl  life="3000" id="messages"  />
+
+            </h:form>
+
+            <!-- Enhanced Styles -->
+            <style>
+                .warning-panel .ui-panel-content {
+                    padding: 1rem !important;
+                }
+
+                .status-panel .ui-panel-content {
+                    padding: 1.5rem !important;
+                }
+
+                .status-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                    gap: 1.5rem;
+                    margin-bottom: 1rem;
+                }
+
+                .status-item {
+                    text-align: center;
+                    padding: 1rem;
+                    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                    border-radius: 10px;
+                    border: 1px solid #dee2e6;
+                }
+
+                .status-number {
+                    display: block;
+                    font-size: 2rem;
+                    font-weight: bold;
+                    color: #495057;
+                }
+
+                .status-label {
+                    display: block;
+                    font-size: 0.9rem;
+                    color: #6c757d;
+                    margin-top: 0.5rem;
+                }
+
+                .setup-grid {
+                    gap: 1.5rem !important;
+                }
+
+                .setup-button {
+                    width: 100%;
+                    height: 50px;
+                    font-size: 1rem !important;
+                    font-weight: 600 !important;
+                }
+
+                .setup-description {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    padding-left: 1rem;
+                }
+
+                .setup-description strong {
+                    color: #495057;
+                    margin-bottom: 0.5rem;
+                }
+
+                .setup-description p {
+                    margin: 0;
+                    color: #6c757d;
+                    font-size: 0.9rem;
+                }
+
+                .nav-buttons {
+                    display: flex;
+                    gap: 1rem;
+                    flex-wrap: wrap;
+                }
+
+                .nav-button {
+                    flex: 1;
+                    min-width: 150px;
+                }
+
+                .dialog-content {
+                    text-align: center;
+                    padding: 1rem;
+                }
+
+                .gradient-loader .ui-progressbar-value {
+                    background: linear-gradient(to right, #3fce5e, #75e6a6);
+                }
+
+                /* Responsive adjustments */
+                @media (max-width: 768px) {
+                    .status-grid {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
+
+                    .setup-grid .ui-panelgrid-cell {
+                        flex-direction: column !important;
+                        text-align: center;
+                    }
+
+                    .setup-description {
+                        padding-left: 0;
+                        padding-top: 1rem;
+                    }
+
+                    .nav-buttons {
+                        flex-direction: column;
+                    }
+                }
+            </style>
+
+        </div>
+    </ui:define>
+</ui:composition>

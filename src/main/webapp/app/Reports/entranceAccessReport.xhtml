@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+
+<ui:composition template="/WEB-INF/templates.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{empReportController.setupBreadcrumb}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="title">Entrance Access Reports</ui:define>
+    <ui:define name ="content">
+        <!--Main Content --> 
+        <div class="main-content">
+            <p:growl id="messages" showSummary= "true" showDetail="true" life="3000" />
+            <h3>ACCESS REPORT</h3>
+
+            <h:form id="entryExitForm">
+                <!-- Filters -->
+                <p:panel header="Access Pairing Filters" toggleable="true">
+                    <p:panelGrid columns="3" styleClass="ui-noborder">
+
+                        <p:outputPanel>
+                            <p:outputLabel for="@next" value="Start Date:" />
+                            <p:datePicker  value="#{entryExitBean.startDate}" pattern="dd-MM-yyy" 
+                                           style="width: 100%" monthNavigator="true" yearNavigator="true" showButtonBar="true"  showWeek="true" />
+                        </p:outputPanel>
+
+                        <p:outputPanel>
+                            <p:outputLabel for="@next" value="End Date:" />
+                            <p:datePicker  value="#{entryExitBean.endDate}" pattern="dd-MM-yyyy" 
+                                           style="width: 100%" monthNavigator="true" yearNavigator="true" showButtonBar="true"  showWeek="true"/>
+                        </p:outputPanel>
+
+                        <p:outputPanel>
+                            <p:outputLabel for="@next" value="Select Entrance" />
+                            <p:selectOneMenu value="#{entryExitBean.selectedEntranceId}"
+                                             style="width: 100%">
+                                <f:selectItem itemLabel="All Entrances" itemValue="#{null}" />
+                                <f:selectItems value="#{entryExitBean.allEntrances}" var="ent"
+                                               itemLabel="#{ent.entranceName}" itemValue="#{ent.id}" />
+                            </p:selectOneMenu>
+                        </p:outputPanel>
+                        <p:spacer height="20px"/>
+                    </p:panelGrid>
+
+                    <div style="display: flex; justify-content: space-between;">
+                        <p:commandButton value="Reset" action="#{entryExitBean.reset()}" update="@form" 
+                                         icon="fa fa-spinner" iconPos="left" 
+                                         styleClass="ui-button-raised ui-button-danger" style="margin-left: 1%"/>
+                        <p:commandButton value="Generate Report"
+                                         action="#{entryExitBean.loadReports}"
+                                         update="entryExitForm:resultsTable messages"
+                                         icon="pi pi-search"
+                                         styleClass="ui-button-success" style="margin-left: 1%" />
+                    </div>
+                </p:panel>
+
+                <div class="table-container" >
+                    <p:dataTable id="resultsTable"
+                                 value="#{entryExitBean.accessHistoryList}"
+                                 var="record"
+                                 paginator="true"
+                                 rows="20"
+                                 emptyMessage="No access records found"
+                                 rowIndexVar="rowIndex"
+                                 resizableColumns="true"
+                                 style="min-width: 250%"
+                                 >
+
+                        <p:column headerText="Employee" style="width:5%">
+                            <h:outputText value="#{record.employeeName}" />
+                        </p:column>
+
+                        <p:column headerText="Ghana Card" style="width:5%;">
+                            <h:outputText value="#{record.ghanaCardNumber}" />
+                        </p:column>
+
+                        <p:column headerText="Entrance" style="width:5%;">
+                            <h:outputText value="#{record.entranceName}" />
+                        </p:column>
+
+                        <p:column headerText="Entry Device" style="width:5%;">
+                            <h:outputText value="#{record.deviceEntryName}" />
+                        </p:column>
+
+                        <p:column headerText="Time Entered" style="width:5%;">
+                            <h:outputText value="#{entryExitBean.formatTime(record.timeEntered)}">
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Entry Result"  style="width:5%;">
+                            <h:outputText value="#{record.entryResult}" 
+                                          styleClass="#{record.entryResult eq 'GRANTED' ? 'granted-box' : 'denied-box'}"/>
+                        </p:column>
+
+                        <p:column headerText="Exit Device"  style="width:5%;">
+                            <h:outputText value="#{record.deviceExitName}" />
+                        </p:column>
+
+                        <p:column headerText="Time Exited"  style="width:5%;">
+                            <h:outputText value="#{entryExitBean.formatTime(record.timeExited)}">
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Exit Result"  style="width:5%;">
+                            <h:outputText value="#{record.exitResult}"
+                                          styleClass="#{record.exitResult eq 'GRANTED' ? 'granted-box' : 'denied-box'}"/>
+                        </p:column>
+
+                        <p:column headerText="Duration"  style="width:5%;">
+                            <h:outputText value="#{entryExitBean.formatDuration(record.duration)}" />
+                        </p:column>
+
+
+                        <p:column headerText="Status"  style="width:5%;">
+                            <h:outputText rendered="#{record.timeEntered != null and record.timeExited == null}"
+                                          value="Missing Exit"
+                                          styleClass="ui-tag ui-tag-danger" />
+
+                            <h:outputText rendered="#{record.timeEntered == null and record.timeExited != null}"
+                                          value="Missing Entry"
+                                          styleClass="ui-tag ui-tag-warning" />
+                        </p:column>
+                    </p:dataTable>
+
+                    <div class="scroll-indicator left" id="scrollLeft" style="display: none;">
+                        <i class="pi pi-chevron-left"></i>
+                    </div>
+                    <div class="scroll-indicator right" id="scrollRight">
+                        <i class="pi pi-chevron-right"></i>
+                    </div>
+                </div>
+            </h:form>
+
+        </div>
+
+        <style>
+            .missing-exit {
+                background-color: #ffe4e1 !important; /* light red */
+            }
+
+            .missing-entry {
+                background-color: #fff5cc !important; /* light yellow */
+            }
+
+            .modern-table .text-success {
+                color: #10b981; /* Tailwind green-500 */
+            }
+
+            .modern-table .text-danger {
+                color: #ef4444; /* Tailwind red-500 */
+            }
+
+            .granted-box {
+                background-color: #d4edda; /* light green */
+                color: black;
+                padding: 4px 8px;
+                border-radius: 5px;
+                font-weight: bold;
+                display: inline-block;
+            }
+
+            .denied-box {
+                background-color: #dc143c ; /* red */
+                color: white;
+                padding: 4px 8px;
+                border-radius: 5px;
+                font-weight: bold;
+                display: inline-block;
+            }
+
+            /* Scroller p3*/
+            .table-container {
+                position: relative;
+                width: 100%;
+                overflow-x: auto;
+                padding: 0;
+                margin: 0;
+            }
+        </style>
+
+<!--        <h:outputScript library="js" name="entrnaceAccessReport.js" target="body" />-->
+    </ui:define>
+</ui:composition>

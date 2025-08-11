@@ -4,16 +4,15 @@
  */
 package com.margins.STIM.service;
 
+import com.margins.STIM.Bean.UserSession;
 import com.margins.STIM.entity.ActivityLog;
 import jakarta.ejb.Stateless;
-import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +27,9 @@ public class ActivityLogService {
 
     @PersistenceContext
     private EntityManager em;
+    
+    @Inject
+    private UserSession userSession;
 
     public void logActivity(ActivityLog log) {
         em.persist(log);
@@ -107,10 +109,7 @@ public class ActivityLogService {
     
     public int countEmployeesOnboardedByLoggedInUserInDay(LocalDate day) {
         // Get logged-in user's username from session
-        String userId = (String) FacesContext.getCurrentInstance()
-                .getExternalContext()
-                .getSessionMap()
-                .get("username");
+        String userId = userSession.getUsername();
 
         if (userId == null) {
             throw new IllegalStateException("No logged-in user found");
@@ -119,6 +118,7 @@ public class ActivityLogService {
         LocalDateTime startOfDay = day.atStartOfDay();
         LocalDateTime endOfDay = day.atTime(23, 59, 59);
 
+        //Rectify this to use auditLog to check employees onboarded this day, week or month
         Long count = em.createQuery(
                 "SELECT COUNT(a) FROM ActivityLog a "
                 + "WHERE a.action = 'create_employee' "

@@ -9,10 +9,17 @@
                 xmlns:f="jakarta.faces.core">
 
     <ui:define name="title">Reset Employee State</ui:define>
+    
+    <ui:define name ="metadata">
+        <f:metadata>
+            <f:viewAction action="#{employeeStateBean.setupBreadcrumb()}" />
+        </f:metadata>
+    </ui:define>
 
     <ui:define name="content">
         <div class="main-content">
             <h:form id="filterForm">
+                <h1>Strict Mode Reset</h1>
                 <p:panel header="Filters" styleClass="custom-panel" toggleable="true">
                     <p:panelGrid columns="4">
                         <p:outputPanel>
@@ -20,9 +27,10 @@
                             <p:autoComplete value="#{employeeStateBean.selectedEmployee}"
                                             completeMethod="#{employeeStateBean.completeEmployees}"
                                             var="emp" itemLabel="#{emp.firstname} #{emp.lastname}" itemValue="#{emp}"
-                                            converter="employeeConverter"
+                                            converter="employeeConverter" style="width: 100%; overflow: hidden"
+                                             scrollHeight="200"
                                             placeholder="Search Employee..." forceSelection="true"
-                                            dropdown="true" style="width: 100%;"/>
+                                            dropdown="true" />
                         </p:outputPanel>
                         <p:outputPanel>
                             <p:outputLabel for="@next">Filter by Entrance</p:outputLabel>
@@ -71,8 +79,11 @@
                         </div>
                     </f:facet>
 
-                    <p:column headerText="Employee" sortBy="#{state.employee.firstname}">
-                        <i class="pi pi-user" style="color:#6366F1; margin-right:5px"/> #{state.employee.firstname} #{state.employee.lastname}
+                    <p:column headerText="Employee" sortBy="#{state.employee.firstname}" styleClass="employee">
+                        <i class="pi pi-user" style="color:#6366F1; margin-right:5px"/>
+                        <div style="font-weight: bold">
+                        #{state.employee.firstname} #{state.employee.lastname}
+                        </div>
                     </p:column>
 
                     <p:column headerText="Ghana Card">
@@ -84,13 +95,16 @@
                     </p:column>
 
                     <p:column headerText="State">
-                        <h:outputText value="#{state.currentState}" styleClass="#{state.currentState == 'INSIDE' ? 'text-success' : 'text-danger'}"/>
+                        <h:panelGroup layout="block" style="display: flex; align-items: center;">
+                            <i class="pi #{state.currentState == 'INSIDE' ? 'pi-arrow-up' : 'pi-arrow-down'}" 
+                               style="color: #{state.currentState == 'INSIDE' ? '#10B981' : '#EF4444'}; margin-right: 6px;" />
+                            <h:outputText value="#{state.currentState}" 
+                                          style="font-weight: 500; color: #{state.currentState == 'INSIDE' ? '#10B981' : '#EF4444'};" />
+                        </h:panelGroup>
                     </p:column>
 
-                    <p:column headerText="Last Updated">
-                        <h:outputText value="#{state.lastModifiedDate}">
-                            <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
-                        </h:outputText>
+                    <p:column headerText="Last Updated"> 
+                        <h:outputText value="#{state.formattedLastModifiedDate}" />
                     </p:column>
 
                     <p:column headerText="Updated By">
@@ -111,7 +125,7 @@
                       id="confirmResetDialog" closable="false" resizable="false" width="400">
                 <h:form id="confirmForm">
                     <p:outputPanel rendered="#{not empty employeeStateBean.selectedState}">
-                        <p:outputLabel value="Change state for #{employeeStateBean.selectedState.employee.firstname} to:"/>
+                        <p:outputLabel value="Change state for #{employeeStateBean.selectedState.employee.firstname} to:"/><br/>
                         <p:selectOneMenu value="#{employeeStateBean.newState}" style="margin-top: 10px;">
                             <f:selectItem itemLabel="Select State" itemValue="" noSelectionOption="true"/>
                             <f:selectItem itemLabel="INSIDE" itemValue="INSIDE"/>
@@ -137,5 +151,12 @@
                 </h:form>
             </p:dialog>
         </div>
+        
+        <style>
+            .employee{
+                display: flex;
+                justify-content: flex-start
+            }
+        </style>
     </ui:define>
 </ui:composition>

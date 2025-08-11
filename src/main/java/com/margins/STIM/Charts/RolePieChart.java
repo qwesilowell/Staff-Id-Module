@@ -5,7 +5,7 @@
 package com.margins.STIM.Charts;
 
 import com.margins.STIM.enums.ChartColor;
-import com.margins.STIM.util.RoleCount;
+import com.margins.STIM.DTO.RoleCount;
 import java.util.ArrayList;
 import java.util.List;
 import org.primefaces.model.charts.ChartData;
