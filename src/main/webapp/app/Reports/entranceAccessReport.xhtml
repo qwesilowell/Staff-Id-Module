@@ -10,7 +10,7 @@
 
     <ui:define name="metadata">
         <f:metadata>
-            <f:viewAction action="#{empReportController.setupBreadcrumb}" />
+            <f:viewAction action="#{entryExitBean.setupBreadcrumb()}" />
         </f:metadata>
     </ui:define>
 
@@ -19,22 +19,34 @@
         <!--Main Content --> 
         <div class="main-content">
             <p:growl id="messages" showSummary= "true" showDetail="true" life="3000" />
-            <h3>ACCESS REPORT</h3>
 
             <h:form id="entryExitForm">
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                    <h3>ACCESS REPORT</h3>
+                    </div>
+                    <div>
+                    <p:commandButton value="Export" 
+                                     icon="pi pi-file-pdf" 
+                                     action="#{entryExitBean.export()}"
+                                     ajax="false"
+                                     styleClass="ui-button-success" style="margin-top: 10%" />
+                    </div>
+                </div>
+                <br/>
                 <!-- Filters -->
                 <p:panel header="Access Pairing Filters" toggleable="true">
-                    <p:panelGrid columns="3" styleClass="ui-noborder">
+                    <p:panelGrid columns="4" styleClass="ui-noborder">
 
                         <p:outputPanel>
                             <p:outputLabel for="@next" value="Start Date:" />
                             <p:datePicker  value="#{entryExitBean.startDate}" pattern="dd-MM-yyy" 
-                                           style="width: 100%" monthNavigator="true" yearNavigator="true" showButtonBar="true"  showWeek="true" />
+                                           style="width: 100%" monthNavigator="true" yearNavigator="true" showButtonBar="true"  showWeek="true" type="LocalDate" />
                         </p:outputPanel>
 
                         <p:outputPanel>
                             <p:outputLabel for="@next" value="End Date:" />
-                            <p:datePicker  value="#{entryExitBean.endDate}" pattern="dd-MM-yyyy" 
+                            <p:datePicker  value="#{entryExitBean.endDate}" pattern="dd-MM-yyyy" type="LocalDate"
                                            style="width: 100%" monthNavigator="true" yearNavigator="true" showButtonBar="true"  showWeek="true"/>
                         </p:outputPanel>
 
@@ -45,6 +57,16 @@
                                 <f:selectItem itemLabel="All Entrances" itemValue="#{null}" />
                                 <f:selectItems value="#{entryExitBean.allEntrances}" var="ent"
                                                itemLabel="#{ent.entranceName}" itemValue="#{ent.id}" />
+                            </p:selectOneMenu>
+                        </p:outputPanel>
+
+                        <p:outputPanel>
+                            <p:outputLabel for="@next" value="Access Status:" />
+                            <p:selectOneMenu value="#{entryExitBean.selectedAccessStatus}" style="width: 100%">
+                                <f:selectItem itemLabel="All Records" itemValue="" />
+                                <f:selectItem itemLabel="Complete Entry Exit" itemValue="COMPLETE" />
+                                <f:selectItem itemLabel="Missing Exit Only" itemValue="MISSING_EXIT" />
+                                <f:selectItem itemLabel="Missing Entry Only" itemValue="MISSING_ENTRY" />
                             </p:selectOneMenu>
                         </p:outputPanel>
                         <p:spacer height="20px"/>
@@ -75,11 +97,9 @@
                                  >
 
                         <p:column headerText="Employee" style="width:5%">
-                            <h:outputText value="#{record.employeeName}" />
-                        </p:column>
-
-                        <p:column headerText="Ghana Card" style="width:5%;">
-                            <h:outputText value="#{record.ghanaCardNumber}" />
+                            <h:outputText value="#{record.employeeName}" style="font-weight: bolder;"/>
+                            <br/>
+                             <h:outputText value="#{record.ghanaCardNumber}" style="font-size: 0.9em; color: rgba(0, 0, 0, 0.6);"  />
                         </p:column>
 
                         <p:column headerText="Entrance" style="width:5%;">
@@ -87,7 +107,7 @@
                         </p:column>
 
                         <p:column headerText="Entry Device" style="width:5%;">
-                            <h:outputText value="#{record.deviceEntryName}" />
+                            <h:outputText value="#{entryExitBean.getDisplayDeviceEntryName(record)}" />
                         </p:column>
 
                         <p:column headerText="Time Entered" style="width:5%;">
@@ -96,12 +116,12 @@
                         </p:column>
 
                         <p:column headerText="Entry Result"  style="width:5%;">
-                            <h:outputText value="#{record.entryResult}" 
-                                          styleClass="#{record.entryResult eq 'GRANTED' ? 'granted-box' : 'denied-box'}"/>
+                            <h:outputText value="#{entryExitBean.safeString(record.entryResult)}" 
+                                          styleClass="#{entryExitBean.safeString(record.entryResult) eq 'GRANTED' ? 'granted-box' : 'denied-box'}"/>
                         </p:column>
 
                         <p:column headerText="Exit Device"  style="width:5%;">
-                            <h:outputText value="#{record.deviceExitName}" />
+                            <h:outputText value="#{entryExitBean.getDisplayDeviceExitName(record)}" />
                         </p:column>
 
                         <p:column headerText="Time Exited"  style="width:5%;">
@@ -110,8 +130,8 @@
                         </p:column>
 
                         <p:column headerText="Exit Result"  style="width:5%;">
-                            <h:outputText value="#{record.exitResult}"
-                                          styleClass="#{record.exitResult eq 'GRANTED' ? 'granted-box' : 'denied-box'}"/>
+                            <h:outputText value="#{entryExitBean.safeString(record.exitResult)}"
+                                          styleClass="#{entryExitBean.safeString(record.exitResult) eq 'GRANTED' ? 'granted-box' : 'denied-box'}"/>
                         </p:column>
 
                         <p:column headerText="Duration"  style="width:5%;">
@@ -127,6 +147,10 @@
                             <h:outputText rendered="#{record.timeEntered == null and record.timeExited != null}"
                                           value="Missing Entry"
                                           styleClass="ui-tag ui-tag-warning" />
+                            
+                            <h:outputText rendered="#{record.timeEntered != null and record.timeExited != null}"
+                                          value="COMPLETE"
+                                          styleClass="ui-tag ui-tag-success" />
                         </p:column>
                     </p:dataTable>
 
@@ -151,11 +175,11 @@
             }
 
             .modern-table .text-success {
-                color: #10b981; /* Tailwind green-500 */
+                color: #10b981; 
             }
 
             .modern-table .text-danger {
-                color: #ef4444; /* Tailwind red-500 */
+                color: #ef4444; 
             }
 
             .granted-box {
@@ -186,6 +210,6 @@
             }
         </style>
 
-<!--        <h:outputScript library="js" name="entrnaceAccessReport.js" target="body" />-->
+        <!--        <h:outputScript library="js" name="entrnaceAccessReport.js" target="body" />-->
     </ui:define>
 </ui:composition>

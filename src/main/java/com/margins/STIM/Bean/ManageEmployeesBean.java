@@ -304,7 +304,7 @@ public class ManageEmployeesBean implements Serializable {
     public boolean validateRule() {
         boolean isValid = true;
 
-        if (selectedEmployee == null) {
+        if (selectedEntrance == null) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_WARN, "Validation Error", "Select an entrance"));
             return false; // critical
@@ -393,6 +393,11 @@ public class ManageEmployeesBean implements Serializable {
     }
 
     public void saveDayTimeRules() {
+        if (selectedEntrance == null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Save Error", "Select an entrance"));
+            return;
+        }
         if (validateRule()) {
             timeAccessRuleService.saveOrUpdateCustomTimeAccess(selectedEmployee, selectedEntrance, startTimes, endTimes, selectedDays);
             

@@ -14,6 +14,10 @@ import com.margins.STIM.entity.enums.AnomalySeverity;
 import com.margins.STIM.entity.enums.AnomalyStatus;
 import com.margins.STIM.entity.enums.AnomalyType;
 import com.margins.STIM.entity.enums.AuditActionType;
+import com.margins.STIM.report.ReportGenerator;
+import com.margins.STIM.report.ReportManager;
+import com.margins.STIM.report.model.AnomalyReport;
+import com.margins.STIM.report.util.ReportOutputFileType;
 import com.margins.STIM.service.AccessAnomalyService;
 import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.EntrancesService;
@@ -33,11 +37,13 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 
 /**
  *
@@ -67,6 +73,8 @@ public class AnomalyBean implements Serializable {
     private AuditLogService auditLogService;
     @Inject
     private UserSession userSession;
+    @Inject
+    private ReportManager rm;
 
     private Long unattended;
 
@@ -162,7 +170,7 @@ public class AnomalyBean implements Serializable {
 
     public void markAsPending(AccessAnomaly anomaly) {
         try {
-            Users currentUser = userService.getCurrentUser();
+            Users currentUser = userSession.getCurrentUser();
             anomalyService.markAsPending(anomaly.getId(), currentUser);
             loadData(); // Refresh data
             FacesContext.getCurrentInstance().addMessage(null,
@@ -182,13 +190,13 @@ public class AnomalyBean implements Serializable {
         try {
 //            ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
 //            String username = (String) externalContext.getSessionMap().get("username");          
-            Users currentUser = userService.getCurrentUser();
+            Users currentUser = userSession.getCurrentUser();
             System.out.println("current User >>>>>>>>> " + currentUser);
             anomalyService.markAsResolved(anomaly.getId(), currentUser);
             loadData(); // Refresh data
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Anomaly resolved successfully"));
-            
+
             String auditDetail = currentUser.getUsername() + " resolved the anomaly with ID: " + anomaly.getId() + ".";
             auditLogService.logActivity(AuditActionType.UPDATE, "Anomaly Page", ActionResult.SUCCESS, auditDetail, currentUser);
         } catch (Exception e) {
@@ -226,9 +234,9 @@ public class AnomalyBean implements Serializable {
                 if (handler != null) {
                     anomalyService.assignHandler(selectedAnomaly.getId(), handler);
                     loadData(); // Refresh data
-                    String auditDetail = "Assigned handler " + handler.getUsername() + " to anomaly with ID: " + selectedAnomaly.getId() + ".";
+                    String auditDetail = "Assigned anomaly with ID: " + selectedAnomaly.getId()+ " to "+ handler.getUsername() + ".";
                     auditLogService.logActivity(AuditActionType.UPDATE, "Anomaly Page", ActionResult.SUCCESS, auditDetail, userSession.getCurrentUser());
-                    
+
                     FacesContext.getCurrentInstance().addMessage(null,
                             new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Handler assigned successfully"));
                 }
@@ -290,9 +298,26 @@ public class AnomalyBean implements Serializable {
     public void setupBreadcrumb() {
         if (breadcrumbBean != null) {
             breadcrumbBean.setSettingsPage();
-        } else {
-            JSF.addWarningMessage("Breadcrumb Empty");
         }
+    }
+
+    public String selectedDevice() {
+        if (this.deviceFilter != null) {
+            Devices device = deviceService.findDeviceById(deviceFilter);
+            return device.getDeviceName();
+        } else {
+            return "N/A";
+        }
+    }
+
+    public String selectedEntrance() {
+        if (this.entranceFilter != null) {
+            Entrances ent = entranceService.findEntranceById(entranceFilter);
+            return ent.getEntranceName();
+        } else {
+            return "ALL ENTRANCES";
+        }
+
     }
 
     public void breadcrumb() {
@@ -301,5 +326,63 @@ public class AnomalyBean implements Serializable {
         } else {
             JSF.addWarningMessage("Breadcrumb Empty");
         }
+    }
+
+    private String safeValue(String value) {
+        return (value != null && !value.isEmpty()) ? value : "N/A";
+    }
+
+    public void export() {
+        List<AnomalyReport> ar = new ArrayList<>();
+
+        for (AccessAnomaly a : filteredAnomalies) {
+            AnomalyReport anomaly = new AnomalyReport();
+            anomaly.setSeverityLevel(a.getAnomalySeverity().toString());
+            anomaly.setAnomalyType(a.getAnomalyType().toString());
+            anomaly.setAnomalyStatus(a.getAnomalyStatus().toString());
+            anomaly.setEmpName(a.getEmployee().getFullName());
+            anomaly.setIssue(a.getMessage());
+            anomaly.setEntranceName(a.getEntrance().getEntranceName());
+            anomaly.setDeviceName(a.getDevice().getDeviceName());
+            anomaly.setTimestamp(formatTimestamp(a));
+
+            ar.add(anomaly);
+
+        }
+
+        rm.addParam("printedBy", userSession.getCurrentUser().getUsername());
+        rm.addParam("selectedSeverity", (selectedSeverity != null ? selectedSeverity.toString() : "ALL"));
+        rm.addParam("empName", safeValue(employeeFilter));
+        rm.addParam("deviceUsed", selectedDevice());
+        rm.addParam("entranceSelected", selectedEntrance());
+        rm.addParam("anomalyStatus", selectedStatus.toString());
+        rm.addParam("date", (dateFilter != null ? DateFormatter.forLocalDate(dateFilter) : "N/A"));
+        rm.addParam("anomalyCount", filteredAnomalies.size());
+        rm.addParam("severeCount", getSevereCount());
+        rm.addParam("infoCount", getInfoCount());
+        rm.addParam("warningCount", getWarningCount());
+
+        rm.addParam("anomalyData", new JRBeanCollectionDataSource(ar));
+        rm.setReportFile(ReportGenerator.ANOMALY_REPORT);
+        rm.setReportData(Arrays.asList(new Object()));
+        rm.generateReport(ReportOutputFileType.PDF);
+    }
+
+    public void print() {
+        rm.addParam("printedBy", userSession.getCurrentUser().getUsername());
+        rm.addParam("severityLevel", selectedAnomaly.getAnomalySeverity().toString());
+        rm.addParam("anomalyType", selectedAnomaly.getAnomalyType().toString());
+        rm.addParam("empName", selectedAnomaly.getEmployee().getFullName());
+        rm.addParam("entranceName", selectedAnomaly.getEntrance().getEntranceName());
+        rm.addParam("deviceName", selectedAnomaly.getDevice().getDeviceName());
+        rm.addParam("issueDetails", selectedAnomaly.getMessage());
+        rm.addParam("timestamp", formatTimestamp(selectedAnomaly));
+        rm.addParam("handlerName", (selectedAnomaly.getHandledBy() != null ? selectedAnomaly.getHandledBy().getUsername() : "UNASSIGNED"));
+        rm.addParam("status", selectedAnomaly.getAnomalyStatus().toString());
+
+        rm.setReportFile(ReportGenerator.ANOMALY_DETAILS);
+        rm.setReportData(Arrays.asList(new Object()));
+        rm.generateReport(ReportOutputFileType.PDF);
+        rm.setFilename("Anomaly_Details_Report");
     }
 }

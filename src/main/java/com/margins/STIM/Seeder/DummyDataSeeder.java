@@ -24,7 +24,6 @@ import com.margins.STIM.service.EntrancesService;
 import com.margins.STIM.service.TimeAccessRuleService;
 import com.margins.STIM.service.UserRolesServices;
 import com.margins.STIM.service.User_Service;
-import com.margins.STIM.util.JSF;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
@@ -108,8 +107,11 @@ public class DummyDataSeeder implements Serializable {
         "Scott", "Green", "Adams", "Baker", "Gonzalez", "Nelson", "Carter", "Mitchell", "Perez", "Roberts",
         "Turner", "Phillips", "Campbell", "Parker", "Evans", "Edwards", "Collins", "Stewart", "Sanchez", "Morris"
     };
-
     private static final String[] LOCATIONS = {
+        "Octagon", "Pronto", "ICPS", "TechWing", "NonTechWing"
+    };
+
+    private static final String[] ENTRANCE_NAMES = {
         "Main Entrance", "Tech Zone", "Server Room", "NonTech Zone", "Food Court", "Finance Office", "Cyber Security",
         "IT Office", "Software Entrance", "HR OFFICE", "Project Management Entrance"
     };
@@ -174,13 +176,11 @@ public class DummyDataSeeder implements Serializable {
                         "👤 User Created!",
                         "Super Admin user has been created successfully!");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
-            } else if (resultMessage != null) {
-
             }
 
         } catch (Exception e) {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "❌ User Creation Failed!",
+                    "User Creation Failed!",
                     "Error creating admin user: " + e.getMessage());
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
@@ -208,7 +208,7 @@ public class DummyDataSeeder implements Serializable {
         try {
             userCount = userService.findAllUsers().size();
             roleCount = userRoleService.getAllUserRoles().size();
-            pageCount = userService.findAll().size(); // Assuming this gets ViewPermissions
+            pageCount = userService.findAll().size(); // this gets ViewPermissions
 
             // Check if setup is complete (has admin user and some pages)
             setupComplete = userCount > 0 && pageCount > 0 && roleCount > 0;
@@ -278,9 +278,11 @@ public class DummyDataSeeder implements Serializable {
         if (userRoleService.findUserRoleByName("SUPER ADMIN") != null) {
             return; // Already seeded
         }
+
         SystemUserRoles userRoles = new SystemUserRoles();
         userRoles.setUserRolename("SUPER ADMIN");
 
+        generatePages();
         List<ViewPermission> allPermissions = userService.findAll();
         userRoles.setPermissions(new HashSet<>(allPermissions));
         userRoleService.createUserRole(userRoles);
@@ -344,19 +346,21 @@ public class DummyDataSeeder implements Serializable {
     }
 
     private void createEntrances() {
-        for (int i = 0; i < 25; i++) {
+
+        for (int i = 0; i < ENTRANCE_NAMES.length; i++) {
             String id = "ENTRANCE-" + (1000 + i);
-            String name = "Entrance " + (i + 1);
+            String name = ENTRANCE_NAMES[i];
             String location = LOCATIONS[i % LOCATIONS.length];
+            
             Entrances entrance = new Entrances();
             entrance.setEntranceDeviceId(id);
             entrance.setEntranceName(name);
             entrance.setEntranceLocation(location);
-            // Randomize mode: 10% STRICT, 50% LENIENT, 40% FULL_ACCESS
+            // Randomize mode: 60% STRICT, 40% LENIENT, 10% FULL_ACCESS
             int r = new Random().nextInt(100);
-            if (r < 10) {
+            if (r < 60) {
                 entrance.setEntranceMode(EntranceMode.STRICT);
-            } else if (r < 60) {
+            } else if (r < 90) {
                 entrance.setEntranceMode(EntranceMode.LENIENT);
             } else {
                 entrance.setEntranceMode(EntranceMode.FULL_ACCESS);
@@ -455,33 +459,45 @@ public class DummyDataSeeder implements Serializable {
 
         for (Employee emp : generatedEmployees) {
             if (random.nextInt(100) < 50) { // 50% of employees
-                Entrances entrance = allEntrances.get(random.nextInt(allEntrances.size()));
+                try {
+                    Entrances entrance = allEntrances.get(random.nextInt(allEntrances.size()));
 
-                // Add entrance to employee's custom list
-                List<Entrances> currentCustomEntrances = emp.getCustomEntrances();
-                if (currentCustomEntrances == null) {
-                    currentCustomEntrances = new ArrayList<>();
+                    // Get current custom entrances or create new list
+                    List<Entrances> currentCustomEntrances = emp.getCustomEntrances() != null
+                            ? new ArrayList<>(emp.getCustomEntrances())
+                            : new ArrayList<>();
+
+                    // Add entrance if not already present
+                    boolean entranceExists = currentCustomEntrances.stream()
+                            .anyMatch(e -> e.getEntranceDeviceId().equals(entrance.getEntranceDeviceId()));
+
+                    if (!entranceExists) {
+                        currentCustomEntrances.add(entrance);
+
+                        // Update employee entrances
+                        Employee updatedEmployee = employeeService.updateEmployeeEntrances(emp, currentCustomEntrances);
+
+                        // Create time access for the entrance
+                        Map<String, LocalTime> startTimes = new HashMap<>();
+                        Map<String, LocalTime> endTimes = new HashMap<>();
+                        List<String> selectedDays = new ArrayList<>();
+
+                        for (DayOfWeek day : DayOfWeek.values()) {
+                            String dayStr = day.name();
+                            startTimes.put(dayStr, LocalTime.of(8, 0));
+                            endTimes.put(dayStr, LocalTime.of(17, 0));
+                            selectedDays.add(dayStr);
+                        }
+
+                        timeAccessService.saveOrUpdateCustomTimeAccess(updatedEmployee, entrance, startTimes, endTimes, selectedDays);
+
+                        System.out.println("Assigned entrance " + entrance.getEntranceName() + " to " + emp.getFullName());
+                    }
+
+                } catch (Exception e) {
+                    System.err.println("Error processing employee " + emp.getGhanaCardNumber() + ": " + e.getMessage());
+                    e.printStackTrace();
                 }
-                if (!currentCustomEntrances.contains(entrance)) {
-                    currentCustomEntrances.add(entrance);
-                }
-                emp.setCustomEntrances(currentCustomEntrances);
-                employeeService.updateEmployeeEnt(emp.getGhanaCardNumber(), emp);
-
-                // Create time maps for Mon–Sun: 08:00 to 17:00
-                Map<String, LocalTime> startTimes = new HashMap<>();
-                Map<String, LocalTime> endTimes = new HashMap<>();
-                List<String> selectedDays = new ArrayList<>();
-
-                for (DayOfWeek day : DayOfWeek.values()) {
-                    String dayStr = day.name();
-                    startTimes.put(dayStr, LocalTime.of(8, 0));
-                    endTimes.put(dayStr, LocalTime.of(17, 0));
-                    selectedDays.add(dayStr);
-                }
-
-                // ✅ Call your real method
-                timeAccessService.saveOrUpdateCustomTimeAccess(emp, entrance, startTimes, endTimes, selectedDays);
             }
         }
     }
@@ -496,32 +512,68 @@ public class DummyDataSeeder implements Serializable {
         }
 
         System.out.println("Total devices available: " + allDevices.size());
-        for (int i = 0; i < Math.min(10, allDevices.size()); i++) {
-            Devices d = allDevices.get(i);
-            System.out.println("Device " + i + ": ID=" + d.getId() + ", DeviceId=" + d.getDeviceId() + ", Name=" + d.getDeviceName());
-        }
-
         Random random = new Random();
+
         for (int i = 0; i < 1000; i++) {
             Employee emp = generatedEmployees.get(random.nextInt(generatedEmployees.size()));
-            Devices device = allDevices.get(random.nextInt(allDevices.size()));
 
-            if (i < 5) {
-                System.out.println("Selected device: ID=" + device.getId() + ", DeviceId=" + device.getDeviceId());
+            // Pick a random entrance from devices list
+            Devices anyDevice = allDevices.get(random.nextInt(allDevices.size()));
+            Entrances entrance = anyDevice.getEntrance();
+
+            // Get entry and exit devices for that entrance
+            List<Devices> entryDevices = allDevices.stream()
+                    .filter(d -> d.getEntrance().equals(entrance) && d.getDevicePosition() == DevicePosition.ENTRY)
+                    .toList();
+            List<Devices> exitDevices = allDevices.stream()
+                    .filter(d -> d.getEntrance().equals(entrance) && d.getDevicePosition() == DevicePosition.EXIT)
+                    .toList();
+
+            if (entryDevices.isEmpty() && exitDevices.isEmpty()) {
+                continue; // No devices assigned
             }
 
-            boolean granted = random.nextInt(100) < 60; // 60% granted
-            String result = granted ? "GRANTED" : "DENIED";
+            int choice = random.nextInt(100); // 0-99
 
-            AccessLog log = new AccessLog();
-            log.setEmployee(emp);
-            log.setDevice(device);
-            log.setTimestamp(randomDateTimeInLast30Days());
-            log.setResult(result);
-            log.setVerificationTime(0.5 + (random.nextDouble() * 2.0));
+            if (choice < 50) {
+                // 50% case: ENTRY + EXIT
+                if (!entryDevices.isEmpty() && !exitDevices.isEmpty()) {
+                    Devices entryDev = entryDevices.get(random.nextInt(entryDevices.size()));
+                    Devices exitDev = exitDevices.get(random.nextInt(exitDevices.size()));
 
-            accessLogService.logAccess(log);
+                    LocalDateTime entryTime = randomDateTimeInLast30Days();
+                    LocalDateTime exitTime = entryTime.plusMinutes(random.nextInt(120) + 1); // 1–120 min later
+
+                    logAccess(emp, entryDev, entryTime);
+                    logAccess(emp, exitDev, exitTime);
+                }
+            } else if (choice < 75) {
+                // 25% case: ENTRY only
+                if (!entryDevices.isEmpty()) {
+                    logAccess(emp, entryDevices.get(random.nextInt(entryDevices.size())), randomDateTimeInLast30Days());
+                }
+            } else {
+                // 25% case: EXIT only
+                if (!exitDevices.isEmpty()) {
+                    logAccess(emp, exitDevices.get(random.nextInt(exitDevices.size())), randomDateTimeInLast30Days());
+                }
+            }
         }
+    }
+
+    private void logAccess(Employee emp, Devices device, LocalDateTime time) {
+        Random random = new Random();
+        boolean granted = random.nextInt(100) < 60; // 60% granted
+        String result = granted ? "GRANTED" : "DENIED";
+
+        AccessLog log = new AccessLog();
+        log.setEmployee(emp);
+        log.setDevice(device);
+        log.setTimestamp(time);
+        log.setResult(result);
+        log.setVerificationTime(0.5 + (random.nextDouble() * 2.0));
+
+        accessLogService.logAccess(log);
     }
 
     private void assignRoleTimeAccess() {
@@ -593,7 +645,7 @@ public class DummyDataSeeder implements Serializable {
                     }
 
                     if (selectedDevice != null) {
-                        stateService.recordStrictEntryOrExit(emp, entrance, nextPosition, "Seeder", selectedDevice);
+                        stateService.recordEntryOrExit(emp, entrance, nextPosition, "Seeder", selectedDevice);
                     }
                 }
             }

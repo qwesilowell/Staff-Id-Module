@@ -24,6 +24,11 @@ public class ReportGenerator extends JasperReportManager implements Serializable
     public static final String ACCESSIBLE_ENTRANCES_PER_ROLE = REPORT_BASE_DIR + "AccessibleEntrancesPerRole.jasper";
     public static final String ENTRANCES_REPORT = REPORT_BASE_DIR + "EntranceReport.jasper";
     public static final String ENTRANCES_INFORMATION = REPORT_BASE_DIR + "EntranceInformation.jasper";
+    public static final String ENTRANCE_ACCESS_REPORT = REPORT_BASE_DIR + "Entrance_Access_Report.jasper";
+    public static final String ANOMALY_REPORT = REPORT_BASE_DIR + "Anomaly.jasper";
+    public static final String ANOMALY_DETAILS = REPORT_BASE_DIR + "AnomalyDetails.jasper";
+    public static final String AUDIT_LOG = REPORT_BASE_DIR + "auditLog.jasper";
+    public static final String USER_REPORT = REPORT_BASE_DIR + "UserReport.jasper";
 
     public ReportGenerator() {
         setReportEnvironment(ReportOutputEnvironment.WEB_APPLICATION);

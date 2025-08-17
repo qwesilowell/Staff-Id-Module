@@ -61,15 +61,13 @@ public class AccessAnomalyService {
             em.merge(anomaly);
         }
     }
-    
-    
 
     public void resolveBatch(List<Integer> anomalyIds, Users resolvedBy) {
         for (int id : anomalyIds) {
             markAsResolved(id, resolvedBy);
         }
     }
-    
+
     public List<AccessAnomaly> findBySeverity(AnomalySeverity severity) {
         return em.createQuery("SELECT a FROM AccessAnomaly a WHERE a.anomalySeverity = :severity ORDER BY a.timestamp DESC", AccessAnomaly.class)
                 .setParameter("severity", severity)
@@ -108,7 +106,9 @@ public class AccessAnomalyService {
             jpql.append(" AND a.anomalyStatus = :status");
         }
         if (employeeName != null && !employeeName.trim().isEmpty()) {
-            jpql.append(" AND LOWER(a.employee.firstname)LIKE :employeeName OR LOWER (a.employee.lastname) LIKE :employeeName");
+            jpql.append(" AND (LOWER(CONCAT(a.employee.firstname, ' ', a.employee.lastname)) LIKE :employeeName");
+            jpql.append(" OR LOWER(a.employee.firstname) LIKE :employeeName");
+            jpql.append(" OR LOWER(a.employee.lastname) LIKE :employeeName)");
         }
         if (deviceId != null) {
             jpql.append(" AND a.device.id = :deviceId");

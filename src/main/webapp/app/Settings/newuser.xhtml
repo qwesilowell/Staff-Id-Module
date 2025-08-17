@@ -6,20 +6,20 @@
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets">
-    
+
     <ui:define name="metadata">
         <f:metadata>
             <f:viewAction action="#{userBean.setupBreadcrumb}" />
         </f:metadata>
     </ui:define>
-    
+
     <ui:define name="title">System User Signup</ui:define>
 
-<!--    <ui:define name="metadata">
-        <f:metadata>
-            <f:viewAction action="#{loginBean.checkAccess('ADMIN')}" />
-        </f:metadata>
-    </ui:define>-->
+    <!--    <ui:define name="metadata">
+            <f:metadata>
+                <f:viewAction action="#{loginBean.checkAccess('ADMIN')}" />
+            </f:metadata>
+        </ui:define>-->
 
 
     <ui:define name ="content">
@@ -198,10 +198,11 @@
 
                                     <div class="button-container">
                                         <div class="capture-buttons">
-                                            <p:commandButton value="Open Camera" onclick="openCamera();" type="button" 
-                                                             styleClass="ui-button-secondary capture-button"/>
-                                            <p:commandButton value="Capture Face" onclick="capture();" type="button" 
-                                                             styleClass="ui-button-secondary capture-button"/>
+                                            <p:commandButton id="cameraButton" value="Open Camera"  type="button" icon="pi pi-camera" iconPos="left"
+                                                             styleClass="ui-button-secondary capture-button" onclick="toggleCamera()" />
+
+                                            <p:commandButton id="captureButton" value="Capture Face" onclick="capture();" type="button" 
+                                                             styleClass="ui-button-secondary capture-button" style="display: none;"/>
                                         </div>
                                         <p:commandButton value="Submit Verification" onclick="saveCroppedImage()" 
                                                          action="#{userBean.verifyFace()}" update="growl" 
@@ -271,16 +272,26 @@
                     <p:panel rendered="#{userBean.currentStep == 2}">
                         <h3>Employee Details</h3>
 
-                        <p:panelGrid columns="2">
-
-                            <h:outputLabel value="Face Image" />
+                        <p:outputPanel style="text-align:center; margin-bottom:2rem;">
+                            <h:outputText value="Face Image" style="font-weight: bold; display:block; margin-bottom:0.5rem; " />
                             <img width="200px" src="#{userBean.empImage}"></img>
+                        </p:outputPanel>
 
-                            <h:outputLabel value="Ghana Card Number:" />
-                            <h:outputText value="#{userBean.ghanaCardNumber}" />
+                        <p:panelGrid columns="2">
 
                             <h:outputLabel value="Full Name:" />
                             <h:outputText value="#{userBean.username}" />
+
+                            <h:outputLabel value="Email:" />
+                            <p:inputText value="#{userBean.email}" placeholder="Enter Email Address"
+                                         style="width:100%; padding:5px;" />
+
+                            <h:outputLabel value="Password:" />
+                            <p:inputText value="#{userBean.password}" placeholder="Enter Password"
+                                         style="width:100%; padding:5px;" />
+
+                            <h:outputLabel value="Ghana Card Number:" />
+                            <h:outputText value="#{userBean.ghanaCardNumber}" />
 
                             <h:outputLabel value="Date of Birth:" />
                             <h:outputText value="#{userBean.employeeDOB}" />
@@ -290,17 +301,28 @@
 
                             <h:outputLabel value="Nationality:" />
                             <h:outputText value="#{userBean.nationality}" />
-
-
+                            
                             <h:outputLabel for="userRole" value="Role:" />
-                            <p:selectOneMenu id="userRole" value="#{userBean.userRole}" >
-                                <f:selectItem itemLabel="Select Role" itemValue="" noSelectionOption="true" />
-                                <f:selectItems value="#{userBean.availableRoles}" var="r"
+                            <p:selectOneMenu value="#{userBean.userRole}" 
+                                              style="width:100%; padding:5px;"
+                                             filter="true"
+                                             filterMatchMode="contains"
+                                             converter="systemUserRoleConverter">
+                                <f:selectItem itemLabel="Select Role..." itemValue="#{null}"  noSelectionOption="true"/>
+                                <f:selectItems value="#{userBean.allUserRole}"
+                                               var="role"
+                                               itemLabel="#{role.userRolename}"
+                                               itemValue="#{role}" />
+                            </p:selectOneMenu>
+                            
+
+                            <h:outputLabel for="userType" value="UserType:" />
+                            <p:selectOneMenu id="userRole" value="#{userBean.selectedUserType}"  style="width:100%; padding:5px;">
+                                <f:selectItem itemLabel="Select User Type" itemValue="" noSelectionOption="true" />
+                                <f:selectItems value="#{userBean.availableUserType}" var="r"
                                                itemLabel="#{r}" itemValue="#{r}" />
                             </p:selectOneMenu>
-                            <p:message for="userRole" />
-
-
+                          
                         </p:panelGrid>
 
                         <div style="display: flex; justify-content: space-between; margin-top: 20px;">
@@ -320,6 +342,7 @@
         <h:outputScript library="js" name="webcam.js"/>
         <h:outputScript library="js" name="cropper.min.js"/>
         <h:outputScript library="js" name="facial.js"/>
+        <h:outputScript library="js" name="bioVerification.js"/>
         <h:outputStylesheet library="css" name="cropper.min.css"/>
 
         <style type='text/css'>
@@ -405,6 +428,31 @@
             .verify-button {
                 background-color: #28a745 !important;
                 color: white !important;
+            }
+            .form-container {
+                display: flex;
+                justify-content: space-between;
+                width: 80%; /* Matches your original panelGrid width */
+                margin: 0 auto; /* Centers the container */
+            }
+            .form-left {
+                width: 48%;
+                vertical-align: top;
+                padding-right: 2%;
+            }
+            .form-right {
+                width: 48%;
+                vertical-align: top;
+            }
+            .camera-button-red {
+                background-color: #dc3545 !important;
+                border-color: #dc3545 !important;
+                color: white !important;
+            }
+
+            .camera-button-red:hover {
+                background-color: #c82333 !important;
+                border-color: #bd2130 !important;
             }
         </style>
 

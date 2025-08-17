@@ -21,12 +21,21 @@
             <h:form id="anomalyForm">
                 <div class="anomalies-container">
                     <!-- Page Header -->
+                    <div style="display: flex; justify-content: space-between">
                     <div class="page-header">
                         <h2><i class="fa-solid fa-building-shield" style="color: black;"></i> Anomaly Management</h2>
 <!--                        <h1 class="page-title" style="margin: 0;">Anomalies Management</h1>-->
                         <p class="page-subtitle">Monitor and manage access anomalies </p>
                     </div>
-
+                        
+                        <div>
+                           <p:commandButton value="Export to PDF" 
+                                     icon="pi pi-file-pdf" 
+                                     styleClass="ui-button-success"
+                                     action="#{anomalyBean.export()}"
+                                     ajax="false"/> 
+                        </div>
+                    </div>
 
                     <!-- Severity Cards -->
                     <div class="cards-grid">
@@ -79,7 +88,7 @@
                     <!-- Controls Section -->
                     <div class="controls-section">
                         <div class="controls-header">
-                            <h2 style="margin: 0; color: var(--text-primary); font-size: 1.5rem;">Anomaly Details</h2>
+                            <h2 style="margin: 0; color: var(--text-primary); font-size: 1.5rem;">Anomaly Filter</h2>
 
                             <!-- Status Toggle -->
                             <div class="status-toggle">
@@ -290,6 +299,14 @@
             <!-- Details Dialog -->
             <p:dialog id="detailsDialog" header="Anomaly Details" widgetVar="detailsDialog" modal="true" resizable="false" width="600">
                 <h:form>
+                    <div style="display: flex; justify-content: flex-end;">
+                           <p:commandButton value="Export to PDF" 
+                                     icon="pi pi-file-pdf" 
+                                     styleClass="ui-button-success"
+                                     action="#{anomalyBean.print()}"
+                                     ajax="false"/> 
+                        </div>
+                    
                     <p:panelGrid columns="2" style="width: 100%;">
                         <p:outputLabel value="Type:" style="font-weight: bold;" />
                         
@@ -318,7 +335,7 @@
                         <h:outputText value="#{anomalyBean.selectedAnomaly.entrance.entranceName}" />
 
                         <p:outputLabel value="Handler:" style="font-weight: bold;" />
-                        <h:outputText value="#{anomalyBean.selectedAnomaly.handledBy != null ? anomalyBean.selectedAnomaly.handledBy.username : 'Unassigned'}" />
+                        <h:outputText value="#{anomalyBean.selectedAnomaly.handledBy != null ? anomalyBean.selectedAnomaly.handledBy.username : 'UNASSIGNED'}" />
 
                         <p:outputLabel value="Message:" style="font-weight: bold;" />
                         <h:outputText value="#{anomalyBean.selectedAnomaly.message}" />

@@ -162,8 +162,8 @@ public class BreadcrumbBean implements Serializable {
     // Specific Report Types
     public void setEmployeeReportBreadcrumb() {
         resetToDashboard();
-        addBreadcrumb("Monitoring and Reports", contextPath + "/app/Reports/Reports.xhtml?faces-redirect=true");
-        addBreadcrumb("Reports", contextPath + "/app/Reports/Reports.xhtml?faces-redirect=true");
+        addBreadcrumb("Monitoring and Reports", contextPath + "/app/Reports/Reports.xhtml");
+        addBreadcrumb("Reports", contextPath + "/app/Reports/Reports.xhtml");
         addBreadcrumb("Employees Report", null, true);
     }
 
@@ -176,16 +176,16 @@ public class BreadcrumbBean implements Serializable {
 
     public void setEntrancesReportBreadcrumb() {
         resetToDashboard();
-        addBreadcrumb("Monitoring and Reports", contextPath + "/app/Reports/Reports?faces-redirect=true");
-        addBreadcrumb("Reports", contextPath + "/app/Reports/Reports?faces-redirect=true");
+        addBreadcrumb("Monitoring and Reports", contextPath + "/app/Reports/Reports");
+        addBreadcrumb("Reports", contextPath + "/app/Reports/Reports.xhtml");
         addBreadcrumb("Entrances Report", null, true);
     }
 
-    public void setLoginsReportBreadcrumb() {
+    public void setEntranceAccessReportReportBreadcrumb() {
         resetToDashboard();
-        addBreadcrumb("Monitoring and Reports", contextPath + "/app/Reports/Reports?faces-redirect=true");
-        addBreadcrumb("Reports", contextPath + "/app/Reports/Reports?faces-redirect=true");
-        addBreadcrumb("Logins Report", null, true);
+        addBreadcrumb("Monitoring and Reports", contextPath + "/app/Reports/Reports.xhtml");
+        addBreadcrumb("Reports", contextPath + "/app/Reports/Reports.xhtml");
+        addBreadcrumb("Entrance Access Report", null, true);
     }
 
     //Settings Page

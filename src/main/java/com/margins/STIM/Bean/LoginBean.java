@@ -13,14 +13,12 @@ import com.margins.STIM.entity.ActivityLog;
 import com.margins.STIM.entity.Users;
 import com.margins.STIM.entity.enums.ActionResult;
 import com.margins.STIM.entity.enums.AuditActionType;
-import com.margins.STIM.entity.enums.UserType;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.entity.websocket.FingerCaptured;
 import com.margins.STIM.model.CapturedFinger;
 import com.margins.STIM.service.ActivityLogService;
 import com.margins.STIM.service.AuditLogService;
-import com.margins.STIM.service.BiometricDataService;
 import com.margins.STIM.service.User_Service;
 import com.margins.STIM.util.FingerprintProcessor;
 import com.margins.STIM.util.JSF;
@@ -118,16 +116,6 @@ public class LoginBean implements Serializable {
 
     String BASE_URL = JSF.getContextURL() + "/";
 
-    private void logActivity(String username, String result, String details) {
-        ActivityLog log = new ActivityLog();
-        log.setUserId(username);
-        log.setAction("login");
-        log.setTimestamp(LocalDateTime.now());
-        log.setResult(result);
-        log.setDetails(details);
-        activityLogService.logActivity(log);
-    }
-
     // Reset Fingerprint Selection
     public void reset() {
         capturedFinger = null;
@@ -141,27 +129,26 @@ public class LoginBean implements Serializable {
         return socketData;
     }
 
-    public void checkAccess(UserType requiredRole) {
-        String sessionRoleStr = (String) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("userRole");
-        if (sessionRoleStr == null) {
-            redirectToLogin();
-            return;
-        }
-
-        UserType sessionRole;
-        try {
-            sessionRole = UserType.valueOf(sessionRoleStr);
-        } catch (IllegalArgumentException e) {
-            // Invalid role string in session
-            redirectToLogin();
-            return;
-        }
-
-        if (!sessionRole.equals(requiredRole)) {
-            redirectToLogin();
-        }
-    }
-
+//    public void checkAccess(UserType requiredRole) {
+//        String sessionRoleStr = (String) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("userRole");
+//        if (sessionRoleStr == null) {
+//            redirectToLogin();
+//            return;
+//        }
+//
+//        UserType sessionRole;
+//        try {
+//            sessionRole = UserType.valueOf(sessionRoleStr);
+//        } catch (IllegalArgumentException e) {
+//            // Invalid role string in session
+//            redirectToLogin();
+//            return;
+//        }
+//
+//        if (!sessionRole.equals(requiredRole)) {
+//            redirectToLogin();
+//        }
+//    }
     private void redirectToLogin() {
         try {
             FacesContext.getCurrentInstance().getExternalContext()
@@ -176,22 +163,27 @@ public class LoginBean implements Serializable {
         try {
 
             if (ghanaCardNumber == null || ghanaCardNumber.isBlank()) {
+                handleBiometricError("Facial Login - GhanaCard is Empty", null, null);
                 JSF.addErrorMessage("Ghana Card Number must be filled");
                 return;
             }
 
             if (!ValidationUtil.isValidGhanaCardNumber(ghanaCardNumber)) {
+                handleBiometricError("SingleFinger Login - Invalid GhanaCard Format", null, null);
                 JSF.addErrorMessage("Invalid Ghana Card Format");
                 return;
             }
 
             Users currentUser = userService.findUserByGhanaCard(ghanaCardNumber);
             if (currentUser == null) {
+                handleBiometricError("Facial Login - User not registered in system", null, null);
                 JSF.addErrorMessage("User Not Registered");
                 return;
             }
 
             if (capturedFinger == null || capturedFinger.isEmpty()) {
+                handleBiometricError("Single Finger Login, Captured Finger is null", null, null);
+
                 JSF.addErrorMessage("No fingerprint captured. Please scan your fingerprint.");
                 return;
             }
@@ -239,37 +231,71 @@ public class LoginBean implements Serializable {
             Gson g = new Gson();
             callBack = g.fromJson(res, VerificationResultData.class);
             System.out.println("Response from API: " + res);
-            if (response.statusCode() == 200 && callBack != null) {
-                if ("TRUE".equals(callBack.getData().getVerified())) {
-                    FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
-                    FacesContext.getCurrentInstance().addMessage(null,
-                            new FacesMessage(FacesMessage.SEVERITY_INFO, "Single Finger Login", "Successful!"));
+            if (response.statusCode() != 200) {
+                handleBiometricError("Server returned status: " + response.statusCode(), null, currentUser);
+                return;
+            }
+            if (callBack == null) {
+                handleBiometricError("No response received from callback ", null, currentUser);
+                return;
+            }
+            // Check if biometric verification was successful
+            if (!"TRUE".equals(callBack.getData().getVerified())) {
+                String errorMsg = callBack.msg != null ? callBack.msg.toString() : "Biometric verification failed";
+                handleBiometricError(errorMsg, null, null);
+                return;
+            }
 
-                    String forenames = callBack.data.person.forenames;
-                    String surname = callBack.data.person.surname;
-                    username = forenames + " " + surname;
-                    ghanaCardNumber = callBack.data.person.nationalId;
+            if (callBack.data == null || callBack.data.person == null) {
+                handleBiometricError("Invalid response data structure", null, currentUser);
+                return;
+            }
 
-                    if (currentUser != null) {
-                        userSession.loginUser(currentUser);
-                        auditLogService.logActivity(AuditActionType.LOGIN, "Biometric Login Page", ActionResult.SUCCESS, currentUser.getUsername() + " SingleFinger Login Succesful", currentUser);
+            String forenames = callBack.data.person.forenames;
+            String surname = callBack.data.person.surname;
+            String nationalId = callBack.data.person.nationalId;
 
-                        FacesContext.getCurrentInstance().getExternalContext().redirect("app/dashboard2.xhtml");
-                    }
-                }
+            if (forenames == null || surname == null || nationalId == null) {
+                handleBiometricError("Incomplete user data in response", null, currentUser);
+                return;
+            }
+
+            username = forenames.trim() + " " + surname.trim();
+            ghanaCardNumber = nationalId;
+
+            userSession.loginUser(currentUser);
+
+            if (userSession.userActive()) {
+                // Successful login
+                auditLogService.logActivity(
+                        AuditActionType.LOGIN,
+                        "Biometric Login Page",
+                        ActionResult.SUCCESS,
+                        currentUser.getUsername() + " Single Finger Login Successful",
+                        currentUser
+                );
+                FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+                JSF.addSuccessMessageWithSummary("Welcome! ", currentUser.getUsername());
+
+                // Redirect to dashboard
+                redirectToDashboard();
             } else {
-                auditLogService.logActivity(AuditActionType.LOGIN, "Biometric Login Page", ActionResult.FAILED, "SingleFinger Login failed for Ghana Card: " + ghanaCardNumber
-                        + " "
-                        + (callBack != null ? callBack.msg : "No response from server"), null);
-                JSF.addErrorMessage("Fingerprint Verification Failed!" + (callBack != null ? callBack.msg : "No response from server"));
+                // User inactive
+                auditLogService.logActivity(
+                        AuditActionType.LOGIN,
+                        "Biometric Login Page",
+                        ActionResult.FAILED,
+                        currentUser.getUsername() + " Single Finger Login Failed - User Inactive",
+                        currentUser
+                );
+
+                JSF.addErrorMessage("Login Failed - Your account is inactive. Please contact administrator.");
+                updateForm();
             }
         } catch (Exception e) {
-            auditLogService.logActivity(AuditActionType.LOGIN, "BiometricLogin Page", ActionResult.FAILED,
-                    "Login failed with exception for Ghana Card: " + ghanaCardNumber + " - " + e.getMessage(), null);
-            JSF.addErrorMessage("An unexpected error occurred. Please try again!");
-            e.printStackTrace(); // Log the error for debugging
-        }
+            handleBiometricError("System error during Single Finger login: " + e.getMessage(), e, null);
 
+        }
     }
 
     public void verifyFace() {
@@ -280,12 +306,15 @@ public class LoginBean implements Serializable {
             }
 
             if (!ValidationUtil.isValidGhanaCardNumber(ghanaCardNumber)) {
+                handleBiometricError("Facial Login - Invalid GhanaCard Format", null, null);
+
                 JSF.addErrorMessage("Invalid Ghana Card Format");
                 return;
             }
 
             Users currentUser = userService.findUserByGhanaCard(ghanaCardNumber);
             if (currentUser == null) {
+                handleBiometricError("Facial Login - User not registered in system", null, null);
                 JSF.addErrorMessage("User Not Registered");
                 return;
             }
@@ -331,37 +360,70 @@ public class LoginBean implements Serializable {
             Gson g = new Gson();
             callBack = g.fromJson(res, VerificationResultData.class);
             System.out.println("Response from API: " + res);
-            if (response.statusCode() == 200 && callBack != null) {
-                if ("TRUE".equals(callBack.getData().getVerified())) {
-                    FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
-                    FacesContext.getCurrentInstance().addMessage(null,
-                            new FacesMessage(FacesMessage.SEVERITY_INFO, "Facial Login", "Successful!"));
-
-                    String forenames = callBack.data.person.forenames;
-                    String surname = callBack.data.person.surname;
-                    username = forenames + " " + surname;
-                    ghanaCardNumber = callBack.data.person.nationalId;
-
-                    if (currentUser != null) {
-                        userSession.loginUser(currentUser);
-                        auditLogService.logActivity(AuditActionType.LOGIN, "Biometric Login Page", ActionResult.SUCCESS, currentUser.getUsername() + " Face Login Succesful", currentUser);
-
-                        FacesContext.getCurrentInstance().getExternalContext().redirect("app/dashboard2.xhtml");
-                    }
-                    PrimeFaces.current().ajax().update("theForm");
-                }
-            } else {
-                auditLogService.logActivity(AuditActionType.LOGIN, "Biometric Login Page", ActionResult.FAILED, "Face Login failed for Ghana Card: " + ghanaCardNumber
-                        + " "
-                        + (callBack != null ? callBack.msg : "No response from server"), null);
-                JSF.addErrorMessage("Fingerprint Verification Failed! " + (callBack != null ? callBack.msg : "No response from server"));
-
+            if (response.statusCode() != 200) {
+                handleBiometricError("Server returned status: " + response.statusCode(), null, currentUser);
+                return;
             }
-        } catch (Exception e) {  // Catch any other unexpected errors
-            auditLogService.logActivity(AuditActionType.LOGIN, "BiometricLogin Page", ActionResult.FAILED,
-                    "Login failed with exception for Ghana Card: " + ghanaCardNumber + " - " + e.getMessage(), null);
-            JSF.addErrorMessage("An unexpected error occurred. Please try again!");
-            e.printStackTrace(); // Log the error for debugging
+            if (callBack == null) {
+                handleBiometricError("No response received from callback ", null, currentUser);
+                return;
+            }
+            // Check if biometric verification was successful
+            if (!"TRUE".equals(callBack.getData().getVerified())) {
+                String errorMsg = callBack.msg != null ? callBack.msg.toString() : "Biometric verification failed";
+                handleBiometricError(errorMsg, null, null);
+                return;
+            }
+
+            if (callBack.data == null || callBack.data.person == null) {
+                handleBiometricError("Invalid response data structure", null, currentUser);
+                return;
+            }
+
+            String forenames = callBack.data.person.forenames;
+            String surname = callBack.data.person.surname;
+            String nationalId = callBack.data.person.nationalId;
+
+            if (forenames == null || surname == null || nationalId == null) {
+                handleBiometricError("Incomplete user data in response", null, currentUser);
+                return;
+            }
+
+            username = forenames.trim() + " " + surname.trim();
+            ghanaCardNumber = nationalId;
+
+            userSession.loginUser(currentUser);
+
+            if (userSession.userActive()) {
+                // Successful login
+                auditLogService.logActivity(
+                        AuditActionType.LOGIN,
+                        "Biometric Login Page",
+                        ActionResult.SUCCESS,
+                        currentUser.getUsername() + " Facial Login Successful",
+                        currentUser
+                );
+                FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+                JSF.addSuccessMessageWithSummary("Welcome! ", currentUser.getUsername());
+
+                // Redirect to dashboard
+                redirectToDashboard();
+            } else {
+                // User inactive
+                auditLogService.logActivity(
+                        AuditActionType.LOGIN,
+                        "Biometric Login Page",
+                        ActionResult.FAILED,
+                        currentUser.getUsername() + " Facial Login Failed - User Inactive",
+                        currentUser
+                );
+
+                JSF.addErrorMessage("Login Failed - Your account is inactive. Please contact administrator.");
+                updateForm();
+            }
+        } catch (Exception e) {
+            handleBiometricError("System error during Facial login: " + e.getMessage(), e, null);
+
         }
     }
 
@@ -399,9 +461,8 @@ public class LoginBean implements Serializable {
             }
 
             String request = requestData(capturedFingers);
-            
-            System.out.println("TRY >>>>>>>>>>>>>>>>>>>>>>>>>" +request);
 
+//            System.out.println("TRY >>>>>>>>>>>>>>>>>>>>>>>>>" + request);
             if (request == null) {
                 JSF.addErrorMessage("Failed to generate request. No valid fingerprint data.");
                 return;
@@ -438,7 +499,9 @@ public class LoginBean implements Serializable {
             System.out.println("Response Body: " + response.body());
 
             if (response.statusCode() == 400) {
+                handleBiometricError("API Error: Bad Request. Response Status Code is " + response.statusCode(), null, null);
                 JSF.addErrorMessage("API Error: Bad Request. Please check fingerprint data.");
+
                 return;
             }
             String res = response.body();
@@ -446,75 +509,127 @@ public class LoginBean implements Serializable {
             callBack = g.fromJson(res, VerificationResultData.class);
 
             System.out.println("Response Data: " + res);
-            if (response.statusCode() == 200 && callBack != null) {
-                if ("TRUE".equals(callBack.getData().getVerified())) {
-
-                    FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
-                    FacesContext.getCurrentInstance().addMessage(null,
-                            new FacesMessage(FacesMessage.SEVERITY_INFO, "No GhanCard Login", "Successful!"));
-
-                    String forenames = callBack.data.person.forenames;
-                    String surname = callBack.data.person.surname;
-                    username = forenames + " " + surname;
-                    ghanaCardNumber = callBack.data.person.nationalId;
-
-                    Users currentUser = userService.findUserByGhanaCard(ghanaCardNumber);
-                    if (currentUser == null) {
-                        JSF.addErrorMessage("User Not Registered");
-                        return;
-                    }
-
-                    userSession.loginUser(currentUser);
-                    auditLogService.logActivity(AuditActionType.LOGIN, "Biometric Login Page", ActionResult.SUCCESS, currentUser.getUsername() + " MultiFinger Login Succesful", currentUser);
-
-                    FacesContext.getCurrentInstance().getExternalContext().redirect("app/dashboard2.xhtml");
-
-                    FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "app/dashboard2.xhtml");
-
-                    PrimeFaces.current().ajax().update("theForm");
-                }
-            } else {
-                auditLogService.logActivity(AuditActionType.LOGIN, "Biometric Login Page", ActionResult.FAILED, "MultiFinger Login failed for Ghana Card: " + ghanaCardNumber
-                        + " "
-                        + (callBack != null ? callBack.msg : "No response from server"), null);
-                JSF.addErrorMessage("MultiFinger Login Failed! " + (callBack != null ? callBack.msg : "No response from server"));
+            if (response.statusCode() != 200) {
+                handleBiometricError("Try Again", null, null);
+                return;
             }
-        } catch (Exception e) {  // Catch any other unexpected errors
-            auditLogService.logActivity(AuditActionType.LOGIN, "BiometricLogin Page", ActionResult.FAILED,
-                    "MultiFinger failed with exception for Ghana Card: " + ghanaCardNumber + " - " + e.getMessage(), null);
-            JSF.addErrorMessage("An unexpected error occurred. Please try again!");
-            e.printStackTrace(); // Log the error for debugging
+            if (callBack == null) {
+                handleBiometricError("No response received from biometric server", null, null);
+                return;
+            }
+            // Check if biometric verification was successful
+            if (!"TRUE".equals(callBack.getData().getVerified())) {
+                String errorMsg = callBack.msg != null ? callBack.msg.toString() : "Biometric verification failed";
+                handleBiometricError("Biometric verification failed: " + errorMsg, null, null);
+                return;
+            }
+
+            if (callBack.data == null || callBack.data.person == null) {
+                handleBiometricError("Invalid response data structure", null, null);
+                return;
+            }
+
+            String forenames = callBack.data.person.forenames;
+            String surname = callBack.data.person.surname;
+            String nationalId = callBack.data.person.nationalId;
+
+            if (forenames == null || surname == null || nationalId == null) {
+                handleBiometricError("Incomplete user data in response", null, null);
+                return;
+            }
+
+            username = forenames.trim() + " " + surname.trim();
+            ghanaCardNumber = nationalId;
+
+            Users currentUser = userService.findUserByGhanaCard(ghanaCardNumber);
+            if (currentUser == null) {
+                handleBiometricError("User not registered in system", null, currentUser);
+                return;
+            }
+
+            userSession.loginUser(currentUser);
+
+            if (userSession.userActive()) {
+                // Successful login
+                auditLogService.logActivity(
+                        AuditActionType.LOGIN,
+                        "Biometric Login Page",
+                        ActionResult.SUCCESS,
+                        currentUser.getUsername() + " MultiFinger Login Successful",
+                        currentUser
+                );
+                FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+                JSF.addSuccessMessageWithSummary("Welcome! ", currentUser.getUsername());
+
+                // Redirect to dashboard
+                redirectToDashboard();
+            } else {
+                // User inactive
+                auditLogService.logActivity(
+                        AuditActionType.LOGIN,
+                        "Biometric Login Page",
+                        ActionResult.FAILED,
+                        currentUser.getUsername() + " MultiFinger Login Failed - User Inactive",
+                        currentUser
+                );
+
+                JSF.addErrorMessage("Login Failed - Your account is inactive. Please contact administrator.");
+                updateForm();
+            }
+        } catch (Exception e) {
+            handleBiometricError("System error during biometric login: " + e.getMessage(), e, null);
+
         }
     }
-
-//    public String getUserInitials() {
-//        String username = (String) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("username");
-//
-//        if (username == null || username.trim().isEmpty()) {
-//            return "??"; // Return default initials if username is missing
-//        }
-//
-//        // Trim and split the name
-//        String[] nameParts = username.trim().split("\\s+"); // Split by one or more spaces
-//        if (nameParts.length == 1) {
-//            return nameParts[0].substring(0, 1).toUpperCase(); // Single name case
-//        }
-//
-//        // Take first letter of first and last name
-//        return nameParts[0].substring(0, 1).toUpperCase() + nameParts[nameParts.length - 1].substring(0, 1).toUpperCase();
-//    }
 
     private void reload() {
         if (socketData != null) {
             // Fetch data from database with socketData and populate captured fingers.
         }
     }
-    
-    public void loginWithEmail(){
+
+    public void loginWithEmail() {
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect("sublogin.xhtml");
         } catch (IOException e) {
             e.printStackTrace(); // Handle the exception appropriately
+        }
+    }
+
+    private void handleBiometricError(String message, Exception e, Users currentUser) {
+        // Log the error
+        auditLogService.logActivity(
+                AuditActionType.LOGIN,
+                "Biometric Login Page",
+                ActionResult.FAILED,
+                "Biometric Login failed for Ghana Card: " + ghanaCardNumber + " - " + message,
+                (currentUser != null ? currentUser : null)
+        );
+
+        // Show error to user
+        JSF.addErrorMessage("Biometric Login Failed: " + message);
+
+        // Print stack trace if exception provided
+        if (e != null) {
+            e.printStackTrace();
+        }
+
+        // Update form
+        updateForm();
+    }
+
+    private void updateForm() {
+        PrimeFaces.current().ajax().update("theForm");
+    }
+
+    private void redirectToDashboard() {
+        try {
+            FacesContext.getCurrentInstance().getExternalContext()
+                    .redirect(BASE_URL + "app/dashboard2.xhtml");
+        } catch (IOException e) {
+            System.err.println("Failed to redirect to dashboard: " + e.getMessage());
+            JSF.addErrorMessage("Login successful but failed to redirect. Please navigate manually.");
+            updateForm();
         }
     }
 }

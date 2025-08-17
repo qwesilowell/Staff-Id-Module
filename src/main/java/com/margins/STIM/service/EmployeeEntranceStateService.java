@@ -118,7 +118,7 @@ public class EmployeeEntranceStateService {
         return findByEntranceAndState(entranceDeviceId, LocationState.OUTSIDE);
     }
 
-    public EmployeeEntranceState recordStrictEntryOrExit(Employee employee, Entrances entrance, DevicePosition position, String updatedBy, Devices device) {
+    public EmployeeEntranceState recordEntryOrExit(Employee employee, Entrances entrance, DevicePosition position, String updatedBy, Devices device) {
         LocationState newState = (position == DevicePosition.ENTRY)
                 ? LocationState.INSIDE
                 : LocationState.OUTSIDE;
@@ -135,7 +135,7 @@ public class EmployeeEntranceStateService {
             newStateRecord.updateState(newState, updatedBy, reason);
             em.persist(newStateRecord);
 
-            logStateChange(newStateRecord, newState, updatedBy, updatedBy);
+            logStateChange(newStateRecord, newState, updatedBy, reason);
             return newStateRecord;
         }
 

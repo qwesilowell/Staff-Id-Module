@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.primefaces.model.SortOrder;
 
 /**
  *
@@ -32,7 +33,6 @@ public class AuditLogService {
 //    public void logActivity(AuditLog log) {
 //        em.persist(log);
 //    }
-
     public AuditLog findAuditById(Long id) {
         return em.find(AuditLog.class, id);
     }
@@ -41,7 +41,7 @@ public class AuditLogService {
         return em.createQuery("SELECT a FROM AuditLog a ORDER BY a.createdOn DESC", AuditLog.class)
                 .getResultList();
     }
-    
+
     public void logActivity(AuditActionType action, String entityName, ActionResult result, String details, Users performedBy) {
         System.out.println("=== AUDIT LOG DEBUG ===");
         System.out.println("Action: " + action);
@@ -70,7 +70,7 @@ public class AuditLogService {
             e.printStackTrace();
         }
     }
-    
+
     public int countByActionAndResultInPeriod(AuditActionType actions, ActionResult result, LocalDateTime start, LocalDateTime end) {
         Long count = em.createQuery(
                 "SELECT COUNT(a) FROM AuditLog a WHERE a.action = :actions AND a.result = :result "
@@ -95,7 +95,7 @@ public class AuditLogService {
                 .getSingleResult();
         return count.intValue();
     }
-    
+
     public List<AuditLog> filterAuditLogs(List<LocalDateTime> dateRange,
             AuditActionType action,
             ActionResult result,
@@ -126,7 +126,6 @@ public class AuditLogService {
             params.put("performedByName", performedByName);
         }
 
-
         if (detailsText != null && !detailsText.isBlank()) {
             queryBuilder.append("AND LOWER(a.details) LIKE :details ");
             params.put("details", "%" + detailsText.toLowerCase() + "%");
@@ -139,7 +138,7 @@ public class AuditLogService {
 
         return query.getResultList();
     }
-    
+
     public List<AuditLog> getRecentActivities(int limit) {
         return em.createQuery(
                 "SELECT a FROM AuditLog a ORDER BY a.createdOn DESC",
@@ -163,11 +162,103 @@ public class AuditLogService {
                 .setMaxResults(limit)
                 .getResultList();
     }
-    
-    public List<AuditLog> getRecentActivitiesByUser( Users user, int limit) {
+
+    public List<AuditLog> getRecentActivitiesByUser(Users user, int limit) {
         return em.createQuery("SELECT a FROM AuditLog a WHERE a.performedBy = :user ORDER BY a.createdOn DESC", AuditLog.class)
                 .setParameter("user", user)
                 .setMaxResults(limit)
                 .getResultList();
+    }
+
+    public List<AuditLog> filterAuditLogs(List<LocalDateTime> dateRange, AuditActionType action, ActionResult result, Users performedByName, String detailsText, int first, int pageSize, String sortField, SortOrder sortOrder) {
+
+        StringBuilder queryBuilder = new StringBuilder("SELECT a FROM AuditLog a WHERE 1=1 ");
+        Map<String, Object> params = new HashMap<>();
+
+        if (dateRange != null && dateRange.size() == 2) {
+            queryBuilder.append("AND a.createdOn BETWEEN :start AND :end ");
+            params.put("start", dateRange.get(0));
+            params.put("end", dateRange.get(1));
+        }
+
+        if (action != null) {
+            queryBuilder.append("AND a.action = :action ");
+            params.put("action", action);
+        }
+
+        if (result != null) {
+            queryBuilder.append("AND a.result = :result ");
+            params.put("result", result);
+        }
+
+        if (performedByName != null) {
+            queryBuilder.append("AND a.performedBy = :performedByName ");
+            params.put("performedByName", performedByName);
+        }
+
+        if (detailsText != null && !detailsText.isBlank()) {
+            queryBuilder.append("AND LOWER(a.details) LIKE :details ");
+            params.put("details", "%" + detailsText.toLowerCase() + "%");
+        }
+
+      
+
+        if (sortField != null && !sortField.isEmpty()) {
+            String orderBy = sortOrder == SortOrder.ASCENDING ? "ASC" : "DESC";
+            queryBuilder.append("ORDER BY a.").append(sortField).append(" ").append(orderBy);
+        } else {
+             queryBuilder.append("ORDER BY a.createdOn DESC");
+        }
+        
+        TypedQuery<AuditLog> query = em.createQuery(queryBuilder.toString(), AuditLog.class);
+        params.forEach(query::setParameter);
+        
+        //Set pagination
+        query.setFirstResult(first);
+        query.setMaxResults(pageSize);
+
+        return query.getResultList();
+    }
+    
+    
+        public int countFilterAuditLogs(List<LocalDateTime> dateRange,
+            AuditActionType action,
+            ActionResult result,
+            Users performedByName,
+            String detailsText) {
+
+        StringBuilder queryBuilder = new StringBuilder("SELECT COUNT (a) FROM AuditLog a WHERE 1=1 ");
+        Map<String, Object> params = new HashMap<>();
+
+        if (dateRange != null && dateRange.size() == 2) {
+            queryBuilder.append("AND a.createdOn BETWEEN :start AND :end ");
+            params.put("start", dateRange.get(0));
+            params.put("end", dateRange.get(1));
+        }
+
+        if (action != null) {
+            queryBuilder.append("AND a.action = :action ");
+            params.put("action", action);
+        }
+
+        if (result != null) {
+            queryBuilder.append("AND a.result = :result ");
+            params.put("result", result);
+        }
+
+        if (performedByName != null) {
+            queryBuilder.append("AND a.performedBy = :performedByName ");
+            params.put("performedByName", performedByName);
+        }
+
+        if (detailsText != null && !detailsText.isBlank()) {
+            queryBuilder.append("AND LOWER(a.details) LIKE :details ");
+            params.put("details", "%" + detailsText.toLowerCase() + "%");
+        }
+
+        TypedQuery<Long> query = em.createQuery(queryBuilder.toString(), Long.class);
+        params.forEach(query::setParameter);
+
+        return query.getSingleResult().intValue();
     }
 }

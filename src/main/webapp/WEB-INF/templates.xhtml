@@ -123,10 +123,10 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     <p:submenu label="Entrance Test" expanded="true" styleClass="custom-label" rendered="#{userSession.hasAnyPermission('Entrance Access Test')}">
                         <p:menuitem value="Entrance Access Test" outcome="/app/Entrances/accessControl?faces-redirect=true"  icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat" rendered="#{userSession.hasPermission('Entrance Access Test')}"/>
                     </p:submenu>
-                    <p:submenu label="Monitoring and Reports" expanded="true" styleClass="custom-label" rendered="#{userSession.hasAnyPermission('Real-Time Monitoring','History Monitoring','Reports')}" >
+                    <p:submenu label="Monitoring and Reports" expanded="true" styleClass="custom-label" rendered="#{userSession.hasAnyPermission('Real-Time Monitoring','History Monitoring','Reports Page')}" >
                         <p:menuitem value="Real Time Monitoring" outcome="/app/Access/liveMonitoring?faces-redirect=true"  icon="pi pi-chart-line"  rendered="#{userSession.hasPermission('Real-Time Monitoring')}"/>
                         <p:menuitem value="History Monitoring" outcome="/app/Access/historyMonitoring?faces-redirect=true"  icon="pi pi-history"  rendered="#{userSession.hasPermission('History Monitoring')}"/>
-                        <p:menuitem value="Reports" outcome="/app/Reports/Reports?faces-redirect=true"  icon="pi pi-book"  rendered="#{userSession.hasPermission('Reports')}"/>
+                        <p:menuitem value="Reports" outcome="/app/Reports/Reports?faces-redirect=true"  icon="pi pi-book"  rendered="#{userSession.hasPermission('Reports Page')}"/>
 
                     </p:submenu>
                 </p:panelMenu>

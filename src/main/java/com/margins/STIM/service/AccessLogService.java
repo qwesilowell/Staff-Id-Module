@@ -225,7 +225,6 @@ public class AccessLogService {
         return entranceCounts;
     }
 
-    
     //Get THE top 5 entry and exitmover last day 
     public List<EntranceAccessStatsDTO> getTop5EntranceAccessStats(LocalDateTime start, LocalDateTime end) {
         List<Object[]> results = em.createQuery(
@@ -388,7 +387,7 @@ public class AccessLogService {
 
     }
 
-    // New method to check access
+    // method to check access
     public boolean hasAccess(Employee employee, Devices devices) {
 
         if (employee == null) {
@@ -619,19 +618,18 @@ public class AccessLogService {
             }
 
             if (position == DevicePosition.EXIT) {
-                if (!withinRoleTime && !withinCustomTime) {
-                    result.setGranted(true);
-                    result.setResult("GRANTED");
-                    result.setMessage("Exit allowed, but occurred outside allowed time.");
-                    result.addAnomaly(AnomalyType.OUT_OF_TIME_RANGE_EXIT);
-                    return result;
-                }
 
                 if (state == null || state.getCurrentState() == LocationState.OUTSIDE) {
                     result.setGranted(false);
                     result.setResult("DENIED");
                     result.setMessage("Exit denied: Didn't badge in.");
                     result.addAnomaly(AnomalyType.STRICT_MODE_VIOLATION);
+                    return result;
+                } else if (!withinRoleTime && !withinCustomTime) {
+                    result.setGranted(true);
+                    result.setResult("GRANTED");
+                    result.setMessage("Exit allowed, but occurred outside allowed time.");
+                    result.addAnomaly(AnomalyType.OUT_OF_TIME_RANGE_EXIT);
                     return result;
                 }
 
@@ -779,4 +777,43 @@ public class AccessLogService {
                 .anyMatch(a -> a.getAnomalyType() == anomalyType);
     }
 
+    /**
+     * Count denied access attempts in a time window for specific
+     * employee+device
+     */
+    public Long countDeniedAttemptsInTimeWindow(int employeeId, int deviceId,
+            LocalDateTime start, LocalDateTime end) {
+        return em.createQuery(
+                "SELECT COUNT(a) FROM AccessLog a "
+                + "WHERE a.employee.id = :employeeId "
+                + "AND a.device.id = :deviceId "
+                + "AND a.result = :result "
+                + "AND a.timestamp BETWEEN :start AND :end", Long.class)
+                .setParameter("employeeId", employeeId)
+                .setParameter("deviceId", deviceId)
+                .setParameter("result", "DENIED")
+                .setParameter("start", start)
+                .setParameter("end", end)
+                .getSingleResult();
+    }
+
+    /**
+     * Check if we've already logged a frequent denial anomaly recently Prevents
+     * spam logging of the same issue
+     */
+    public boolean hasRecentFrequentDenialAnomaly(int employeeId, int deviceId, LocalDateTime since) {
+        Long count = em.createQuery(
+                "SELECT COUNT(aa) FROM AccessAnomaly aa "
+                + "WHERE aa.employee.id = :employeeId "
+                + "AND aa.device.id = :deviceId "
+                + "AND aa.anomalyType = :anomalyType "
+                + "AND aa.timestamp >= :since", Long.class)
+                .setParameter("employeeId", employeeId)
+                .setParameter("deviceId", deviceId)
+                .setParameter("anomalyType", AnomalyType.FREQUENT_DENIED_ACCESS)
+                .setParameter("since", since)
+                .getSingleResult();
+
+        return count > 0;
+    }
 }

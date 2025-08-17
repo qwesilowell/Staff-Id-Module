@@ -20,7 +20,7 @@ import jakarta.faces.convert.FacesConverter;
 public class SystemUserRoleConverter implements Converter<SystemUserRoles> {
 
     @EJB
-    private UserRolesServices roleService; // Or whatever your service is called
+    private UserRolesServices roleService;
 
     @Override
     public SystemUserRoles getAsObject(FacesContext context, UIComponent component, String value) {

@@ -4,6 +4,7 @@
  */
 package com.margins.STIM.service;
 
+import com.margins.STIM.Bean.UserSession;
 import com.margins.STIM.entity.SystemUserRoles;
 import com.margins.STIM.entity.Users;
 import com.margins.STIM.entity.ViewPermission;
@@ -13,13 +14,16 @@ import com.margins.STIM.util.JSF;
 import java.util.List;
 import jakarta.ejb.Stateless;
 import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  *
@@ -29,12 +33,14 @@ import jakarta.transaction.Transactional;
 @Transactional
 public class User_Service {
 
+    @Inject
+    private UserSession userSession;
+
     @PersistenceContext(name = "STIM_persistence_unit")
     EntityManager em;
 
     //Create
     public Users createUser(Users user) {
-        //Persist into db
         em.persist(user);
         return user;
     }
@@ -54,6 +60,8 @@ public class User_Service {
             systemUser.setUserType(UserType.ADMIN);
             systemUser.setGhanaCardNumber("GHA-726682342-4");
             systemUser.setUserRole(userRole);
+            systemUser.setEmail("philip.asare@margins-id.com");
+            systemUser.setPassword(passwordEncoder.encode("InshaAllah"));
             createUser(systemUser);
 
             FacesContext.getCurrentInstance().addMessage(null,
@@ -105,6 +113,21 @@ public class User_Service {
                 .findFirst()
                 .orElse(null);
     }
+    
+    /**
+     * Find user by email address - matches the pattern of findUserByGhanaCard
+     *
+     * @param email - the email to search for
+     * @return Users object if found, null if not found
+     */
+    public Users findUserByEmail(String email) {
+        return em.createQuery("SELECT u FROM Users u WHERE UPPER(u.email) = UPPER(:email) "
+                + "AND u.deleted = false ORDER BY u.createdAt DESC", Users.class)
+                .setParameter("email", email)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+    }
 
     public Users findUserById(int id) {
         return em.find(Users.class, id);
@@ -151,22 +174,72 @@ public class User_Service {
             throw new EntityNotFoundException("User not found.");
         }
     }
+    
 
-    public Users getCurrentUser() {
-        ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-        String username = (String) externalContext.getSessionMap().get("username");
-
-        if (username == null || username.isEmpty()) {
+    /**
+     * Find user by email regardless of status (for admin purposes)
+     *
+     * @param email - the email to search for
+     * @return Users object if found, null if not found
+     */
+    public Users findUserByEmailAnyStatus(String email) {
+        if (email == null || email.trim().isEmpty()) {
             return null;
         }
 
         try {
-            return em.createQuery("SELECT u FROM Users u WHERE LOWER(u.username) = LOWER(:username) And u.deleted = false", Users.class)
-                    .setParameter("username", username)
-                    .getSingleResult();
+            String normalizedEmail = email.trim().toLowerCase();
+
+            TypedQuery<Users> query = em.createQuery(
+                    "SELECT u FROM Users u WHERE LOWER(u.email) = :email",
+                    Users.class
+            );
+
+            query.setParameter("email", normalizedEmail);
+
+            return query.getSingleResult();
+
         } catch (NoResultException e) {
             return null;
+        } catch (Exception e) {
+            System.err.println("Error finding user by email (any status): " + e.getMessage());
+            e.printStackTrace();
+            return null;
         }
+    }
+
+    /**
+     * Check if email already exists in the system
+     *
+     * @param email - email to check
+     * @return true if email exists, false otherwise
+     */
+    public boolean emailExists(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+
+        try {
+            String normalizedEmail = email.trim().toLowerCase();
+
+            Long count = em.createQuery(
+                    "SELECT COUNT(u) FROM Users u WHERE LOWER(u.email) = :email",
+                    Long.class
+            )
+                    .setParameter("email", normalizedEmail)
+                    .getSingleResult();
+
+            return count > 0;
+
+        } catch (Exception e) {
+            System.err.println("Error checking if email exists: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Users getCurrentUser() {
+        return userSession.getCurrentUser();
     }
 
     //for ViewPermission
@@ -193,34 +266,27 @@ public class User_Service {
     }
 
     public void seedViewPermissions() {
-        for (PagePermission pp : PagePermission.values()) {
-            // Check if this page already exists in DB
-            ViewPermission existing = findByPageName(pp.getPagePath());
-            if (existing == null) {
-                ViewPermission vp = new ViewPermission();
-                vp.setPagePath(pp.getPagePath());
-                vp.setDisplayName(pp.getDisplayName());
-                saveVp(vp);
-                JSF.addSuccessMessage(findAll().size() + " pages added succesfully");
+        try {
+
+            for (PagePermission pp : PagePermission.values()) {
+                // Check if this page already exists in DB
+                ViewPermission existing = findByPageName(pp.getPagePath());
+                if (existing == null) {
+                    ViewPermission vp = new ViewPermission();
+                    vp.setPagePath(pp.getPagePath());
+                    vp.setDisplayName(pp.getDisplayName());
+                    saveVp(vp);
+                    JSF.addSuccessMessage(findAll().size() + " pages added succesfully");
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
-}
+    public static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-//    // Validate user credentials
-//    public boolean validateUser(String ghanaCardNumber, String password) {
-//        try {
-//            Users user = em.createQuery(
-//                    "SELECT u FROM Users u WHERE u.ghanaCardNumber = :ghanaCardNumber", Users.class)
-//                    .setParameter("ghanaCardNumber", ghanaCardNumber)
-//                    .getSingleResult();
-//
-//            if (user != null && BCrypt.checkpw(password, user.getPassword())) { // Hash check
-//                return "Admin".equals(user.getUserRole()); // Return true only if role is Admin
-//            }
-//        } catch (NoResultException e) {
-//            return false; // User not found
-//        }
-//        return false; // Password does not match or not an Admin
-//    }
-//}
+    public boolean checkPassword(String rawPassword, String storedHash) {
+        return passwordEncoder.matches(rawPassword, storedHash);
+    }
+
+}

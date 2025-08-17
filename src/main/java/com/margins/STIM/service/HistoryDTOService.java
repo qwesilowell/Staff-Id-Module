@@ -29,7 +29,7 @@ public class HistoryDTOService {
     
     @Inject 
     private AccessLogService accessLogRepository;
-    public List<AccessHistoryDTO> generateAccessHistory(LocalDate startDate, LocalDate endDate, Integer entranceId) {
+    public List<AccessHistoryDTO> generateAccessHistory(LocalDate startDate, LocalDate endDate, Integer entranceId, String accessStatus) {
         List<AccessLog> logs = accessLogRepository.findLogsBetweenDates(startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX), entranceId);
 
         Map<String, List<AccessLog>> groupedLogs = groupLogsByEmployeeEntranceDate(logs);
@@ -54,7 +54,39 @@ public class HistoryDTOService {
             historyDTOs.addAll(matchEntryExitPairs(entries, exits));
         }
 
-        return historyDTOs;
+        return filterByAccessStatus(historyDTOs, accessStatus);
+    }
+    
+    public List<AccessHistoryDTO> findUnmatchedEntries(LocalDate startDate, LocalDate endDate, Integer entranceId) {
+        List<AccessHistoryDTO> allHistory = generateAccessHistory(startDate, endDate, entranceId,"ALL");
+
+        // Return only records with missing exits
+        return allHistory.stream()
+                .filter(dto -> dto.getTimeEntered() != null && dto.getTimeExited() == null)
+                .collect(Collectors.toList());
+    }
+    
+    private List<AccessHistoryDTO> filterByAccessStatus(List<AccessHistoryDTO> records, String accessStatus) {
+        if (accessStatus == null || accessStatus.isEmpty() || "ALL".equals(accessStatus)) {
+            return records;
+        }
+
+        return records.stream()
+                .filter(record -> matchesStatus(record, accessStatus))
+                .collect(Collectors.toList());
+    }
+
+    private boolean matchesStatus(AccessHistoryDTO record, String status) {
+        switch (status) {
+            case "MISSING_EXIT":
+                return record.getTimeEntered() != null && record.getTimeExited() == null;
+            case "MISSING_ENTRY":
+                return record.getTimeEntered() == null && record.getTimeExited() != null;
+            case "COMPLETE":
+                return record.getTimeEntered() != null && record.getTimeExited() != null;
+            default:
+                return true;
+        }
     }
 
     private Map<String, List<AccessLog>> groupLogsByEmployeeEntranceDate(List<AccessLog> logs) {

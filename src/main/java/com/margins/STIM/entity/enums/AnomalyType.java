@@ -28,15 +28,15 @@ public enum AnomalyType {
     }
 }
 
-//UNMATCHED_ENTRY
+//UNMATCHED_EXIT
 //Used when a person badges out but no entry log was ever found.
 //
 //Implies the person may have tailgated or bypassed the system.
 //
-// UNMATCHED_EXIT
+// UNMATCHED_ENTRY
 //A person badges in but never badged out (even after many hours).
 //
-//You can set this to trigger after 12 hours (as you earlier said).
+//You can set this to trigger after 12 hours (as earlier said).
 //
 //OUT_OF_TIME_RANGE_ENTRY
 //Entry was attempted when not allowed based on time rule.
@@ -54,6 +54,15 @@ public enum AnomalyType {
 //Use this to track wrong sequence (entry-entry or exit-exit) in strict mode.
 //
 //FREQUENT_DENIED_ACCESS
-//Multiple denied attempts (e.g. 3+ within 30 minutes).
+//Multiple denied attempts (e.g. 3+ within 2 minute).
 //
 //Could indicate misuse or faulty badge.
+
+
+//Key Features of This Implementation:
+//
+//Real-time Detection: Checks immediately after each denied attempt
+//Time Window: 3+ denials within 2 minutes (configurable)
+//Anti-Spam: Prevents duplicate anomaly logging for the same pattern
+//Employee+Device Specific: Tracks patterns per employee-device combination
+//Extensible: Easy to add badge locking or security alerts

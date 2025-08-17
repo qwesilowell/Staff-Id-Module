@@ -73,60 +73,7 @@
                 border-radius: 5px;
             }
 
-            .capture-container {
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-                margin-bottom: 20px;
-            }
-
-            .capture-label {
-                font-weight: bold;
-                margin-bottom: 10px;
-            }
-
-            .face-capture-area {
-                border: 2px dashed #ccc;
-                padding: 15px;
-                text-align: center;
-                border-radius: 5px;
-                min-height: 200px;
-                width: 100%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                background-color: #f8f9fa;
-            }
-
-            .button-container {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-top: 20px;
-            }
-
-            .capture-buttons {
-                display: flex;
-                gap: 10px;
-            }
-
-            .capture-button {
-                background-color: #4682B4 !important;
-                color: white !important;
-            }
-
-            .verify-button {
-                background-color: #28a745 !important;
-                color: white !important;
-            }
-            .display-form{
-                background-color:#f0f0f0;
-                color:black;
-                font-weight:bold;
-                width:100%;
-                padding:5px;
-                margin-bottom:1rem;
-            }
+      
         </style>
     </ui:define>
 
@@ -135,13 +82,13 @@
         <div class="main-content">
             <h:form id="wizardForm" prependId="false">
                 <p:growl widgetVar="fgrowl" id="growl" showDetail="true" showSummary="false" life="3000" />
-                
+
                 <ui:define name="metadata">
                     <f:metadata>
                         <f:viewAction action="#{singlefingerBean.setupBreadcrumb}" />
                     </f:metadata>
                 </ui:define>
-                
+
                 <h1>Update Employee Details</h1>
 
                 <p:steps activeIndex="#{singlefingerBean.currentStep}" >
@@ -311,10 +258,11 @@
 
                                     <div class="button-container">
                                         <div class="capture-buttons">
-                                            <p:commandButton value="Open Camera" onclick="openCamera();" type="button"
-                                                             styleClass="ui-button-secondary capture-button"/>
-                                            <p:commandButton value="Capture Face" onclick="capture();" type="button"
-                                                             styleClass="ui-button-secondary capture-button"/>
+                                            <p:commandButton id="cameraButton" value="Open Camera"  type="button" icon="pi pi-camera" iconPos="left"
+                                                             styleClass="ui-button-secondary capture-button" onclick="toggleCamera()" />
+
+                                            <p:commandButton id="captureButton" value="Capture Face" onclick="capture();" type="button" 
+                                                             styleClass="ui-button-secondary capture-button" style="display: none;"/>
                                         </div>
                                         <p:commandButton value="Submit Verification" onclick="saveCroppedImage()"
                                                          action="#{singlefingerBean.verifyFace()}" update="growl"
@@ -444,7 +392,7 @@
                                 <h:outputLabel value="Email Address:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
                                 <p:inputText value="#{singlefingerBean.updatedEmail}"  placeholder="Enter email address"
                                              style="width:100%; padding:5px; margin-bottom:1rem;" />
-                                
+
                                 <h:outputLabel value="Primary Phone Number: *" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
                                 <p:inputText value="#{wizardBean.primaryPhone}" placeholder="Enter primary phone number"
                                              style="width:100%; padding:5px; margin-bottom:1rem;" />
@@ -457,7 +405,7 @@
 
                         <div style="display: flex; justify-content: space-between; margin-top: 20px;">
                             <p:commandButton value="Back" action="#{singlefingerBean.prevStep}" update="wizardForm"/>
-                            
+
                             <h:panelGroup rendered="#{singlefingerBean.showUpdateButton}">
                                 <p:commandButton value="Update Employee Details"
                                                  action="#{singlefingerBean.updateEmployeeName}"
@@ -474,5 +422,8 @@
         <h:outputScript library="js" name="cropper.min.js"/>
         <h:outputScript library="js" name="facial.js"/>
         <h:outputStylesheet library="css" name="cropper.min.css"/>
+        <h:outputStylesheet library="css" name="onboardEmployee.css"/>
+        <h:outputScript library="js" name="bioVerification.js"/>
+
     </ui:define>
 </ui:composition>

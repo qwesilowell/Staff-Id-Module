@@ -77,12 +77,15 @@
     </h:head>
     <h:body>
         <!-- Navigation Bar -->
+        <h:form>
         <div class="navbar">
+           
             <h2 class="nav-title">STAFF ID MODULE</h2>
             <p:commandLink value="Login with Email/Password?" 
                            style="color: white;white-space: nowrap;"
                            action="#{loginBean.loginWithEmail()}" />
         </div>
+        </h:form>
 
 <!--        <h:outputText value="#{flash.successMessage}" rendered="#{not empty flash.successMessage}" style="color: green; font-weight: bold; display: block; margin: 10px 0;" />-->
 
@@ -92,7 +95,7 @@
                 <div class="cont">
                     <!-- Sign In Form -->
                     <div class="form sign-in" style="overflow: auto;">
-                        <p:growl widgetVar="fgrowl" id="growl" showSummary= "false" showDetail="true" life="6000" globalOnly="true"/>
+                        <p:growl widgetVar="fgrowl" id="growl" showSummary= "false" showDetail="true" life="6000" globalOnly="false"/>
                         <h2>Sign In</h2>
 
                         <p:tabView dynamic="true" cache="true" prependId="false" >

@@ -25,18 +25,25 @@ public class Users extends EntityModel implements Serializable {
     
     @Column(name = "ADMINGHANA_CARD_NUMBER", nullable = false, unique = true, length = 15)
     private String ghanaCardNumber;
-   
+
     @Column(name = "USERNAME", nullable = false, unique = true)
     private String username;
 
+    @Column(name = "EMAIL", nullable = false, unique = true)
+    private String email;
+    
+    @Column(name = "PASSWORD", nullable = false)
+    private String password;    
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "USER_ROLE")
+    @Column(name = "USER_TYPE")
     private UserType userType;
     
     @Enumerated(EnumType.STRING)
-    private UserStatus status = UserStatus.ACTIVE;
-    
+    private UserStatus status ;
+
     @ManyToOne
-    @JoinColumn(name = "role_id")
+    @JoinColumn(name = "USERROLE")
     private SystemUserRoles userRole;
+    
 }

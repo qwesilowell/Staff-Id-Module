@@ -182,7 +182,7 @@ public class JasperReportManager implements Serializable {
             switch (type) {
                 case PDF:
                     response.setContentType("application/pdf");
-                    response.setHeader("Content-Disposition", "inline; filename=\"report.pdf\"");
+                    response.setHeader("Content-Disposition", "inline; filename=\"report.pdf\""); //attachment
 
                     JRPdfExporter pdfExporter = new JRPdfExporter();
                     pdfExporter.setExporterInput(new SimpleExporterInput(jasperPrint));

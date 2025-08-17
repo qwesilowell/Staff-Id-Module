@@ -1,6 +1,7 @@
 package com.margins.STIM.Bean;
 
 import com.google.gson.Gson;
+import com.margins.STIM.entity.SystemUserRoles;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import java.io.Serializable;
@@ -9,13 +10,16 @@ import com.margins.STIM.service.User_Service;
 import com.margins.STIM.entity.Users;
 import com.margins.STIM.entity.enums.ActionResult;
 import com.margins.STIM.entity.enums.AuditActionType;
+import com.margins.STIM.entity.enums.UserStatus;
 import com.margins.STIM.entity.enums.UserType;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.entity.websocket.FingerCaptured;
 import com.margins.STIM.model.CapturedFinger;
 import com.margins.STIM.service.AuditLogService;
+import com.margins.STIM.service.UserRolesServices;
 import com.margins.STIM.util.DateFormatter;
+import com.margins.STIM.util.EmailSender;
 import com.margins.STIM.util.FingerprintProcessor;
 import com.margins.STIM.util.JSF;
 import com.margins.STIM.util.ValidationUtil;
@@ -51,11 +55,14 @@ public class UserBean implements Serializable {
 
     @EJB
     private User_Service userService;
-    @Inject 
+    @Inject
     private AuditLogService auditLogService;
 
-    @Inject 
+    @Inject
     private BreadcrumbBean breadcrumbBean;
+
+    @Inject
+    private UserRolesServices userRoleService;
 
     @Getter
     @Setter
@@ -88,8 +95,6 @@ public class UserBean implements Serializable {
 
     @Getter
     private StreamedContent fingerImage;
-
-  
 
     String BASE_URL = JSF.getContextURL() + "/";
 
@@ -133,30 +138,49 @@ public class UserBean implements Serializable {
     @Setter
     private String faceImageData;
 
+    @Setter
+    private List<SystemUserRoles> allUserRole = new ArrayList<>();
+
     @Getter
     @Setter
-    private String userRole;
+    private SystemUserRoles userRole;
+
+    @Getter
+    @Setter
+    private String email;
+
+    @Getter
+    @Setter
+    private String password;
+
+    @Getter
+    @Setter
+    private UserType selectedUserType;
 
     @Getter
     @Setter
     private List<Users> users = new ArrayList<>();
 
-    public void getUserss() {
-        users = userService.findAllUsers();
-        System.out.println("USERS>>>>>>>>>>>>>> " + users.toString());
+    public List<SystemUserRoles> getAllUserRole() {
+        this.allUserRole = userRoleService.getAllUserRoles();
+        return allUserRole;
     }
 
     public void setupBreadcrumb() {
         breadcrumbBean.setCreateNewUserBreadcrumb();
     }
+
     public void setBreadcrumb() {
         breadcrumbBean.setDeveloperTools();
-    }    
+    }
 
     private void clearForm() {
         this.ghanaCardNumber = null;
         this.username = null;
         this.userRole = null;
+        this.password = null;
+        this.email = null;
+        this.selectedUserType = null;
     }
 
     // Getters and Setters
@@ -168,7 +192,7 @@ public class UserBean implements Serializable {
         this.username = username;
     }
 
-    public List<UserType> getAvailableRoles() {
+    public List<UserType> getAvailableUserType() {
         return Arrays.asList(UserType.values());
     }
 
@@ -210,7 +234,6 @@ public class UserBean implements Serializable {
     public boolean isVerificationSuccess() {
         return verificationSuccess;
     }
-
 
     // Reset Fingerprint Selection
     public void reset() {
@@ -446,19 +469,41 @@ public class UserBean implements Serializable {
             return;
         }
 
-        // Check if Ghana Card Number is already registered
-        if (userService.findUserByGhanaCard(ghanaCardNumber) != null) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                            "User with Ghana Card Number already registered", null));
+        if (!ValidationUtil.isValidGhanaCardNumber(ghanaCardNumber)) {
+            // Check if Ghana Card Number is already registered
+            if (userService.findUserByGhanaCard(ghanaCardNumber) != null) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "User with Ghana Card Number already registered", null));
+                return;
+            }
+            JSF.addErrorMessage("Invalid GhanaCard Number");
             return;
         }
-        if (userRole == null || userRole.isBlank()) {
+        if (!ValidationUtil.isValidEmail(email)) {
+            JSF.addErrorMessage("That doesn’t look like a valid email. Please check and try again.");
+            return;
+        }
+        if (userRole == null) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Please select a user role before proceeding.", null));
             return;
         }
-        
+
+        if (selectedUserType == null) {
+            JSF.addErrorMessage("Select a UserType");
+            return;
+        }
+        String validationMessage = ValidationUtil.validatePassword(password);
+        if (validationMessage != null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, validationMessage, null));
+            return;
+        }
+        if (selectedUserType == null) {
+            JSF.addErrorMessage("Select A User Type");
+            return;
+        }
 
         Users currentUser = userService.getCurrentUser();
         try {
@@ -466,8 +511,12 @@ public class UserBean implements Serializable {
             // Create new user entity
             Users newUser = new Users();
             newUser.setGhanaCardNumber(ghanaCardNumber);
-            newUser.setUsername(username);  
-            newUser.setUserType(UserType.valueOf(userRole));
+            newUser.setUsername(username);
+            newUser.setUserType(selectedUserType);
+            newUser.setEmail(email);
+            newUser.setUserRole(userRole);
+            newUser.setStatus(UserStatus.PENDING_PASSWORD_CHANGE);
+            newUser.setPassword(User_Service.passwordEncoder.encode(password));
 
             // Save user to database
             userService.createUser(newUser);
@@ -476,25 +525,32 @@ public class UserBean implements Serializable {
             FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_INFO, "User " + username + " created successfully!", null));
-            
-            
-            auditLogService.logActivity(AuditActionType.CREATE, "User Creation Page", ActionResult.SUCCESS, "Created new user " + username , currentUser);
-                    
+
+            auditLogService.logActivity(AuditActionType.CREATE, "User Creation Page", ActionResult.SUCCESS, "Created new user " + username, currentUser);
+
+            if (EmailSender.sendEmail(password, newUser)) {
+                auditLogService.logActivity(AuditActionType.CREATE, "User Creation Page", ActionResult.SUCCESS, "Sent Temporary Login Password to " + newUser.getEmail(), currentUser);
+                JSF.addSuccessMessage("Email sent successfully!");
+
+            } else {
+                auditLogService.logActivity(AuditActionType.CREATE, "User Creation Page", ActionResult.FAILED, "Temporary Login Password failed to send to " + newUser.getEmail(), currentUser);
+                JSF.addErrorMessage("User created but email failed to send");
+            }
+
             // Clear form fields
             clearForm();
 
             // Redirect to login page
-            FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "login.xhtml");
+            FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "app/Settings/viewUsers.xhtml");
 
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error creating new user: " + e.getMessage(), null));
-            
+
             auditLogService.logActivity(AuditActionType.CREATE, "User Creation Page", ActionResult.FAILED, "Failed Creating new user " + username + ": " + e.getMessage(), currentUser);
             e.printStackTrace();
         }
     }
-
 
     public void verifyFace() {
         try {
@@ -502,7 +558,7 @@ public class UserBean implements Serializable {
                 JSF.addErrorMessage("Invalid Ghana Card Format");
                 return;
             }
-            
+
             VerificationRequest request = new VerificationRequest();
             request.setImage(faceImageData);
             request.setPinNumber(ghanaCardNumber);

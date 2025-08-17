@@ -56,11 +56,16 @@ public class DateFormatter {
         }
         return "No Record";
     }
-    
+
     public static LocalTime toLocalTime(Date date) {
         return date.toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalTime();  //ignores Jan-1970
+    }
+
+    public static String forLocalDate(LocalDate ld) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        return ld.format(formatter);
     }
 
     public static String formatDateTime(LocalDateTime dateTime) {
@@ -99,4 +104,6 @@ public class DateFormatter {
     private String getFirstChar(String word) {
         return (word != null && word.length() >= 1) ? word.substring(0, 1).toUpperCase() : "?";
     }
+    
+    
 }

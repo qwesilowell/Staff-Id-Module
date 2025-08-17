@@ -20,7 +20,7 @@
         <!--Main Content --> 
         <div class="main-content">
             <h:form id="entForm">
-                <p:growl id="messages" widgetVar="messages" showSummary= "true" showDetail="true" life="3000" globalOnly="true"/>
+                <p:growl id="messages" widgetVar="messages" showSummary= "true" showDetail="true" life="3000" globalOnly="false"/>
 
                 <!-- Header and Export Buttons -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -168,21 +168,24 @@
                                  rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}"
                                  emptyMessage="No data available for the selected criteria"
                                  sortMode="multiple"
-                                 resizableColumns="true"  style="min-width: 250%">
+                                 resizableColumns="true"  style="min-width: 180%">
 
                         <p:column headerText="Entrance Name" sortBy="#{report.entrances.entranceName}" filterBy="#{report.entrances.entranceName}">
-                            <h:outputText value="#{report.entrances.entranceName}" />
+                            <h:outputText value="#{report.entrances.entranceName}" style="font-weight: bolder;"/>
+                            <br/>
+                            <h:outputText value="#{report.entrances.entranceLocation}" style="font-size: 0.9em; color: rgba(0, 0, 0, 0.6);" />
                         </p:column>
 
-                        <p:column headerText="Location" sortBy="#{report.entrances.entranceLocation}">
-                            <h:outputText value="#{report.entrances.entranceLocation}" />
-                        </p:column>
+                        <!--                        <p:column headerText="Devices Assigned" sortBy="#-{report.entrances.devices}" styleClass="totalAccess">
+                                                    <h:outputText value="#-{report.entrances.devices.size()}"  />
+                                                </p:column>-->
 
-                        <p:column headerText="Devices Assigned" sortBy="#{report.entrances.devices}" styleClass="totalAccess">
-                            <h:outputText value="#{report.entrances.devices.size()}"  />
-                        </p:column>
-
-                        <p:column headerText="Entry Device Assigned" styleClass="totalAccess" >
+                        <p:column  styleClass="totalAccess" style="width:5%">
+                            <f:facet name="header">
+                                <div style="white-space: normal; word-wrap: break-word; text-align: center;">
+                                    Entry Device Assigned
+                                </div>
+                            </f:facet>
                             <p:commandButton value="#{report.entrydevice.size()}"  
                                              action="#{entranceReportBean.viewDevice(report.entrydevice,report.entrances)}"
                                              update="entryDevice"
@@ -190,7 +193,12 @@
                                              oncomplete="PF('entryDevice').show()"/>
                         </p:column>
 
-                        <p:column headerText="Exit Device Assigned" styleClass="totalAccess" >
+                        <p:column styleClass="totalAccess" style="width:5%">
+                            <f:facet name="header">
+                                <div style="white-space: normal; word-wrap: break-word; text-align: center;">
+                                    Exit Device Assigned
+                                </div>
+                            </f:facet>
                             <p:commandButton value="#{report.exitdevice.size()}" 
                                              action="#{entranceReportBean.viewDevice(report.exitdevice,report.entrances)}"
                                              update="entryDevice"
@@ -198,7 +206,12 @@
                                              oncomplete="PF('entryDevice').show()"/>
                         </p:column>
 
-                        <p:column headerText="Total Accesses" sortBy="#{report.totalAccesses}" style="text-align: center;" title="Total access attempts for the entrance">
+                        <p:column sortBy="#{report.totalAccesses}" style="text-align: center; width:5%" title="Total access attempts for the entrance" width="70px">
+                            <f:facet name="header">
+                                <div style="white-space: normal; word-wrap: break-word; text-align: center;">
+                                    Total Accesses
+                                </div>
+                            </f:facet>
                             <p:commandLink value="#{report.totalAccesses}" 
                                            action="#{entranceReportBean.navigateToHistory(report.entrances.id)}"
                                            ajax="false"
@@ -207,7 +220,7 @@
                             </p:commandLink>
                         </p:column>
 
-                        <p:column headerText="Count(Unique Accesses)" sortBy="#{report.uniqueUsers}" style="text-align: center;" 
+                        <p:column headerText="Count(Unique Accesses)" sortBy="#{report.uniqueUsers}" style="text-align: center;"
                                   title="Distinct employees who have accessed the entrance, regardless of the number of access attempts."> <!--  Number of unique employees who have accessed the entrance, counting each employee only once regardless of multiple access attempts.-->
                             <p:commandLink value="#{report.uniqueUsers}" 
                                            action="#{entranceReportBean.navigateToHistory(report.entrances.id)}"
@@ -218,7 +231,12 @@
                             </p:commandLink>
                         </p:column>
 
-                        <p:column headerText="Granted" sortBy="#{report.grantedAccesses}" style="text-align: center;">                            
+                        <p:column sortBy="#{report.grantedAccesses}" style="text-align: center; width:5%">   
+                            <f:facet name="header">
+                                <div style="white-space: normal; word-wrap: break-word; text-align: center;">
+                                    Granted
+                                </div>
+                            </f:facet>
                             <p:commandLink value="#{report.grantedAccesses}" 
                                            action="#{entranceReportBean.navToResult(report.entrances.id,'granted')}"
                                            ajax="false"
@@ -229,7 +247,12 @@
 
                         </p:column>
 
-                        <p:column headerText="Denied" sortBy="#{report.deniedAccesses}" style="text-align: center;">
+                        <p:column sortBy="#{report.deniedAccesses}" style="text-align: center;" width="70px">
+                            <f:facet name="header">
+                                <div style="white-space: normal; word-wrap: break-word; text-align: center;">
+                                    Denied
+                                </div>
+                            </f:facet>
                             <p:commandLink value="#{report.deniedAccesses}" 
                                            action="#{entranceReportBean.navToResult(report.entrances.id,'denied')}"
                                            ajax="false"

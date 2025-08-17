@@ -22,7 +22,7 @@ import lombok.Setter;
 public class ViewPermission extends EntityModel implements Serializable {
 
     private String pagePath; // e.g. "/admin/manageUsers.xhtml"
-    
+
     private String displayName; // e.g. "Manage Users"
 
     @Override
@@ -41,5 +41,10 @@ public class ViewPermission extends EntityModel implements Serializable {
     public int hashCode() {
         return Objects.hash(this.getId());
     }
-    
+
+    @Override
+    public String toString() {
+        return displayName != null ? displayName : pagePath;
+    }
+
 }

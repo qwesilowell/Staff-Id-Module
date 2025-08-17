@@ -70,7 +70,7 @@
 
 
                             <p:commandButton icon="pi pi-trash" styleClass="rounded-button ui-button-danger ui-button-outlined"  action="#{assignEmpRoleBean.deleteRole(role)}" onclick="PF('deleteConfirmDialogWidget').show()" update="@form"  oncomplete="PF('deleteConfirmDialogWidget').hide()">
-                                <p:confirm header="Confirm Deletion" message="Are you sure you want to delete this Role ?" icon="pi pi-exclamation-triangle" />
+                                <p:confirm header="Confirm Deletion" message="Are you sure you want to delete this Role ( #{role.roleName} ) ?" icon="pi pi-exclamation-triangle" />
                             </p:commandButton>
                         </p:outputPanel>
                     </p:column>

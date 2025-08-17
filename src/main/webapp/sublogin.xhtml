@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
 
     <h:head>
         <title>Ghana Card Login</title>
@@ -11,7 +12,7 @@
         <style type="text/css">
             body {
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-/*                background-color: #f0f2f5;*/
+                /*                background-color: #f0f2f5;*/
                 margin: 0;
                 padding: 0;
                 display: flex;
@@ -70,6 +71,159 @@
                 background-color: #005230 !important;
                 border: 1px solid #005230 !important;
             }
+
+            /* Password Change Modal Styles */
+            .password-modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 9999;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .password-modal {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                width: 90%;
+                max-width: 500px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .password-modal-header {
+                background: linear-gradient(135deg, #00f 0%, #00aaff 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 12px 12px 0 0;
+                text-align: center;
+            }
+
+            .password-modal-header h3 {
+                margin: 0;
+                font-size: 20px;
+                font-weight: 600;
+            }
+
+            .password-modal-header i {
+                font-size: 24px;
+                margin-bottom: 8px;
+                display: block;
+            }
+
+            .password-modal-body {
+                padding: 25px;
+            }
+
+            .security-notice {
+                background: #e3f2fd;
+                border-left: 4px solid #2196f3;
+                padding: 15px;
+                margin-bottom: 20px;
+                border-radius: 4px;
+            }
+
+            .security-notice strong {
+                color: #1976d2;
+            }
+
+            .password-form-group {
+                margin-bottom: 18px;
+            }
+
+            .password-form-group label {
+                display: block;
+                margin-bottom: 6px;
+                font-weight: 600;
+                color: #333;
+            }
+
+            .password-input {
+                width: 100% !important;
+                padding: 12px !important;
+                border: 2px solid #ddd !important;
+                border-radius: 6px !important;
+                font-size: 14px !important;
+                box-sizing: border-box !important;
+            }
+
+            .password-input:focus {
+                border-color: #2196f3 !important;
+                outline: none !important;
+                box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1) !important;
+            }
+
+            .password-requirements {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 6px;
+                border-left: 3px solid #2196f3;
+                margin-top: 15px;
+            }
+
+            .password-requirements h4 {
+                margin: 0 0 10px 0;
+                color: #333;
+                font-size: 14px;
+            }
+
+            .password-requirements ul {
+                margin: 0;
+                padding-left: 20px;
+            }
+
+            .password-requirements li {
+                color: #666;
+                font-size: 13px;
+                margin-bottom: 4px;
+            }
+
+            .password-modal-footer {
+                padding: 20px 25px;
+                border-top: 1px solid #eee;
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .modal-btn {
+                padding: 12px 24px !important;
+                border-radius: 6px !important;
+                font-weight: 600 !important;
+                cursor: pointer !important;
+                border: none !important;
+                margin-left: 10px !important;
+                 order: 2;
+            }
+
+            .btn-primary-modal {
+                background: #2196f3 !important;
+                color: white !important;
+            }
+
+            .btn-primary-modal:hover {
+                background: #1976d2 !important;
+            }
+
+            .btn-secondary-modal {
+                background: #6c757d !important;
+                color: white !important;
+                order: 1
+                    
+            }
+
+            .btn-secondary-modal:hover {
+                background: #5a6268 !important;
+            }
+
+            .btn-processing {
+                opacity: 0.7;
+                cursor: not-allowed !important;
+            }
         </style>
     </h:head>
 
@@ -77,34 +231,35 @@
 
         <h:form id="SubLogin" prependId="false">
 
-        <div class="navbar">
-            <h2 class="nav-title">STAFF ID MODULE</h2>
-            <p:commandLink value="Login with Biometrics?" 
-                           style="color: white; white-space: nowrap;"
-                           action="#{sublogin.loginWithBiometrics()}"
-                           />
-        </div>
+            <div class="navbar">
+                <h2 class="nav-title">STAFF ID MODULE</h2>
+                <p:commandLink value="Login with Biometrics?" 
+                               style="color: white; white-space: nowrap;"
+                               action="#{sublogin.loginWithBiometrics()}"
+                               />
+            </div>
         </h:form>
         <div class="background"></div>
-        
+
         <div class="login-containerSub">
 
             <div class="header">
-                <img src="resources/images/fingerprint.jpg" alt="Ghana Card Logo" class="logo" />
+                <img src="resources/images/stimLogoBig.png" alt="STIM" class="logo" />
                 <h2>THE STAFF ID MODULE</h2>
                 <h1>Login</h1>
-                <p>Enter your Ghana Card details to continue</p>
+                <p>Enter your Credentials to Login</p>
             </div>
 
             <h:form id="loginForm" prependId="false">
-                <p:growl id="growl" showDetail="true" />
+
+                <p:growl widgetVar="fgrowl" id="growl" showSummary= "false" showDetail="true" life="6000" globalOnly="false"/>
 
                 <div class="form-group">
-                    <p:outputLabel for="ghanaCard" value="Ghana Card Number" />
-                    <p:inputText id="ghanaCard" value="#{sublogin.ghanaCardNumber}" 
+                    <p:outputLabel for="Email" value="Email" />
+                    <p:inputText id="Email" value="#{sublogin.email}" 
                                  required="true" 
                                  requiredMessage="Ghana Card Number is required"
-                                 placeholder="e.g. GHA-XXXXXXXXX-X" />
+                                 placeholder="@mail.com" />
                 </div>
 
                 <div class="form-group">
@@ -118,13 +273,89 @@
                 <p:commandButton value="Login" 
                                  id="Login"
                                  action="#{sublogin.login()}" 
-                                 styleClass="LoginButton" />
+                                 styleClass="LoginButton" 
+                                 update="@form passwordChangeForm"/>
             </h:form>
 
             <div class="form-footer">
                 <p>Please contact system administrator if you're having trouble logging in.</p>
             </div>
         </div>
+
+        <!-- Password Change Modal -->
+        <h:form id="passwordChangeForm"  prependId="false">
+            <div id="passwordChangeModal" class="password-modal-overlay" 
+                 style="display: #{sublogin.showPasswordChangeModal ? 'flex' : 'none'};">
+                <div class="password-modal">
+                    <div class="password-modal-header">
+                        <i class="fas fa-lock"></i>
+                        <h3>Password Change Required</h3>
+                    </div>
+
+
+                    <div class="password-modal-body">
+                        <div class="security-notice">
+                            <strong>Security Notice:</strong> You must change your temporary password before accessing the system.
+                        </div>
+
+                        <div class="password-form-group">
+                            <p:outputLabel for="newPassword" value="New Password:" />
+                            <p:password id="newPassword" 
+                                        value="#{sublogin.newPassword}" 
+                                        styleClass="password-input"
+                                        required="true"
+                                        placeholder="Enter your new password">
+
+                            </p:password>
+                        </div>
+
+                        <div class="password-form-group">
+                            <p:outputLabel for="confirmPassword" value="Confirm New Password:" />
+                            <p:password id="confirmPassword" 
+                                        value="#{sublogin.confirmPassword}" 
+                                        styleClass="password-input"
+                                        required="true"
+                                        placeholder="Confirm your new password" />
+                        </div>
+
+                        <div class="password-requirements">
+                            <h4>Password Requirements:</h4>
+                            <ul>
+                                <li>At least 8 characters long</li>
+                                <li>Mix of letters and numbers recommended</li>
+                                <li>Avoid using personal information</li>
+                                <li>Choose something you can remember</li>
+                            </ul>
+                        </div>
+
+                        <p:messages id="modalMessages" globalOnly="false" showDetail="true" showSummary="false" />
+                    </div>
+
+                    <div class="password-modal-footer">
+                        <p:commandButton value="Change Password" 
+                                         action="#{sublogin.changePassword}"
+                                         styleClass="modal-btn btn-primary-modal"
+                                         update="@form loginForm"
+                                         process="@form"
+                                         />
+                        
+                        <p:commandButton value="Cancel" 
+                                         action="#{sublogin.cancelPasswordChange}"
+                                         styleClass="modal-btn btn-secondary-modal"
+                                         immediate="true"
+                                         update="@form loginForm"
+                                         process="@this" />
+                    </div>
+
+                </div>
+            </div>
+        </h:form>
+
+        <!-- Auto-focus script for modal -->
+        <h:outputScript library="js" name="subLogin.js"/>
+        <h:outputScript rendered="#{sublogin.showPasswordChangeModal}">
+            document.addEventListener('DOMContentLoaded', focusPasswordModal);
+        </h:outputScript>
 
     </h:body>
 </html>

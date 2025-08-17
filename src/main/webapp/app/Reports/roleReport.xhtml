@@ -50,9 +50,9 @@
                 <p:spacer height="30px"/>
 
                 <br/><br/>
-                <div style="display: flex; justify-content: space-between">
+                <div style="display: grid; grid-template-columns: 47% 47%; gap: 19px;">
                     <p:panel header="Top 5 Employees Role Distribution" style="margin-bottom:2em;" toggleable="true" >
-                        <p:pieChart class="top5Roles" model="#{roleReportController.top5roles}" style="height: 300px;">
+                        <p:pieChart class="top5Roles" model="#{roleReportController.top5roles}" style="height: 400px;">
                             <p:ajax event="itemSelect"
                                     listener="#{roleReportController.onChartItemSelect}"
                                     update="roleForm:roleTable roleForm:selectedRowIndex"
@@ -61,12 +61,12 @@
                     </p:panel>
 
                     <p:panel header="Top 5 Roles With Most Entrance Access" style="margin-bottom:2em;" toggleable="true" >
-                        <p:pieChart class="top5entranceAccessToRoles" model="#{roleReportController.top5entranceAccessToRoles}" style="height: 300px;">
+                        <p:donutChart class="top5entranceAccessToRoles" model="#{roleReportController.top5entranceAccessToRoles}" style="height: 400px;">
                             <p:ajax event="itemSelect"
                                     listener="#{roleReportController.onChartItemSelect}"
                                     update="roleForm:roleTable roleForm:selectedRowIndex"
                                     oncomplete="scrollToSelectedRow()" /> 
-                        </p:pieChart>
+                        </p:donutChart>
                     </p:panel>
                 </div>
 

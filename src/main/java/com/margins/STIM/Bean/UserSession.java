@@ -131,6 +131,6 @@ public class UserSession implements Serializable {
         currentUser = null;
         ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
         ec.invalidateSession(); // Ends user session
-        ec.redirect(ec.getRequestContextPath() + "/login.xhtml");
+        ec.redirect(ec.getRequestContextPath() + "/sublogin.xhtml");
     }
 }

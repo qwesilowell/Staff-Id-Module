@@ -95,7 +95,7 @@ public class EntranceReportController implements Serializable {
     }
 
     public void setupBreadcrumb() {
-        breadcrumbBean.setEmployeeReportBreadcrumb();
+        breadcrumbBean.setEntrancesReportBreadcrumb();
     }
 
     public void loadReport() {

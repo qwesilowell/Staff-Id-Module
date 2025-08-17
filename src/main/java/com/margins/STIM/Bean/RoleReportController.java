@@ -43,6 +43,9 @@ import org.primefaces.model.charts.axes.cartesian.linear.CartesianLinearTicks;
 import org.primefaces.model.charts.bar.BarChartDataSet;
 import org.primefaces.model.charts.bar.BarChartModel;
 import org.primefaces.model.charts.bar.BarChartOptions;
+import org.primefaces.model.charts.donut.DonutChartDataSet;
+import org.primefaces.model.charts.donut.DonutChartModel;
+import org.primefaces.model.charts.donut.DonutChartOptions;
 import org.primefaces.model.charts.optionconfig.legend.Legend;
 import org.primefaces.model.charts.pie.PieChartDataSet;
 import org.primefaces.model.charts.pie.PieChartModel;
@@ -81,7 +84,7 @@ public class RoleReportController implements Serializable {
     private EmployeeRole selectedRole;
     private BarChartModel employeeCountBarModel;
     private PieChartModel top5roles;
-    private PieChartModel top5entranceAccessToRoles;
+    private DonutChartModel top5entranceAccessToRoles;
     private BarChartModel entranceCountBarModel;
     private String selectedRoleName;
     private List<RoleCountDTO> filteredRoles;
@@ -305,10 +308,10 @@ public class RoleReportController implements Serializable {
     }
 
     public void createEntranceCountPieChart() {
-        top5entranceAccessToRoles = new PieChartModel(); // Changed to PieChartModel
+        top5entranceAccessToRoles = new DonutChartModel(); // Changed to PieChartModel
         ChartData data = new ChartData();
 
-        PieChartDataSet dataSet = new PieChartDataSet();
+        DonutChartDataSet dataSet = new DonutChartDataSet();
         List<Number> values = new ArrayList<>();
         List<String> labels = new ArrayList<>();
 
@@ -324,7 +327,8 @@ public class RoleReportController implements Serializable {
         }
 
         dataSet.setData(values);
-        dataSet.setBackgroundColor(generateColors(values.size())); // Reuse your color method
+        dataSet.setBackgroundColor(List.of( "#26C6DA",
+            "#EC407A", "#8BC34A", "#FF7043", "#DFC57B", "#00BCD4")); // Reuse your color method
 
         data.addChartDataSet(dataSet);
         data.setLabels(labels);
@@ -332,7 +336,7 @@ public class RoleReportController implements Serializable {
         top5entranceAccessToRoles.setData(data);
 
         // Pie chart options
-        PieChartOptions options = new PieChartOptions();
+        DonutChartOptions options = new DonutChartOptions();
         options.setResponsive(true);
         options.setMaintainAspectRatio(false);
 

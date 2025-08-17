@@ -9,6 +9,23 @@ package com.margins.STIM.entity.enums;
  * @author PhilipManteAsare
  */
 public enum UserStatus {
-    ACTIVE,
-    INACTIVE
+    ACTIVE("Active"),
+    INACTIVE("Inactive"),
+    PENDING_PASSWORD_CHANGE("Pending Password Change");
+    
+    
+    private final String displayName;
+
+    UserStatus(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    @Override
+    public String toString() {
+        return displayName;
+    }
 }

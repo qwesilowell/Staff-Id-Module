@@ -25,6 +25,16 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
         <!-- Main Content -->
         <div class="main-content">
             <div class="user-management-container">
+                <h:form>
+                <div style="display: flex; justify-content: flex-end">
+                    <p:commandButton value="Export to PDF" 
+                                     icon="pi pi-file-pdf" 
+                                     styleClass="ui-button-success"
+                                     action="#{viewUsers.export()}"
+                                     ajax="false"/>  
+                </div>
+                </h:form>
+                
                 <div class="page-header">
                     <h1 class="page-title">
                         <i class="pi pi-users"></i>
@@ -34,7 +44,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                 </div>
 
                 <h:form id="userManagementForm">
-                    <p:growl id="messages" widgetVar="userGrowl" showSummary="false" showDetail="true" life="6000" globalOnly="true" />
+                    <p:growl id="messages" widgetVar="userGrowl" showSummary="false" showDetail="true" life="6000" globalOnly="false" />
 
                     <!-- Filter Cards Section -->
                     <h:panelGroup id="filterCards" layout="block" styleClass="filter-cards">

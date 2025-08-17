@@ -20,8 +20,18 @@
         <!--Main Content --> 
         <div class="main-content">
             <p:growl id="messages" showSummary= "true" showDetail="true" life="3000" />
-            <h3>EMPLOYEE REPORT</h3>
+
+           
             <h:form id="employeeForm">
+                <div style="display: flex; justify-content: space-between">
+                    <h3>EMPLOYEE REPORT</h3>
+                    <p:commandButton value="Export" 
+                                     icon="pi pi-file-pdf" 
+                                     styleClass="ui-button-secondary"
+                                     action="#{empReportController.export()}"
+                                     ajax="false"/>
+                </div>
+                <br/>
                 <p:panel toggleable="true" header="Filters">
 
                     <p:panelGrid columns="4">
@@ -71,14 +81,7 @@
                 </p:panel>
 
                 <p:spacer height="30px"/>
-                <div style="display: flex; justify-content: flex-end;">
-                    <p:commandButton value="Export" 
-                                     icon="pi pi-file-pdf" 
-                                     styleClass="ui-button-secondary"
-                                     action="#{empReportController.export()}"
-                                     ajax="false"/>
-                </div>
-                <br/>
+
 
                 <!-- Employee List -->
                 <p:dataTable id="employeeTable" value="#{empReportController.employees}" var="employee"

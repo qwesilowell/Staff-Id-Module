@@ -20,6 +20,7 @@ import com.margins.STIM.entity.model.AccessEvaluationResult;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.service.AccessLogService;
+import com.margins.STIM.service.AnomalyDetectionService;
 import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.EmployeeEntranceStateService;
 
@@ -74,7 +75,7 @@ public class AccessControlBean implements Serializable {
 
     @EJB
     private AccessLogService accessLogService;
-    
+
     @Inject
     private AuditLogService auditLogService;
     @Inject
@@ -82,6 +83,9 @@ public class AccessControlBean implements Serializable {
 
     @Inject
     private DeviceService deviceService;
+
+    @Inject
+    private AnomalyDetectionService anomalyDetectionService;
 
     @Inject
     private EmployeeEntranceStateService employeeEntranceStateService;
@@ -164,6 +168,7 @@ public class AccessControlBean implements Serializable {
 //        String entranceId = null;
         Employee employee = null;
         AccessEvaluationResult evaluation = null;
+         AccessLog log = new AccessLog();
         try {
             System.out.println("GHANACARD2 >>>>>>>>>>>>>> " + ghanaCardNumber);
             if (!ValidationUtil.isValidGhanaCardNumber(ghanaCardNumber)) {
@@ -230,6 +235,10 @@ public class AccessControlBean implements Serializable {
             System.out.println("Response Status: " + response.statusCode());
             System.out.println("Response Body: " + response.body());
 
+            log.setVerificationTime(verificationTime);
+            log.setTimestamp(LocalDateTime.now());
+            log.setDevice(selectedDevice);
+
             callBack = new Gson().fromJson(response.body(), VerificationResultData.class);
 
             if (response.statusCode() != 200 || callBack == null) {
@@ -237,11 +246,13 @@ public class AccessControlBean implements Serializable {
                 auditLogService.logActivity(AuditActionType.ACCESS_CHECK, "Access Control Test", ActionResult.FAILED, errorMessage, userSession.getCurrentUser());
                 statusMessage = "Verification Error";
                 JSF.addErrorMessage(errorMessage);
+                log.setResult(result);
             } else if (!"TRUE".equals(callBack.getData().getVerified())) {
                 statusMessage = "Access Denied";
                 String errorMessage = "Fingerprint Verification Failed!";
                 JSF.addErrorMessage(errorMessage);
                 auditLogService.logActivity(AuditActionType.ACCESS_CHECK, "Access Control Test", ActionResult.FAILED, errorMessage, userSession.getCurrentUser());
+            log.setResult(result);
             } else {
                 Entrances entrance = selectedDevice.getEntrance();
                 if (entrance == null) {
@@ -249,6 +260,7 @@ public class AccessControlBean implements Serializable {
                     String errorMessage = "Selected entrance not found.";
                     JSF.addErrorMessage(errorMessage);
                     auditLogService.logActivity(AuditActionType.ACCESS_CHECK, "Access Control Test", ActionResult.FAILED, errorMessage, userSession.getCurrentUser());
+                log.setResult(result);
                 } else {
                     employee = employeeService.findEmployeeByGhanaCard(ghanaCardNumber);
                     if (employee == null) {
@@ -256,9 +268,12 @@ public class AccessControlBean implements Serializable {
                         String errorMessage = "Employee not found.";
                         JSF.addErrorMessage(errorMessage);
                         auditLogService.logActivity(AuditActionType.ACCESS_CHECK, "Access Control Test", ActionResult.FAILED, errorMessage, userSession.getCurrentUser());
+                    log.setResult(result);
                     } else {
+                        log.setEmployee(employee);
                         evaluation = accessLogService.evaluateAccess(employee, selectedDevice);
                         result = evaluation.getResult();
+                        log.setResult(result);
 
                         String displayMessage = evaluation.getMessage();
 
@@ -268,16 +283,25 @@ public class AccessControlBean implements Serializable {
                             auditLogService.logActivity(AuditActionType.ACCESS_CHECK, "Access Control Test", ActionResult.SUCCESS, successMessage, userSession.getCurrentUser());
                             statusMessage = "Access Granted";
 
-                            if (selectedDevice.getEntrance().getEntranceMode() == EntranceMode.STRICT) {
-                                employeeEntranceStateService.recordStrictEntryOrExit(
+                            try {
+                                employeeEntranceStateService.recordEntryOrExit(
                                         employee, selectedDevice.getEntrance(), selectedDevice.getDevicePosition(), "SYSTEM", selectedDevice
                                 );
+                            } catch (Exception e) {
+                                // Log error but don't change access result since door already opened
+                                auditLogService.logActivity(AuditActionType.ACCESS_CHECK,
+                                        "Access Control Test",
+                                        ActionResult.FAILED,
+                                        "State update failed after successful access",
+                                        userSession.getCurrentUser());
                             }
                         } else {
                             String errorMessage = "Access denied: " + evaluation.getMessage();
                             JSF.addErrorMessage(errorMessage);
                             statusMessage = "Access Denied";
                             auditLogService.logActivity(AuditActionType.ACCESS_CHECK, "Access Control Test", ActionResult.FAILED, errorMessage, userSession.getCurrentUser());
+                            anomalyDetectionService.checkFrequentDeniedAccess(employee, selectedDevice);
+
                         }
                     }
                 }
@@ -288,17 +312,11 @@ public class AccessControlBean implements Serializable {
             String errorDetail = "Exception during access control check: " + e.getMessage();
             JSF.addErrorMessage("Error during access control check: " + e.getLocalizedMessage());
             auditLogService.logActivity(AuditActionType.ACCESS_CHECK, "Access Control Test", ActionResult.FAILED, errorDetail, userSession.getCurrentUser());
+            log.setResult(result);
             e.printStackTrace();
-            
+
         } finally {
             // Log every attempt   
-            AccessLog log = new AccessLog();
-            log.setEmployee(employee);
-            log.setDevice(selectedDevice);
-            log.setResult(result);
-            log.setVerificationTime(verificationTime);
-            log.setTimestamp(LocalDateTime.now());
-
             accessLogService.logAccess(log);
 
             if (evaluation != null && evaluation.getAnomalies() != null) {

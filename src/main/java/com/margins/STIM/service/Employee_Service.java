@@ -8,6 +8,7 @@ import com.margins.STIM.entity.BiometricData;
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.EmployeeRole;
 import com.margins.STIM.entity.EmploymentStatus;
+import com.margins.STIM.entity.Entrances;
 import java.util.List;
 import java.util.regex.Pattern;
 import jakarta.ejb.Stateless;
@@ -70,16 +71,29 @@ public class Employee_Service {
     }
 
     //Update Employee Custom Entrance
-    public Employee updateEmployeeEnt(String ghanaCardNumber, Employee employee) {
-        Employee existingEmployee = findEmployeeByGhanaCard(ghanaCardNumber);
-        if (existingEmployee != null) {
-            employee.setGhanaCardNumber(ghanaCardNumber);
-            Employee merged = entityManager.merge(employee);
-            entityManager.flush();
-            return merged;
+    public Employee updateEmployeeEntrances(Employee employee, List<Entrances> customEntrances) {
+        Employee existing = findEmployeeByGhanaCard(employee.getGhanaCardNumber());
+        if (existing == null) {
+            throw new EntityNotFoundException("Employee does not exist with Ghana Card number: " + employee.getGhanaCardNumber());
         }
-        System.err.println("Employee not found: " + ghanaCardNumber);
-        throw new EntityNotFoundException("Employee does not exist with Ghana Card number: " + ghanaCardNumber);
+
+        // Clear existing relationships
+        if (existing.getCustomEntrances() != null) {
+            existing.getCustomEntrances().clear();
+            entityManager.flush();
+        }
+
+        // Add new relationships with managed entities
+        if (customEntrances != null && !customEntrances.isEmpty()) {
+            for (Entrances entrance : customEntrances) {
+                Entrances managedEntrance = entityManager.find(Entrances.class, entrance.getId());
+                if (managedEntrance != null) {
+                    existing.getCustomEntrances().add(managedEntrance);
+                }
+            }
+        }
+
+        return entityManager.merge(existing);
     }
 
     // Retrieve all Employees

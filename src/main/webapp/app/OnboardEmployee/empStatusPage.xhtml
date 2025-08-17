@@ -79,6 +79,7 @@
                             <p:spacer width="10px"/>
                             <p:commandButton class="rounded-button ui-button-danger ui-button-outlined" 
                                              icon="pi pi-trash" 
+                                             update=":employmentStatusDialog"
                                              process="@this" 
                                              oncomplete="PF('deleteEmploymentStatusDialog').show()">
                                 <f:setPropertyActionListener value="#{employmentStatus}"
@@ -91,7 +92,7 @@
                     <p:confirmDialog widgetVar="deleteEmploymentStatusDialog" 
                                      showEffect="fade" 
                                      width="300"
-                                     message="Delete this Employment status?" 
+                                     message="Delete #{employmentStatusBean.selectedEmploymentStatus.empstatus} Employment status?" 
                                      header="Confirm" 
                                      severity="warn">
                         <p:commandButton value="Yes" 
