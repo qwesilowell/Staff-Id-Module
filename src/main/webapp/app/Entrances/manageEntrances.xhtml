@@ -17,11 +17,11 @@
 
     <ui:define name ="title">Manage Entrances</ui:define>
 
-<!--    <ui:define name ="metadata">
-        <f:metadata>
-            <f:viewAction action="#-{loginBean.checkAccess('ADMIN')}" />
-        </f:metadata>
-    </ui:define>-->
+    <!--    <ui:define name ="metadata">
+            <f:metadata>
+                <f:viewAction action="#-{loginBean.checkAccess('ADMIN')}" />
+            </f:metadata>
+        </ui:define>-->
 
     <ui:define name ="content">
         <!-- Main Content -->
@@ -56,7 +56,7 @@
                             <!-- STRICT mode -->
                             <h:panelGroup layout="block"
                                           rendered="#{entrance.entranceMode == 'STRICT'}"
-                                           styleClass="mode-tag #{entrance.entranceMode}"> 
+                                          styleClass="mode-tag #{entrance.entranceMode}"> 
                                 <i class="fa-solid fa-lock" style="margin-right: 6px;"></i>
                                 STRICT
                             </h:panelGroup>
@@ -94,20 +94,19 @@
                 </p:panel>
 
                 <!-- Add/Edit Entrance Dialog -->
-                <p:dialog id="entranceDialog" widgetVar="entranceDialogWidget" header="Entrance Details" modal="true" closable="false">
+                <p:dialog id="entranceDialog" widgetVar="entranceDialogWidget" header="Entrance Details" modal="true" closable="false"  width="500px">
                     <h:panelGrid columns="2">
-                        <h:outputLabel value="ENTRANCE ID:"/>
-                        <p:inputText value="#{entranceBean.selectedEntrance.entranceDeviceId}"/>
+                        <h:outputLabel value="ENTRANCE ID:" styleClass="spacer"/>
+                        <p:inputText value="#{entranceBean.selectedEntrance.entranceDeviceId}" style="margin-left: 20px; width: 120%;" styleClass="spacer"/>
 
-                        <h:outputLabel value="Name:"/>
-                        <p:inputText value="#{entranceBean.selectedEntrance.entranceName}"/>
+                        <h:outputLabel value="Name:"  styleClass="spacer"/>
+                        <p:inputText value="#{entranceBean.selectedEntrance.entranceName}" style="margin-left: 20px; width: 120%;" styleClass="spacer"/>
 
-                        <h:outputLabel value="Location:"/>
-                        <p:inputText value="#{entranceBean.selectedEntrance.entranceLocation}"/>
+                        <h:outputLabel value="Location:"  styleClass="spacer"/>
+                        <p:inputText value="#{entranceBean.selectedEntrance.entranceLocation}" styleClass="spacer" style="margin-left: 20px; width: 120%;"/>
 
-                        <h:outputLabel value="Mode:"/>
-                        <p:selectOneMenu value="#{entranceBean.selectedEntrance.entranceMode}" style="width: 100%" >
-                            <!--                            <f:selectItem itemLabel="Select Mode" itemValue="" noSelectionOption="true"/>-->
+                        <h:outputLabel value="Mode:"  styleClass="spacer"/>
+                        <p:selectOneMenu value="#{entranceBean.selectedEntrance.entranceMode}" style="margin-left: 20px; width: 120%"  styleClass="spacer">
                             <f:selectItems value="#{entranceBean.entranceModes}" var="mode"
                                            itemLabel="#{mode}" itemValue="#{mode}"/>
                         </p:selectOneMenu>
@@ -143,11 +142,11 @@
 
         <style>
             .mode-tag {
-               display: inline-block;
+                display: inline-block;
                 padding: 4px 10px;
                 border-radius: 20px;
                 font-weight: 600;
-               
+
             }
 
             /* Mode-specific gradients */
@@ -161,9 +160,13 @@
                 background: linear-gradient(to right, #3aaf7c, #30bdb6); /* green-teal */
             }
 
-            .LENIENT {    
+            .LENIENT {
                 color: black;
                 background: linear-gradient(to right, #f7971e, #ffd200);
+            }
+            .spacer{
+                display:inline-block; 
+                margin-bottom: 10px;
             }
 
         </style>

@@ -98,7 +98,7 @@ public class Sublogincontroller implements Serializable {
                         auditLogService.logActivity(AuditActionType.LOGIN, "SubLogin Page", ActionResult.SUCCESS, currentUser.getUsername() + " Login Succesful", currentUser);
 
                         FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
-                        JSF.addSuccessMessageWithSummary("Welcome ! ", currentUser.getUsername());
+                        JSF.addSuccessMessageWithSummary("Welcome Back! ", currentUser.getUsername());
                         FacesContext.getCurrentInstance().getExternalContext().redirect("app/dashboard2.xhtml");
                         return null;
                     } else {
@@ -205,11 +205,9 @@ public class Sublogincontroller implements Serializable {
         }
 
         try {
-            // Update password and status
-            user.setPassword(User_Service.passwordEncoder.encode(newPassword));
-            user.setStatus(UserStatus.ACTIVE);
+            userService.updatePassword(user.getId(), User_Service.passwordEncoder.encode(newPassword));
 
-            userService.updateUser(user);
+            user = userService.findUserById(user.getId());
 
             // Clear session and modal
             FacesContext.getCurrentInstance().getExternalContext()
@@ -223,14 +221,18 @@ public class Sublogincontroller implements Serializable {
 
             auditLogService.logActivity(AuditActionType.UPDATE, "SubLogin Page", ActionResult.SUCCESS,
                     user.getUsername() + " Password changed successfully", user);
+
+            userSession.loginUser(user);
+
             auditLogService.logActivity(AuditActionType.LOGIN, "SubLogin Page", ActionResult.SUCCESS,
                     user.getUsername() + " Login Succesful After Password Change", user);
 
-            JSF.addSuccessMessage("Password changed successfully!");
+            JSF.addSuccessMessage("Password changed successfully! You are now logged in.");
 
             // Redirect to dashboard
-            FacesContext.getCurrentInstance().getExternalContext().redirect("sublogin.xhtml");
-            JSF.addSuccessMessage("Login With New Credentials");
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+            FacesContext.getCurrentInstance().getExternalContext().redirect("app/dashboard2.xhtml");
+            JSF.addSuccessMessageWithSummary("Welcome..",user.getUsername()+" to The Staff ID Module.");
 
         } catch (Exception e) {
             JSF.addErrorMessage("Error changing password: " + e.getMessage());

@@ -51,6 +51,17 @@ public class AccessAnomalyService {
                 .setParameter("status", status)
                 .getSingleResult();
     }
+    
+    //OverLoad for users 
+    public long countByStatus(AnomalyStatus status, Users user) {
+        return em.createQuery("SELECT COUNT(a) FROM AccessAnomaly a WHERE"
+                + " a.handledBy = :user"
+                + " AND a.anomalyStatus = :status", Long.class)
+                .setParameter("user", user)
+                .setParameter("status", status)
+                .getSingleResult();
+    }
+
 
     public void markAsResolved(int anomalyId, Users resolvedBy) {
         AccessAnomaly anomaly = em.find(AccessAnomaly.class, anomalyId);
@@ -86,6 +97,7 @@ public class AccessAnomalyService {
                 .setParameter("severity", severity)
                 .getSingleResult();
     }
+    
 
     public long countBySeverityAndStatus(AnomalySeverity severity, AnomalyStatus status) {
         return em.createQuery("SELECT COUNT(a) FROM AccessAnomaly a WHERE a.anomalySeverity = :severity AND a.anomalyStatus = :status", Long.class)
@@ -94,9 +106,25 @@ public class AccessAnomalyService {
                 .getSingleResult();
     }
 
+    /**
+     *This is an overload that takes users to find for users
+     * @param severity     
+     * @param status     
+     * @param user     
+     **/
+    public long countBySeverityAndStatus(AnomalySeverity severity, AnomalyStatus status, Users user) {
+        return em.createQuery("SELECT COUNT(a) FROM AccessAnomaly a"
+                + " WHERE a.handledBy = :user"
+                + " AND a.anomalySeverity = :severity AND a.anomalyStatus = :status", Long.class)
+                .setParameter("user", user)
+                .setParameter("severity", severity)
+                .setParameter("status", status)
+                .getSingleResult();
+    }
+
     public List<AccessAnomaly> findWithFilters(AnomalySeverity severity, AnomalyStatus status,
-            String employeeName, Integer deviceId,
-            Integer entranceId, LocalDate dateFilter) {
+            String employeeName, Integer deviceId, String refNumber,
+            Integer entranceId, LocalDate dateFilter , Users user) {
         StringBuilder jpql = new StringBuilder("SELECT a FROM AccessAnomaly a WHERE 1=1");
 
         if (severity != null) {
@@ -104,6 +132,9 @@ public class AccessAnomalyService {
         }
         if (status != null) {
             jpql.append(" AND a.anomalyStatus = :status");
+        }
+        if (refNumber != null && !refNumber.trim().isEmpty()){
+        jpql.append(" AND LOWER (a.anomalyRef) LIKE :refNumber");
         }
         if (employeeName != null && !employeeName.trim().isEmpty()) {
             jpql.append(" AND (LOWER(CONCAT(a.employee.firstname, ' ', a.employee.lastname)) LIKE :employeeName");
@@ -120,7 +151,10 @@ public class AccessAnomalyService {
             jpql.append(" AND DATE(a.timestamp) = :dateFilter");
         }
 
-        jpql.append(" ORDER BY a.timestamp DESC");
+        if (user != null) {
+            jpql.append(" AND a.handledBy = :user");
+        }
+        jpql.append(" ORDER BY a.createdAt DESC");
 
         TypedQuery<AccessAnomaly> query = em.createQuery(jpql.toString(), AccessAnomaly.class);
 
@@ -129,6 +163,9 @@ public class AccessAnomalyService {
         }
         if (status != null) {
             query.setParameter("status", status);
+        }
+        if(refNumber != null && !refNumber.trim().isEmpty()){
+            query.setParameter("refNumber", "%" + refNumber.toLowerCase() + "%");
         }
         if (employeeName != null && !employeeName.trim().isEmpty()) {
             query.setParameter("employeeName", "%" + employeeName.toLowerCase() + "%");
@@ -142,7 +179,8 @@ public class AccessAnomalyService {
         if (dateFilter != null) {
             query.setParameter("dateFilter", dateFilter);
         }
-
+        if (user != null)
+            query.setParameter("user", user);
         return query.getResultList();
     }
 
@@ -161,6 +199,10 @@ public class AccessAnomalyService {
             anomaly.setHandledBy(handler);
             em.merge(anomaly);
         }
+    }
+    
+    public AccessAnomaly findAnomaly(AccessAnomaly anomaly){
+    return em.find(AccessAnomaly.class, anomaly.getId());
     }
 
 }

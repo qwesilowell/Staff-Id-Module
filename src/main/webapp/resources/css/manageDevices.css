@@ -23,7 +23,7 @@ body {
     margin-bottom: 1px !important;
     overflow-x: hidden;
     flex-grow: 1;
-/*    max-width: calc(100vw - 130px);*/
+    /*    max-width: calc(100vw - 130px);*/
 }
 
 .device-container {
@@ -118,28 +118,28 @@ body {
 }
 
 .btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.85rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    white-space: nowrap;
+    padding: 0.75rem 1.5rem !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    font-size: 0.85rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    white-space: nowrap !important;
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-    color: white;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3)!important;
 }
 
 .btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
 }
 .btn-secondary {
     background: linear-gradient(135deg, #ff7f7f 0%, #ff1a1a 100%);
@@ -154,14 +154,14 @@ body {
 }
 
 .btn-edit {
-/*    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;*/
+    /*    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;*/
     color: orange !important;
     background: transparent !important;
     border: none!important;
     padding: 0.4rem 0.4rem !important;
-/*    
-    font-size: 0.60rem !important;
-    border-radius: 25px!important;*/
+    /*    
+        font-size: 0.60rem !important;
+        border-radius: 25px!important;*/
 }
 
 .btn-delete {
@@ -304,22 +304,40 @@ body {
 }
 
 .position-toggle {
-    display: flex;
-    background: #f3f4f6;
-    border-radius: 8px;
-    padding: 2px;
-    position: relative;
+    display: flex !important;
+    background: #f3f4f6 !important;
+    border-radius: 8px !important;
+    padding: 2px !important;
+    position: relative !important;
+    gap: 10px;
 }
 
 .position-option {
     flex: 1;
-    padding: 0.5rem 0.75rem;
-    text-align: center;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-weight: 600;
-    font-size: 0.75rem;
+    padding: 0.2rem 0.75rem !important;
+    text-align: center !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    font-weight: 600 !important;
+    font-size: 0.75rem !important;
+}
+
+.position.entry.active{
+    flex: 1;
+    background-color: white;
+    color :#44994C;
+    cursor: pointer !important;
+    border: 2px solid #2196f3 !important; 
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+.position.exit.active{
+    flex: 1;
+    background-color: white;
+    color :#B33737;
+    cursor: pointer !important;
+    border: 2px solid #2196f3 !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .position-option.active {
@@ -336,13 +354,17 @@ body {
     color: #ef4444;
 }
 
+
+
+
+
 .stats-section {
     padding: 1rem 0;
-/*    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);*/
+    /*    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);*/
     border-top: 1px solid #e5e7eb;
     border-radius: 16px;
     flex-shrink: 0;
-/*    margin-bottom: 1rem;*/
+    /*    margin-bottom: 1rem;*/
 }
 
 .stats-grid {
@@ -394,7 +416,7 @@ body {
 }
 
 .stat-icon {
-/*    font-size: 2rem;*/
+    /*    font-size: 2rem;*/
     margin-bottom: 0.5rem;
     background: linear-gradient(45deg, #667eea, #764ba2);
     -webkit-background-clip: text;
@@ -409,7 +431,7 @@ body {
 }
 
 .stat-number {
-/*    font-size: 2.5rem;*/
+    /*    font-size: 2.5rem;*/
     font-weight: 700;
     margin-bottom: 0.5rem;
     background: linear-gradient(45deg, #2d3748, #4a5568);

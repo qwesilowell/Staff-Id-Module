@@ -49,58 +49,44 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.primefaces.PrimeFaces;
 
+@Getter
+@Setter
 @Named("loginBean")
 @SessionScoped
 public class LoginBean implements Serializable {
 
-    @Getter
-    @Setter
     private String ghanaCardNumber;
 
-    @Getter
-    @Setter
     private String password;
 
-    @Getter
-    @Setter
     private String capturedFinger;
 
-    @Getter
-    @Setter
     private String fingerPosition;
 
-    @Getter
-    @Setter
     private String errorMessage;
 
-    @Getter
-    @Setter
     private String faceImageData;
 
-    @Getter
-    @Setter
     private String msg;
 
-    @Getter
-    @Setter
     private CapturedFinger capturedMultiFinger = new CapturedFinger();
 
     List<FingerCaptured> capturedFingers = new ArrayList<>();
 
-    @Getter
-    @Setter
     VerificationResultData callBack = new VerificationResultData();
 
     private byte[] fingerData;
     private String socketData;
 
-    @Getter
-    @Setter
     private String userRole;
 
-    @Getter
-    @Setter
     private String username;
+
+    private boolean showPasswordChangeModal = false;
+
+    private String newPassword;
+
+    private String confirmPassword;
 
     @EJB
     private User_Service userService;
@@ -129,26 +115,6 @@ public class LoginBean implements Serializable {
         return socketData;
     }
 
-//    public void checkAccess(UserType requiredRole) {
-//        String sessionRoleStr = (String) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("userRole");
-//        if (sessionRoleStr == null) {
-//            redirectToLogin();
-//            return;
-//        }
-//
-//        UserType sessionRole;
-//        try {
-//            sessionRole = UserType.valueOf(sessionRoleStr);
-//        } catch (IllegalArgumentException e) {
-//            // Invalid role string in session
-//            redirectToLogin();
-//            return;
-//        }
-//
-//        if (!sessionRole.equals(requiredRole)) {
-//            redirectToLogin();
-//        }
-//    }
     private void redirectToLogin() {
         try {
             FacesContext.getCurrentInstance().getExternalContext()
@@ -163,20 +129,19 @@ public class LoginBean implements Serializable {
         try {
 
             if (ghanaCardNumber == null || ghanaCardNumber.isBlank()) {
-                handleBiometricError("Facial Login - GhanaCard is Empty", null, null);
-                JSF.addErrorMessage("Ghana Card Number must be filled");
+                JSF.addErrorMessage("National ID must be filled");
                 return;
             }
 
             if (!ValidationUtil.isValidGhanaCardNumber(ghanaCardNumber)) {
                 handleBiometricError("SingleFinger Login - Invalid GhanaCard Format", null, null);
-                JSF.addErrorMessage("Invalid Ghana Card Format");
+                JSF.addErrorMessage("Invalid National ID Format");
                 return;
             }
 
             Users currentUser = userService.findUserByGhanaCard(ghanaCardNumber);
             if (currentUser == null) {
-                handleBiometricError("Facial Login - User not registered in system", null, null);
+                handleBiometricError("SingleFinger Login - User not registered in system", null, null);
                 JSF.addErrorMessage("User Not Registered");
                 return;
             }
@@ -265,6 +230,11 @@ public class LoginBean implements Serializable {
 
             userSession.loginUser(currentUser);
 
+            if (userSession.userPendingPassword()) {
+                pendingPasswordChange(currentUser);
+                return;
+            }
+
             if (userSession.userActive()) {
                 // Successful login
                 auditLogService.logActivity(
@@ -290,7 +260,7 @@ public class LoginBean implements Serializable {
                 );
 
                 JSF.addErrorMessage("Login Failed - Your account is inactive. Please contact administrator.");
-                updateForm();
+//                updateForm();
             }
         } catch (Exception e) {
             handleBiometricError("System error during Single Finger login: " + e.getMessage(), e, null);
@@ -301,14 +271,14 @@ public class LoginBean implements Serializable {
     public void verifyFace() {
         try {
             if (ghanaCardNumber == null || ghanaCardNumber.isBlank()) {
-                JSF.addErrorMessage("Ghana Card Number must be filled");
+                JSF.addErrorMessage("National ID must be filled");
                 return;
             }
 
             if (!ValidationUtil.isValidGhanaCardNumber(ghanaCardNumber)) {
                 handleBiometricError("Facial Login - Invalid GhanaCard Format", null, null);
 
-                JSF.addErrorMessage("Invalid Ghana Card Format");
+                JSF.addErrorMessage("Invalid National ID Format");
                 return;
             }
 
@@ -393,6 +363,11 @@ public class LoginBean implements Serializable {
             ghanaCardNumber = nationalId;
 
             userSession.loginUser(currentUser);
+            
+            if (userSession.userPendingPassword()) {
+                pendingPasswordChange(currentUser);
+                return;
+            }
 
             if (userSession.userActive()) {
                 // Successful login
@@ -419,7 +394,7 @@ public class LoginBean implements Serializable {
                 );
 
                 JSF.addErrorMessage("Login Failed - Your account is inactive. Please contact administrator.");
-                updateForm();
+//                updateForm();
             }
         } catch (Exception e) {
             handleBiometricError("System error during Facial login: " + e.getMessage(), e, null);
@@ -548,7 +523,11 @@ public class LoginBean implements Serializable {
             }
 
             userSession.loginUser(currentUser);
-
+            
+            if (userSession.userPendingPassword()) {
+                pendingPasswordChange(currentUser);
+                return;
+            }
             if (userSession.userActive()) {
                 // Successful login
                 auditLogService.logActivity(
@@ -574,7 +553,7 @@ public class LoginBean implements Serializable {
                 );
 
                 JSF.addErrorMessage("Login Failed - Your account is inactive. Please contact administrator.");
-                updateForm();
+//                updateForm();
             }
         } catch (Exception e) {
             handleBiometricError("System error during biometric login: " + e.getMessage(), e, null);
@@ -615,11 +594,91 @@ public class LoginBean implements Serializable {
         }
 
         // Update form
-        updateForm();
+//        updateForm();
     }
 
-    private void updateForm() {
-        PrimeFaces.current().ajax().update("theForm");
+    public void pendingPasswordChange(Users currentUser) {
+        if (currentUser == null) {
+            JSF.addErrorMessage("Session Expired Login Again.");
+            return;
+        }
+        FacesContext.getCurrentInstance().getExternalContext()
+                .getSessionMap().put("userMustChangePassword", currentUser);
+
+        auditLogService.logActivity(AuditActionType.LOGIN, "BiometricLogin Page", ActionResult.SUCCESS,
+                currentUser.getUsername() + " Login Successful - Password change required", currentUser);
+
+        showPasswordChangeModal = true;
+    }
+    
+    public void cancelPasswordChange() throws IOException {
+        // Clear session and logout
+        FacesContext.getCurrentInstance().getExternalContext()
+                .getSessionMap().remove("userMustChangePassword");
+        showPasswordChangeModal = false;
+        newPassword = null;
+        confirmPassword = null;
+
+        // Logout user
+        userSession.logout();
+        JSF.addErrorMessage("Password change cancelled. Please login again.");
+    }
+
+    public void changePassword() {
+        Users user = (Users) FacesContext.getCurrentInstance()
+                .getExternalContext().getSessionMap().get("userMustChangePassword");
+
+        if (user == null) {
+            JSF.addErrorMessage("Session expired. Please login again.");
+            return;
+        }
+
+        String validationMessage = ValidationUtil.validatePassword(newPassword);
+        if (validationMessage != null) {
+            JSF.addErrorMessage(validationMessage);
+            return;
+        }
+
+        // Validate new passwords match
+        if (!newPassword.equals(confirmPassword)) {
+            JSF.addErrorMessage("Passwords do not match");
+            return;
+        }
+
+        try {
+            userService.updatePassword(user.getId(), User_Service.passwordEncoder.encode(newPassword));
+
+            user = userService.findUserById(user.getId());
+
+            // Clear session and modal
+            FacesContext.getCurrentInstance().getExternalContext()
+                    .getSessionMap().remove("userMustChangePassword");
+
+            showPasswordChangeModal = false;
+
+            // Clear form fields
+            newPassword = null;
+            confirmPassword = null;
+
+            auditLogService.logActivity(AuditActionType.UPDATE, "SubLogin Page", ActionResult.SUCCESS,
+                    user.getUsername() + " Password changed successfully", user);
+
+            userSession.loginUser(user);
+
+            auditLogService.logActivity(AuditActionType.LOGIN, "SubLogin Page", ActionResult.SUCCESS,
+                    user.getUsername() + " Login Succesful After Password Change", user);
+
+            JSF.addSuccessMessage("Password changed successfully! You are now logged in.");
+
+            // Redirect to dashboard
+            FacesContext.getCurrentInstance().getExternalContext().redirect("app/dashboard2.xhtml");
+            JSF.addSuccessMessage("Login With New Credentials");
+
+        } catch (Exception e) {
+            JSF.addErrorMessage("Error changing password: " + e.getMessage());
+            auditLogService.logActivity(AuditActionType.UPDATE, "Login Page", ActionResult.FAILED,
+                    user.getUsername() + " Password change failed: " + e.getMessage(), user);
+        }
     }
 
     private void redirectToDashboard() {
@@ -629,7 +688,7 @@ public class LoginBean implements Serializable {
         } catch (IOException e) {
             System.err.println("Failed to redirect to dashboard: " + e.getMessage());
             JSF.addErrorMessage("Login successful but failed to redirect. Please navigate manually.");
-            updateForm();
+//            updateForm();
         }
     }
 }

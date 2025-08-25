@@ -17,7 +17,8 @@ public enum PagePermission {
     SETTINGS("/app/Settings/settingsPage.xhtml", "Settings"),
     CREATE_NEW_USER("/app/Settings/newuser.xhtml", "Create New System User"),
     VIEW_USERS("/app/Settings/viewUsers.xhtml", "View All System Users"),
-    MANAGE_USER_ROLES("/app/Settings/createUserRoless.xhtml", "Manage User Roles"),
+    MANAGE_USER_ROLES("/app/Settings/createUserRoles.xhtml", "Manage User Roles"),
+    ANOMALY_MANAGEMENT("/app/Anomalies/anomaliesPage.xhtml", "Anomaly Management"),
     
     ACTIVITY_LOG("/app/Settings/activityLog.xhtml", "View All activites"),
     DEVELOPER_TOOLS("/app/Settings/developerTools.xhtml", "For Developer"),

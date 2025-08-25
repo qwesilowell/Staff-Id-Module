@@ -63,6 +63,9 @@ public class JSF {
     public static void addWarningMessage(String message) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, message));
     }
+    public static void addWarningMessageWithSummary(String summary,String message) {
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, summary, message));
+    }
 
     public static void addDynamicMessage(String message, boolean type) {
         if (type) {

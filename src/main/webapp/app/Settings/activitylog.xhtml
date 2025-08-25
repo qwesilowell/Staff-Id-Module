@@ -92,10 +92,10 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                 <p:panel header="Activity Logs" styleClass="glass-panel">
 
                     <p:dataTable value="#{auditLogBean.allLazyAuditLogs}" var="log" paginator="true" paginatorPosition="bottom" rows="10" lazy="true"
-                                 styleClass="modern-table" rowKey="#{log.id}" >
+                                 styleClass="modern-table" rowKey="#{log.id}" rowIndexVar="rowIndex">
 
-                        <p:column headerText="ID" width="4%">
-                            #{log.id}
+                        <p:column headerText="#" width="4%">
+                            <h:outputText value="#{rowIndex + 1}" />
                         </p:column>
 
                         <p:column headerText="Action" width="10%">

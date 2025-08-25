@@ -40,10 +40,10 @@
                             </h:panelGroup>
                         </f:facet>
                         <p:dataTable value="#{liveMonitoring.recentAccessAttempts}" var="log" rowIndexVar="rowIndex"  rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">                                   
-                            <p:column headerText="Employee">
+                            <p:column headerText="Full Name">
                                 <h:outputText value="#{liveMonitoring.getEmployeeName((log.employee))}"/>
                             </p:column>
-                            <p:column headerText="GhanaCard No">
+                            <p:column headerText="National ID">
                                 <h:outputText value="#{log.employee.ghanaCardNumber}"/>
                             </p:column>
                             <p:column headerText="Device Used">
@@ -57,7 +57,7 @@
                                               styleClass="#{log.result eq 'GRANTED' ? 'granted-box' : 'denied-box'}" />
 
                             </p:column>
-                            <p:column headerText="Time">
+                            <p:column headerText="Timestamp">
                                 <h:outputText value="#{liveMonitoring.getFormattedTimestamp(log)}">
 
                                 </h:outputText>

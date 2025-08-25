@@ -29,6 +29,7 @@ public class ReportGenerator extends JasperReportManager implements Serializable
     public static final String ANOMALY_DETAILS = REPORT_BASE_DIR + "AnomalyDetails.jasper";
     public static final String AUDIT_LOG = REPORT_BASE_DIR + "auditLog.jasper";
     public static final String USER_REPORT = REPORT_BASE_DIR + "UserReport.jasper";
+    public static final String OCCUPANT_STATE = REPORT_BASE_DIR + "OccupantState.jasper";
 
     public ReportGenerator() {
         setReportEnvironment(ReportOutputEnvironment.WEB_APPLICATION);

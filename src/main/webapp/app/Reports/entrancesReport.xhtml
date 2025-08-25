@@ -17,6 +17,8 @@
 
     <ui:define name ="content">
         <h:outputStylesheet library="css" name= "roleReport.css"/>
+        <h:outputScript library="js" name="entranceAccessReport.js" target="body" />
+
         <!--Main Content --> 
         <div class="main-content">
             <h:form id="entForm">
@@ -33,15 +35,15 @@
                         <p:commandButton value="Export Excel" 
                                          icon="pi pi-file-excel" 
                                          styleClass="ui-button-success"
-                                         style="margin-right: 10px;">
-                            <p:dataExporter type="xls" target="entTable" fileName="entrance_report"/>
-                        </p:commandButton>
-
+                                         style="margin-right: 10px;"
+                                         ajax="false"
+                                         actionListener="#{entranceReportBean.exportPage('EXCEL')}" />
+                      
                         <p:commandButton value="Export PDF" 
                                          icon="pi pi-file-pdf" 
                                          styleClass="ui-button-secondary"
                                          ajax="false"
-                                         action="#{entranceReportBean.exportPage()}"/>
+                                         actionListener="#{entranceReportBean.exportPage('PDF')}" />
                     </div>
                 </div>
 
@@ -159,165 +161,163 @@
                 <!-- Data Table -->
                 <div style="width: 100%; overflow-x: auto; padding: 0; margin: 0;">
                     <div class="scroll-hint" rendered = "#{ not empty entranceReportBean.reportData}">
-                        <i class="pi pi-arrow-right floating-icon" title="See More Details"></i>  
+                        <i class="pi pi-arrow-right floating-icon" title="See More Details" onclick="scrollTableToRightSmooth()"></i>
                     </div>
-                    <p:dataTable id="entTable"  value="#{entranceReportBean.reportData}" var="report" styleClass="ui-datatable"  paginator="true" 
-                                 rows="10"
-                                 paginatorPosition="bottom"  
-                                 rowIndexVar="rowIndex"  
-                                 rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}"
-                                 emptyMessage="No data available for the selected criteria"
-                                 sortMode="multiple"
-                                 resizableColumns="true"  style="min-width: 180%">
+                    <div class="table-container" >
+                        <p:dataTable id="entTable"  value="#{entranceReportBean.reportData}" var="report" styleClass="ui-datatable"  paginator="true" 
+                                     rows="10"
+                                     paginatorPosition="bottom"  
+                                     rowIndexVar="rowIndex"  
+                                     rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}"
+                                     emptyMessage="No data available for the selected criteria"
+                                     sortMode="multiple"   scrollable="true"
+                                     resizableColumns="true"  style="min-width: 180%">
 
-                        <p:column headerText="Entrance Name" sortBy="#{report.entrances.entranceName}" filterBy="#{report.entrances.entranceName}">
-                            <h:outputText value="#{report.entrances.entranceName}" style="font-weight: bolder;"/>
-                            <br/>
-                            <h:outputText value="#{report.entrances.entranceLocation}" style="font-size: 0.9em; color: rgba(0, 0, 0, 0.6);" />
-                        </p:column>
+                            <p:column headerText="Entrance Name" sortBy="#{report.entrances.entranceName}" filterBy="#{report.entrances.entranceName}">
+                                <h:outputText value="#{report.entrances.entranceName}" style="font-weight: bolder;"/>
+                                <br/>
+                                <h:outputText value="#{report.entrances.entranceLocation}" style="font-size: 0.9em; color: rgba(0, 0, 0, 0.6);" />
+                            </p:column>
 
-                        <!--                        <p:column headerText="Devices Assigned" sortBy="#-{report.entrances.devices}" styleClass="totalAccess">
-                                                    <h:outputText value="#-{report.entrances.devices.size()}"  />
-                                                </p:column>-->
+                            <p:column  styleClass="totalAccess" style="width:5%">
+                                <f:facet name="header">
+                                    <div style="white-space: normal; word-wrap: break-word; text-align: center;">
+                                        Entry Device Assigned
+                                    </div>
+                                </f:facet>
+                                <p:commandButton value="#{report.entrydevice.size()}"  
+                                                 action="#{entranceReportBean.viewDevice(report.entrydevice,report.entrances)}"
+                                                 update="entryDevice"
+                                                 styleClass="cbutton"
+                                                 oncomplete="PF('entryDevice').show()"/>
+                            </p:column>
 
-                        <p:column  styleClass="totalAccess" style="width:5%">
-                            <f:facet name="header">
-                                <div style="white-space: normal; word-wrap: break-word; text-align: center;">
-                                    Entry Device Assigned
-                                </div>
-                            </f:facet>
-                            <p:commandButton value="#{report.entrydevice.size()}"  
-                                             action="#{entranceReportBean.viewDevice(report.entrydevice,report.entrances)}"
-                                             update="entryDevice"
-                                             styleClass="cbutton"
-                                             oncomplete="PF('entryDevice').show()"/>
-                        </p:column>
+                            <p:column styleClass="totalAccess" style="width:5%">
+                                <f:facet name="header">
+                                    <div style="white-space: normal; word-wrap: break-word; text-align: center;">
+                                        Exit Device Assigned
+                                    </div>
+                                </f:facet>
+                                <p:commandButton value="#{report.exitdevice.size()}" 
+                                                 action="#{entranceReportBean.viewDevice(report.exitdevice,report.entrances)}"
+                                                 update="entryDevice"
+                                                 styleClass="cbutton"
+                                                 oncomplete="PF('entryDevice').show()"/>
+                            </p:column>
 
-                        <p:column styleClass="totalAccess" style="width:5%">
-                            <f:facet name="header">
-                                <div style="white-space: normal; word-wrap: break-word; text-align: center;">
-                                    Exit Device Assigned
-                                </div>
-                            </f:facet>
-                            <p:commandButton value="#{report.exitdevice.size()}" 
-                                             action="#{entranceReportBean.viewDevice(report.exitdevice,report.entrances)}"
-                                             update="entryDevice"
-                                             styleClass="cbutton"
-                                             oncomplete="PF('entryDevice').show()"/>
-                        </p:column>
+                            <p:column sortBy="#{report.totalAccesses}" style="text-align: center; width:5%" title="Total access attempts for the entrance" width="70px">
+                                <f:facet name="header">
+                                    <div style="white-space: normal; word-wrap: break-word; text-align: center;">
+                                        Total Accesses
+                                    </div>
+                                </f:facet>
+                                <p:commandLink value="#{report.totalAccesses}" 
+                                               action="#{entranceReportBean.navigateToHistory(report.entrances.id)}"
+                                               ajax="false"
+                                               update="messages"
+                                               styleClass="totalAccess" >
+                                </p:commandLink>
+                            </p:column>
 
-                        <p:column sortBy="#{report.totalAccesses}" style="text-align: center; width:5%" title="Total access attempts for the entrance" width="70px">
-                            <f:facet name="header">
-                                <div style="white-space: normal; word-wrap: break-word; text-align: center;">
-                                    Total Accesses
-                                </div>
-                            </f:facet>
-                            <p:commandLink value="#{report.totalAccesses}" 
-                                           action="#{entranceReportBean.navigateToHistory(report.entrances.id)}"
-                                           ajax="false"
-                                           update="messages"
-                                           styleClass="totalAccess" >
-                            </p:commandLink>
-                        </p:column>
+                            <p:column headerText="Count(Unique Accesses)" sortBy="#{report.uniqueUsers}" style="text-align: center;"
+                                      title="Distinct employees who have accessed the entrance, regardless of the number of access attempts."> <!--  Number of unique employees who have accessed the entrance, counting each employee only once regardless of multiple access attempts.-->
+                                <p:commandLink value="#{report.uniqueUsers}" 
+                                               action="#{entranceReportBean.navigateToHistory(report.entrances.id)}"
+                                               ajax="false"
+                                               update="messages"
+                                               styleClass="totalAccess" >
+                                    <!--                                <f:param name="entranceId" value="#-{report.entrances.entranceDeviceId}" />-->
+                                </p:commandLink>
+                            </p:column>
 
-                        <p:column headerText="Count(Unique Accesses)" sortBy="#{report.uniqueUsers}" style="text-align: center;"
-                                  title="Distinct employees who have accessed the entrance, regardless of the number of access attempts."> <!--  Number of unique employees who have accessed the entrance, counting each employee only once regardless of multiple access attempts.-->
-                            <p:commandLink value="#{report.uniqueUsers}" 
-                                           action="#{entranceReportBean.navigateToHistory(report.entrances.id)}"
-                                           ajax="false"
-                                           update="messages"
-                                           styleClass="totalAccess" >
-                                <!--                                <f:param name="entranceId" value="#-{report.entrances.entranceDeviceId}" />-->
-                            </p:commandLink>
-                        </p:column>
+                            <p:column sortBy="#{report.grantedAccesses}" style="text-align: center; width:5%">   
+                                <f:facet name="header">
+                                    <div style="white-space: normal; word-wrap: break-word; text-align: center;">
+                                        Granted
+                                    </div>
+                                </f:facet>
+                                <p:commandLink value="#{report.grantedAccesses}" 
+                                               action="#{entranceReportBean.navToResult(report.entrances.id,'granted')}"
+                                               ajax="false"
+                                               update="messages"
+                                               styleClass="granted-access" >
+                                    <f:param name="entranceId" value="#{report.entrances.id}" />
+                                </p:commandLink>
 
-                        <p:column sortBy="#{report.grantedAccesses}" style="text-align: center; width:5%">   
-                            <f:facet name="header">
-                                <div style="white-space: normal; word-wrap: break-word; text-align: center;">
-                                    Granted
-                                </div>
-                            </f:facet>
-                            <p:commandLink value="#{report.grantedAccesses}" 
-                                           action="#{entranceReportBean.navToResult(report.entrances.id,'granted')}"
-                                           ajax="false"
-                                           update="messages"
-                                           styleClass="granted-access" >
-                                <f:param name="entranceId" value="#{report.entrances.id}" />
-                            </p:commandLink>
+                            </p:column>
 
-                        </p:column>
+                            <p:column sortBy="#{report.deniedAccesses}" style="text-align: center;" width="70px">
+                                <f:facet name="header">
+                                    <div style="white-space: normal; word-wrap: break-word; text-align: center;">
+                                        Denied
+                                    </div>
+                                </f:facet>
+                                <p:commandLink value="#{report.deniedAccesses}" 
+                                               action="#{entranceReportBean.navToResult(report.entrances.id,'denied')}"
+                                               ajax="false"
+                                               update="messages"
+                                               styleClass="denied-access" >
+                                    <f:param name="entranceId" value="#{report.entrances.id}" />
+                                </p:commandLink>
+                            </p:column>
 
-                        <p:column sortBy="#{report.deniedAccesses}" style="text-align: center;" width="70px">
-                            <f:facet name="header">
-                                <div style="white-space: normal; word-wrap: break-word; text-align: center;">
-                                    Denied
-                                </div>
-                            </f:facet>
-                            <p:commandLink value="#{report.deniedAccesses}" 
-                                           action="#{entranceReportBean.navToResult(report.entrances.id,'denied')}"
-                                           ajax="false"
-                                           update="messages"
-                                           styleClass="denied-access" >
-                                <f:param name="entranceId" value="#{report.entrances.id}" />
-                            </p:commandLink>
-                        </p:column>
+                            <p:column headerText="Last Accessed Timestamp" sortBy="#{report.lastAccessed}" style="text-align: center;">
+                                <h:outputText value="#{entranceReportBean.formatTimeString(report.lastAccessed)}" rendered="#{report.lastAccessed != null}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"  type="localDateTime"/>
+                                </h:outputText>
+                                <h:outputText value="No Access" rendered="#{report.lastAccessed == null}" styleClass="no-access"/>
+                            </p:column>
 
-                        <p:column headerText="Time Last Accessed" sortBy="#{report.lastAccessed}" style="text-align: center;">
-                            <h:outputText value="#{entranceReportBean.formatTimeString(report.lastAccessed)}" rendered="#{report.lastAccessed != null}">
-                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm"  type="localDateTime"/>
-                            </h:outputText>
-                            <h:outputText value="No Access" rendered="#{report.lastAccessed == null}" styleClass="no-access"/>
-                        </p:column>
+                            <p:column headerText="Last Accessed By" style="text-align: center;">
+                                <h:outputText value="#{report.lastAccessedBy}" rendered="#{report.lastAccessedBy != null}"/>
+                                <h:outputText value="N/A" rendered="#{report.lastAccessedBy == null}" styleClass="no-data"/>
+                            </p:column>
 
-                        <p:column headerText="Last Accessed By" style="text-align: center;">
-                            <h:outputText value="#{report.lastAccessedBy}" rendered="#{report.lastAccessedBy != null}"/>
-                            <h:outputText value="N/A" rendered="#{report.lastAccessedBy == null}" styleClass="no-data"/>
-                        </p:column>
+                            <p:column headerText="Last Accessed Status" style="text-align: center;">
+                                <h:outputText value="#{report.lastAccessStatus.toLowerCase() eq 'granted' ? 'GRANTED' : 'DENIED'}" 
+                                              styleClass="#{report.lastAccessStatus.toLowerCase() eq 'granted' ? 'status-granted' : 'status-denied'}"
+                                              rendered="#{report.lastAccessStatus != null}"/>
+                                <h:outputText value="N/A" rendered="#{report.lastAccessStatus == null}" styleClass="no-data"/>
+                            </p:column>
 
-                        <p:column headerText="Last Accessed Status" style="text-align: center;">
-                            <h:outputText value="#{report.lastAccessStatus.toLowerCase() eq 'granted' ? 'GRANTED' : 'DENIED'}" 
-                                          styleClass="#{report.lastAccessStatus.toLowerCase() eq 'granted' ? 'status-granted' : 'status-denied'}"
-                                          rendered="#{report.lastAccessStatus != null}"/>
-                            <h:outputText value="N/A" rendered="#{report.lastAccessStatus == null}" styleClass="no-data"/>
-                        </p:column>
+                            <p:column headerText="Employees With Access" sortBy="#{report.employeeCount}" style="text-align: center;">
+                                <p:commandButton  value="#{report.employeeCount}"
+                                                  action="#{entranceReportBean.viewEmployees(report.entrances.id)}"
+                                                  title="View all employees with access to this entrance"
+                                                  update="empAccess"
+                                                  styleClass="cbutton"
+                                                  oncomplete="PF('empAccess').show()"/>
+                            </p:column>
 
-                        <p:column headerText="Employees With Access" sortBy="#{report.employeeCount}" style="text-align: center;">
-                            <p:commandButton  value="#{report.employeeCount}"
-                                              action="#{entranceReportBean.viewEmployees(report.entrances.id)}"
-                                              title="View all employees with access to this entrance"
-                                              update="empAccess"
-                                              styleClass="cbutton"
-                                              oncomplete="PF('empAccess').show()"/>
-                        </p:column>
-
-                        <p:column headerText="Roles With Access" sortBy="#{report.roleCount}" style="text-align: center;">
-                            <p:commandButton  value="#{report.roleCount}"
-                                              action="#{entranceReportBean.viewEmployees(report.entrances.id)}"
-                                              title="View all roles with access to this entrance"
-                                              update="roleAccess"
-                                              styleClass="cbutton"
-                                              oncomplete="PF('roleAccess').show()"/>
-                        </p:column>
+                            <p:column headerText="Roles With Access" sortBy="#{report.roleCount}" style="text-align: center;">
+                                <p:commandButton  value="#{report.roleCount}"
+                                                  action="#{entranceReportBean.viewEmployees(report.entrances.id)}"
+                                                  title="View all roles with access to this entrance"
+                                                  update="roleAccess"
+                                                  styleClass="cbutton"
+                                                  oncomplete="PF('roleAccess').show()"/>
+                            </p:column>
 
 
 
-                        <p:column headerText="Actions" style="text-align: center; width: 120px;">
-                            <!--                        <p:commandButton icon="pi pi-chart-line" 
-                                                                     title="View Chart"
-                                                                     styleClass="ui-button-rounded ui-button-info"
-                                                                     style="margin-right: 5px;"
-                                                                     action="#-{entranceReportBean.viewChart(report.entrances.entranceDeviceId)}"
-                                                                     update="chartDialog"
-                                                                     oncomplete="PF('chartDialog').show()"/>-->
+                            <p:column headerText="Actions" style="text-align: center; width: 120px;">
+                                <!--                        <p:commandButton icon="pi pi-chart-line" 
+                                                                         title="View Chart"
+                                                                         styleClass="ui-button-rounded ui-button-info"
+                                                                         style="margin-right: 5px;"
+                                                                         action="#-{entranceReportBean.viewChart(report.entrances.entranceDeviceId)}"
+                                                                         update="chartDialog"
+                                                                         oncomplete="PF('chartDialog').show()"/>-->
 
-                            <p:commandButton icon="pi pi-eye" 
-                                             title="View Details"
-                                             styleClass="ui-button-rounded ui-button-secondary"
-                                             action="#{entranceReportBean.viewDetails(report.entrances.id)}"
-                                             update="detailDialog"
-                                             oncomplete="PF('detailDialog').show()"/>
-                        </p:column>
-                    </p:dataTable>
+                                <p:commandButton icon="pi pi-eye" 
+                                                 title="View Details"
+                                                 styleClass="ui-button-rounded ui-button-secondary"
+                                                 action="#{entranceReportBean.viewDetails(report.entrances.id)}"
+                                                 update="detailDialog"
+                                                 oncomplete="PF('detailDialog').show()"/>
+                            </p:column>
+                        </p:dataTable>
+                    </div>
                 </div>
 
             </h:form>
@@ -344,6 +344,15 @@
                       styleClass="modern-dialog"  style="max-height: 90vh; overflow-y: auto; width: 90vw;">
 
                 <h:form>
+                    <div style="text-align: end; margin-top: 1rem;">
+                        <p:commandButton value="Export to PDF" 
+                                         icon="pi pi-file-pdf" 
+                                         styleClass="ui-button-success"
+                                         action="#{entranceReportBean.exportEntranceInfo()}"
+                                         ajax="false"
+                                         oncomplete="PF('detailDialog').hide();">
+                        </p:commandButton>
+                    </div>
                     <p:outputPanel rendered="#{entranceReportBean.selectedEntranceDetail != null}" styleClass="p-fluid">
                         <div class="p-grid p-nogutter p-justify-around">
                             <!-- Entrance Basic Info Card -->
@@ -416,16 +425,6 @@
                                     <p><strong>Roles with Access:</strong> #{entranceReportBean.selectedEntranceDetail.roleCount}</p>
                                 </div>
                             </div>
-                        </div>
-
-                        <div style="text-align: center; margin-top: 1rem;">
-                            <p:commandButton value="Export to PDF" 
-                                             icon="pi pi-file-pdf" 
-                                             styleClass="ui-button-success"
-                                             action="#{entranceReportBean.exportEntranceInfo()}"
-                                             ajax="false"
-                                             oncomplete="PF('detailDialog').hide();">
-                            </p:commandButton>
                         </div>
                     </p:outputPanel>
                 </h:form>
@@ -544,6 +543,5 @@
             </p:dialog>
         </div>
 
-        <!-- Custom CSS -->
     </ui:define>
 </ui:composition>

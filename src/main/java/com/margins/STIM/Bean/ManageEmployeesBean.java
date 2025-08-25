@@ -25,6 +25,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -38,6 +39,8 @@ import org.primefaces.event.SelectEvent;
  *
  * @author PhilipManteAsare
  */
+@Getter
+@Setter
 @Named("manageEmployeesBean")
 @ViewScoped
 public class ManageEmployeesBean implements Serializable {
@@ -60,45 +63,35 @@ public class ManageEmployeesBean implements Serializable {
     @Inject
     private TimeAccessRuleService timeAccessRuleService;
 
-    @Getter
-    @Setter
     private Employee selectedEmployee;
-    @Getter
-    @Setter
+
     private Entrances selectedEntrance;
-    @Getter
-    @Setter
+
     private String searchQuery;
-    @Getter
-    @Setter
+
     private Set<Entrances> selectedEmployeeEntrances;
-    @Getter
-    @Setter
+
     private Set<Entrances> selectedCustomEmpEntrances;
-    @Getter
-    @Setter
+
     private boolean showEntrances;
-    @Getter
-    @Setter
+
     private boolean showCustomEntrances;
-    @Getter
-    @Setter
+
     private boolean showCustomTimeRules;
-    @Getter
+    
     private List<Entrances> allEntrances;
-    @Getter
-    @Setter
+
     private CustomTimeAccess customRule;
 
-    @Getter
-    @Setter
     private List<String> selectedDays = new ArrayList<>();
-    @Getter
-    @Setter
+
     private Map<String, LocalTime> startTimes = new HashMap<>();
-    @Getter
-    @Setter
+
     private Map<String, LocalTime> endTimes = new HashMap<>();
+
+    private LocalTime defaultStartTime;
+
+    private LocalTime defaultEndTime;
 
     @PostConstruct
     public void init() {
@@ -167,7 +160,7 @@ public class ManageEmployeesBean implements Serializable {
                         new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Employee " + selectedEmployee.getFullName() + " deleted."));
                 selectedEmployee = null; // Clear selection
             } catch (Exception e) {
-                String details = "Failed to delete employee "+selectedEmployee.getFullName() + " with GhanaCardNumber " + selectedEmployee.getGhanaCardNumber()  + " reason: " + e.getMessage();
+                String details = "Failed to delete employee " + selectedEmployee.getFullName() + " with GhanaCardNumber " + selectedEmployee.getGhanaCardNumber() + " reason: " + e.getMessage();
                 auditLogService.logActivity(AuditActionType.DELETE, "Employee Profile Page", ActionResult.FAILED, details, userSession.getCurrentUser());
 
                 FacesContext.getCurrentInstance().addMessage(null,
@@ -400,11 +393,11 @@ public class ManageEmployeesBean implements Serializable {
         }
         if (validateRule()) {
             timeAccessRuleService.saveOrUpdateCustomTimeAccess(selectedEmployee, selectedEntrance, startTimes, endTimes, selectedDays);
-            
+
             String details = "Created a custom Entrance Time Access for: " + selectedEmployee.getFullName() + " at (" + selectedEntrance.getEntranceName() + " ).";
 
             auditLogService.logActivity(AuditActionType.CREATE, "Employee Profiles Page", ActionResult.SUCCESS, details, userSession.getCurrentUser());
-            
+
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_INFO, "Saved", "Custom time access rules saved successfully."));
             resetSidebar();
@@ -413,7 +406,6 @@ public class ManageEmployeesBean implements Serializable {
 
             auditLogService.logActivity(AuditActionType.CREATE, "Employee Profiles Page", ActionResult.FAILED, details, userSession.getCurrentUser());
 
-            
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Saving Failed"));
         }
@@ -435,11 +427,91 @@ public class ManageEmployeesBean implements Serializable {
 
         // Soft delete from database
         timeAccessRuleService.deleteCustomTimeAccess(selectedEmployee, selectedEntrance, day);
-        
-        String details = "Custom Time Access deleted for " +selectedEmployee.getFullName()+ " at " + selectedEntrance.getEntranceName() + " has been deleted for " + day + ".";
+
+        String details = "Custom Time Access deleted for " + selectedEmployee.getFullName() + " at " + selectedEntrance.getEntranceName() + " has been deleted for " + day + ".";
         auditLogService.logActivity(AuditActionType.DELETE, day, ActionResult.SUCCESS, details, userSession.getCurrentUser());
 
         JSF.addSuccessMessageWithSummary("Successful", "Time access for " + day + " removed successfully.");
+    }
+
+    // Method to fill default times to all selected days
+    public void fillDefaultTimesToSelectedDays() {
+        if (defaultStartTime != null && defaultEndTime != null && !selectedDays.isEmpty()) {
+            for (String day : selectedDays) {
+                startTimes.put(day, defaultStartTime);
+                endTimes.put(day, defaultEndTime);
+            }
+
+            // Optional: Show success message
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            "Success",
+                            "Default times applied to all selected days!"));
+        } else {
+            // Show validation message
+            String message = "";
+            if (selectedDays.isEmpty()) {
+                message = "Please select at least one day first.";
+            } else if (defaultStartTime == null || defaultEndTime == null) {
+                message = "Please set both start and end default times.";
+            }
+
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN,
+                            "Warning", message));
+        }
+    }
+
+    public void selectAllDays() {
+        selectedDays = new ArrayList<>(Arrays.asList(
+                "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY",
+                "FRIDAY", "SATURDAY", "SUNDAY"
+        ));
+        loadDayTimeInputs();
+    }
+
+    public void selectWeekdays() {
+        selectedDays = new ArrayList<>(Arrays.asList(
+                "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"
+        ));
+        loadDayTimeInputs();
+    }
+
+    public void selectWeekends() {
+        selectedDays = new ArrayList<>(Arrays.asList(
+                "SATURDAY", "SUNDAY"
+        ));
+        loadDayTimeInputs();
+    }
+
+    public void clearAllDays() {
+        selectedDays = new ArrayList<>();
+        // Clear the time inputs as well
+        startTimes.clear();
+        endTimes.clear();
+    }
+
+    public void selectWeekdaysWithBusinessHours() {
+        selectWeekdays();
+        setBusinessHoursAsDefault();
+        fillDefaultTimesToSelectedDays();
+    }
+
+    public void selectWeekendsWithFlexibleHours() {
+        selectWeekends();
+        setFlexibleHoursAsDefault();
+        fillDefaultTimesToSelectedDays();
+    }
+
+// Helper methods for common time presets
+    private void setBusinessHoursAsDefault() {
+        defaultStartTime = LocalTime.of(7, 0);   // 7:00 AM
+        defaultEndTime = LocalTime.of(17, 0);    // 5:00 PM
+    }
+
+    private void setFlexibleHoursAsDefault() {
+        defaultStartTime = LocalTime.of(5, 0);  // 5:00 AM
+        defaultEndTime = LocalTime.of(22, 0);    // 10:00 PM
     }
 
     // Getters and Setters

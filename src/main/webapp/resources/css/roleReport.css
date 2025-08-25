@@ -162,7 +162,8 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
     width: 2.5rem;
     height: 2.5rem;
 }
-.ui-button{}
+.ui-button{
+}
 
 .summary-row {
     display: flex;
@@ -278,21 +279,27 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
     font-weight: bold;
 }
 
-
 .scroll-hint {
     position: absolute;
     top: 50%;
     right: 20px;
     transform: translateY(-50%);
     z-index: 10;
-    pointer-events: none;
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 .floating-icon {
-    font-size: 1.5rem;
+    font-size: 1.5rem !important;
     color: black;
     animation: pulseArrow 1.5s infinite ease-in-out;
 }
+.highlighted-row {
+    background-color: #f2ffe6 !important;
+    border-left: 4px solid #4CAF50;
+    transition: background-color 0.5s ease;
+}
+
 .highlighted-row {
     background-color: #f2ffe6 !important;
     border-left: 4px solid #4CAF50;

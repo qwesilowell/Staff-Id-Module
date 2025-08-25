@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.margins.STIM.Bean;
 
 import com.margins.STIM.Interface.DeviceService;
@@ -13,10 +9,12 @@ import com.margins.STIM.entity.enums.DevicePosition;
 import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.EntrancesService;
 import com.margins.STIM.util.JSF;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+
 import java.io.Serializable;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -24,29 +22,30 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.Getter;
-import lombok.Setter;
 
-/**
- *
- * @author PhilipManteAsare
- */
 @Named("deviceBean")
 @ViewScoped
-@Setter
-@Getter
 public class DeviceMangementBean implements Serializable {
 
     private Devices device;
-    private List<Devices> devices = new ArrayList<>();
-    private List<Entrances> availableEntrances = new ArrayList<>();
-    private Entrances selectedEntrance;
-    private String currentFilter;
-    private List<Devices> filteredDevices;
-    private String searchQuery = "";
-    private Entrances selectedEntranceFilter;
-    private String selectedPositionFilter = "";
 
+    private List<Devices> devices = new ArrayList<>();
+    private List<Devices> filteredDevices = new ArrayList<>();
+    private List<Entrances> availableEntrances = new ArrayList<>();
+
+    private String currentFilter = "all";         
+    private String searchQuery = "";
+    private Entrances selectedEntranceFilter;      
+    private String selectedPositionFilter = "";    // "", ENTRY, EXIT, UNASSIGNED
+
+    private String deviceId;
+    private String deviceName;
+    private DevicePosition devicePosition;         
+    private Entrances selectedEntrance;            
+
+    private boolean editMode = false;
+
+ 
     @Inject
     private DeviceService deviceService;
     @Inject
@@ -63,86 +62,93 @@ public class DeviceMangementBean implements Serializable {
         devices = deviceService.getAllDevices();
         availableEntrances = entranceService.findAllEntrances();
         device = new Devices();
-        currentFilter = "all";
-        filterDevices("all");
+        clearTempVariables();
+        applyAllFilters();
     }
 
-    public void addDevice() {
+    
+    public void saveDevice() {
         try {
+            assignTempVariablesToDevice();
+
             if (!validateDeviceData()) {
+                auditLogService.logActivity(isNewDevice() ? AuditActionType.CREATE : AuditActionType.UPDATE,
+                        "Manage Devices", ActionResult.FAILED, "Validation failed", userSession.getCurrentUser());
                 return;
             }
-            assignSelectedEntrance();
+
             device.setDeleted(false);
-            deviceService.registerDevice(device);
-            devices.add(device);
-            selectedEntrance = null;
-            device = new Devices();
-            JSF.addSuccessMessage("Device added successfully.");
-        } catch (Exception e) {
-            selectedEntrance = null;
-            device = new Devices();
-            JSF.addErrorMessage("Error adding device: " + e.getLocalizedMessage() + "");
-        }
-    }
 
-//    public void saveDevice() {
-//        try {
-//            if (!validateDeviceData()) {
-//                String details = "Device data validation failed.";
-//                auditLogService.logActivity(isNewDevice() ? AuditActionType.CREATE : AuditActionType.UPDATE, "Manage Devices", ActionResult.FAILED, details, userSession.getCurrentUser());
-//                return;
-//            }
-//
-//            assignSelectedEntrance();
-//            device.setDeleted(false);
-//
-//            // Check if this is a new device or existing device
-//            if (isNewDevice()) {
-//                // This is a new device - use registerDevice (persist)
-//                deviceService.registerDevice(device);
-//                devices.add(device);
-//                String successDetail = "Successfully added new "+ device.getDevicePosition()+" device with ID: " + device.getId()+ " for "+ device.getEntrance().getEntranceName();
-//                auditLogService.logActivity(AuditActionType.CREATE, "Manage Devices", ActionResult.SUCCESS, successDetail, userSession.getCurrentUser());
-//                JSF.addSuccessMessage("Device added successfully.");
-//            } else {
-//                // This is an existing device - use updateDevice (merge)
-//                deviceService.updateDevice(device);
-//                String successDetail = "Successfully updated " + device.getDevicePosition() + " device with ID: " + device.getId() + " for "+ device.getEntrance().getEntranceName();
-//                auditLogService.logActivity(AuditActionType.UPDATE, "Save Device", ActionResult.SUCCESS, successDetail, userSession.getCurrentUser());
-//                // Update the device in the list
-//                updateDeviceInList(device);
-//                JSF.addSuccessMessage("Device updated successfully.");
-//            }
-//
-//            reset();
-//           filterDevices("all");
-//        } catch (Exception e) {
-//            String errorDetail = "Failed to save device with ID: " + (device.getId() != 0 ? device.getId() : "Unknown") + ". Error: " + e.getMessage();
-//            auditLogService.logActivity(isNewDevice() ? AuditActionType.CREATE : AuditActionType.UPDATE, "Save Device", ActionResult.FAILED, errorDetail, userSession.getCurrentUser());
-//
-//            
-//            JSF.addErrorMessage("Error saving device: " + e.getLocalizedMessage());
-//            e.printStackTrace(); // Add this for debugging
-//        }
-//    }
-    private void updateDeviceInList(Devices updatedDevice) {
-        for (int i = 0; i < devices.size(); i++) {
-            if (devices.get(i).getDeviceId().equals(updatedDevice.getDeviceId())) {
-                devices.set(i, updatedDevice);
-                break;
+            if (isNewDevice()) {
+                deviceService.registerDevice(device);
+                devices.add(device);
+
+                auditLogService.logActivity(AuditActionType.CREATE, "Manage Devices",
+                        ActionResult.SUCCESS,
+                        "Added " + device.getDevicePosition() + " deviceId=" + device.getDeviceId(),
+                        userSession.getCurrentUser());
+
+                JSF.addSuccessMessage("Device added successfully.");
+            } else {
+                deviceService.updateDevice(device);
+                replaceDeviceInList(device);
+
+                auditLogService.logActivity(AuditActionType.UPDATE, "Manage Devices",
+                        ActionResult.SUCCESS,
+                        "Updated " + device.getDevicePosition() + " deviceId=" + device.getDeviceId(),
+                        userSession.getCurrentUser());
+
+                JSF.addSuccessMessage("Device updated successfully.");
             }
+
+            reset();
+            applyAllFilters();
+
+        } catch (Exception e) {
+            auditLogService.logActivity(isNewDevice() ? AuditActionType.CREATE : AuditActionType.UPDATE,
+                    "Manage Devices", ActionResult.FAILED,
+                    "Save error: " + e.getMessage(), userSession.getCurrentUser());
+            JSF.addErrorMessage("Failed Saving device ");
+            e.printStackTrace();
         }
     }
 
-    private boolean isNewDevice() {
-        return device.getDeviceId() == null
-                || devices.stream().noneMatch(d -> d.getDeviceId().equals(device.getDeviceId()));
+    public void editDevice(Devices selected) {
+        if (selected == null) {
+            JSF.addWarningMessage("No device selected to edit.");
+            return;
+        }
+        JSF.addSuccessMessageWithSummary("Edit Mode", "Editing " + selected.getDeviceId());
+        this.device = selected;
+        this.editMode = true;
+        assignDeviceToTempVariables(); 
     }
 
-    public void startEdit(Devices selected) {
-        this.device = selected;
-        this.selectedEntrance = selected.getEntrance();
+    public void deleteDevice(Devices selected) {
+        try {
+            if (selected == null || selected.getId() == 0) {
+                auditLogService.logActivity(AuditActionType.DELETE, "Manage Devices",
+                        ActionResult.FAILED, "No device selected", userSession.getCurrentUser());
+                JSF.addErrorMessage("No device selected for deletion.");
+                return;
+            }
+
+            deviceService.deleteDevice(selected.getId());
+            auditLogService.logActivity(AuditActionType.DELETE, "Manage Devices",
+                    ActionResult.SUCCESS,
+                    "Deleted deviceId=" + selected.getDeviceId(),
+                    userSession.getCurrentUser());
+
+            // refresh list & filters
+            devices = deviceService.getAllDevices();
+            applyAllFilters();
+
+            JSF.addWarningMessage("Device is deleted.");
+        } catch (Exception e) {
+            auditLogService.logActivity(AuditActionType.DELETE, "Manage Devices",
+                    ActionResult.FAILED, "Delete error: " + e.getMessage(), userSession.getCurrentUser());
+            JSF.addErrorMessage("Error deleting device: " + e.getLocalizedMessage());
+        }
     }
 
     public void cancelEdit() {
@@ -150,99 +156,261 @@ public class DeviceMangementBean implements Serializable {
         JSF.addWarningMessage("Edit cancelled.");
     }
 
-    // Method to check if we're in edit mode
-    public boolean isEditMode() {
-        return !isNewDevice();
+    public void reset() {
+        device = new Devices();
+        editMode = false;
+        JSF.addWarningMessage("Reset Succesful");
+        clearTempVariables();
     }
 
-    public void assignSelectedEntrance() {
-        if (selectedEntrance != null) {
-            device.setEntrance(selectedEntrance);
-        } else {
-            JSF.addWarningMessage("No Entrance selected");
+    private boolean isNewDevice() {
+        // You use editMode to decide new vs edit
+        return !editMode || device == null || device.getId() == 0;
+    }
+
+    private void replaceDeviceInList(Devices updated) {
+        for (int i = 0; i < devices.size(); i++) {
+            if (devices.get(i).getId() == updated.getId()) {
+                devices.set(i, updated);
+                return;
+            }
         }
     }
 
-    public void editDevice(Devices selected) {
-        this.device = selected;
-        this.selectedEntrance = selected.getEntrance();
+    // =========================================================
+    // Form temp fields <-> entity sync (because XHTML binds to bean temp fields)
+    // =========================================================
+    private void assignTempVariablesToDevice() {
+        if (device == null) {
+            device = new Devices();
+        }
+        device.setDeviceId(deviceId != null ? deviceId.trim() : null);
+        device.setDeviceName(deviceName != null ? deviceName.trim() : null);
+        device.setDevicePosition(devicePosition);
+        device.setEntrance(selectedEntrance); // can be null (unassigned)
     }
 
-//    public void deleteDevice(Devices selected) {
+    private void assignDeviceToTempVariables() {
+        if (device == null) {
+            System.out.println("Editing Device is Null");
+            return;
+        }
+        deviceId = device.getDeviceId();
+        deviceName = device.getDeviceName();
+        devicePosition = device.getDevicePosition();
+        selectedEntrance = device.getEntrance();
+    }
+
+    private void clearTempVariables() {
+        deviceId = "";
+        deviceName = "";
+        devicePosition = null;
+        selectedEntrance = null;
+    }
+
+    // =========================================================
+    // Validation used by saveDevice()
+    // =========================================================
+    private boolean validateDeviceData() {
+        boolean ok = true;
+
+        if (deviceId == null || deviceId.trim().isEmpty()) {
+            JSF.addWarningMessage("Please enter a Device ID");
+            ok = false;
+        }
+        if (deviceName == null || deviceName.trim().isEmpty()) {
+            JSF.addWarningMessage("Please enter a Device Name");
+            ok = false;
+        }
+        if (devicePosition == null) {
+            JSF.addWarningMessage("Please select a Device Position (Entry or Exit)");
+            ok = false;
+        }
+        // Entrance can be optional; if required, uncomment:
+        // if (selectedEntrance == null) { JSF.addWarningMessage("Please select an Entrance"); ok = false; }
+
+        return ok;
+    }
+
+    // =========================================================
+    // Position toggle (form & per-card)
+    // =========================================================
+    // Called by the form Entry/Exit buttons: set temporary position field
+    public void setDevicePosition(String position) {
+        updateDevicePosition(position);
+    }
+
+    // Used by the list card buttons to update a single device and persist immediately
+//    public void updateDevicePosition(Devices d, String position) {
+//        if (d == null) {
+//            return;
+//        }
+//        if ("ENTRY".equalsIgnoreCase(position)) {
+//            d.setDevicePosition(DevicePosition.ENTRY);
+//        } else if ("EXIT".equalsIgnoreCase(position)) {
+//            d.setDevicePosition(DevicePosition.EXIT);
+//        }
 //        try {
-//            if (selected == null || selected.getId() == 0) {
-//                String details = "No device selected for deletion.";
-//                auditLogService.logActivity(AuditActionType.DELETE, "Delete Device", ActionResult.FAILED, details, userSession.getCurrentUser());
-//                JSF.addErrorMessage("No device selected for deletion.");
-//                return;
-//            }
-//
-//            deviceService.deleteDevice(selected.getId());
-//
-//            String successDetail = "Successfully deleted " + selected.getDevicePosition() + " device with ID: " + selected.getDeviceId() + " for " + selected.getEntrance().getEntranceName();
-//            auditLogService.logActivity(AuditActionType.DELETE, "Delete Device", ActionResult.SUCCESS, successDetail, userSession.getCurrentUser());
-//
-//            devices = deviceService.getAllDevices();
-//            JSF.addWarningMessage("Device is deleted.");
+//            deviceService.updateDevice(d);
+//            JSF.addSuccessMessage("Device position updated.");
+//            applyAllFilters();
 //        } catch (Exception e) {
-//            String errorDetail = "Failed to delete device with ID: " + (selected != null ? selected.getDeviceId() : "Unknown") + ". Error: " + e.getMessage();
-//            auditLogService.logActivity(AuditActionType.DELETE, "Delete Device", ActionResult.FAILED, errorDetail, userSession.getCurrentUser());
-//
-//            JSF.addErrorMessage("Error deleting device: " + e.getLocalizedMessage());
+//            JSF.addErrorMessage("Failed to update device position: " + e.getMessage());
 //        }
 //    }
 
-    public void saveAllDevices() {
-        try {
-            for (Devices d : devices) {
-                if (d.equals(device) && selectedEntrance != null) {
-                    d.setEntrance(selectedEntrance);
-                }
-                deviceService.updateDevice(d);
-            }
-            JSF.addSuccessMessage("All Edited Devices saved.");
-            reset();
-        } catch (Exception e) {
-            JSF.addErrorMessage("Error saving devices: " + e.getMessage());
-        }
-    }
-
-    public void setDevicePosition(String position) {
+    // Helper to set the temp position field from form toggle
+    public void updateDevicePosition(String position) {
         if ("ENTRY".equalsIgnoreCase(position)) {
-            device.setDevicePosition(DevicePosition.ENTRY);
+            devicePosition = DevicePosition.ENTRY;
         } else if ("EXIT".equalsIgnoreCase(position)) {
-            device.setDevicePosition(DevicePosition.EXIT);
+            devicePosition = DevicePosition.EXIT;
         }
     }
 
-    public boolean validateDeviceData() {
-        boolean isValid = true;
-
-        if (device.getDevicePosition() == null) {
-            JSF.addWarningMessage("Please select a Device Position (Entry or Exit)");
-            isValid = false;
+    // NOTE: Your XHTML compares result to a string:
+    //   #{deviceBean.isTempPositionActive("ENTRY") == 'ENTRY' ? 'active' : ''}
+    // so we return the same string when active, or empty otherwise.
+    public String isTempPositionActive(String position) {
+        if (devicePosition == null || position == null) {
+            return "";
         }
-
-        if (device.getDeviceName() == null || device.getDeviceName().trim().isEmpty()) {
-            JSF.addWarningMessage("Please enter a Device Name");
-            isValid = false;
-        }
-        return isValid;
+        return devicePosition.name().equalsIgnoreCase(position) ? "active" : "";
     }
 
-    public void updateDevicePosition(Devices target, String position) {
-        if ("ENTRY".equalsIgnoreCase(position)) {
-            target.setDevicePosition(DevicePosition.ENTRY);
-        } else if ("EXIT".equalsIgnoreCase(position)) {
-            target.setDevicePosition(DevicePosition.EXIT);
-        }
-        deviceService.updateDevice(target);
-        JSF.addSuccessMessageWithSummary("Success", "Device position updated.");
+    // =========================================================
+    // Search / Filter logic (wired to your XHTML)
+    // =========================================================
+    public void setupBreadcrumb() {
+        breadcrumbBean.setManageEntrancesDevices();
     }
 
-    // Stats
+    public void searchDevices() {
+        applyAllFilters();
+    }
+
+    public void filterByEntrance() {
+        applyAllFilters();
+    }
+
+    public void filterByPosition() {
+        applyAllFilters();
+    }
+
+    public void clearAllFilters() {
+        searchQuery = "";
+        selectedEntranceFilter = null;
+        selectedPositionFilter = "";
+        currentFilter = "all";
+        JSF.addSuccessMessage("Filters Cleared");
+        applyAllFilters();
+    }
+
+    public void filterDevices(String filterType) {
+        this.currentFilter = (filterType != null ? filterType : "all");
+        // reset other filters when using stat tiles
+        searchQuery = "";
+        selectedEntranceFilter = null;
+        selectedPositionFilter = "";
+        applyAllFilters();
+    }
+
+    private void applyAllFilters() {
+        List<Devices> base;
+
+        switch (currentFilter.toLowerCase()) {
+            case "entry":
+                base = devices.stream()
+                        .filter(d -> d.getDevicePosition() == DevicePosition.ENTRY)
+                        .collect(Collectors.toList());
+                break;
+            case "exit":
+                base = devices.stream()
+                        .filter(d -> d.getDevicePosition() == DevicePosition.EXIT)
+                        .collect(Collectors.toList());
+                break;
+            case "unassigned":
+                base = devices.stream()
+                        .filter(d -> d.getEntrance() == null)
+                        .collect(Collectors.toList());
+                break;
+            default:
+                base = new ArrayList<>(devices);
+        }
+
+        Comparator<Devices> byRecentActivityDesc = Comparator.comparing(
+                d -> Optional.ofNullable(d.getUpdatedAt())
+                        .orElse(d.getCreatedAt().toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDateTime()),
+                Comparator.reverseOrder());
+
+        filteredDevices = base.stream()
+                .filter(this::matchesSearchQuery)
+                .filter(this::matchesEntranceFilter)
+                .filter(this::matchesPositionFilter)
+                .sorted(byRecentActivityDesc)
+                .collect(Collectors.toList());
+    }
+
+    private boolean matchesSearchQuery(Devices d) {
+        if (searchQuery == null || searchQuery.trim().isEmpty()) {
+            return true;
+        }
+        String q = searchQuery.toLowerCase();
+        return (d.getDeviceName() != null && d.getDeviceName().toLowerCase().contains(q))
+                || (d.getDeviceId() != null && d.getDeviceId().toLowerCase().contains(q));
+    }
+
+    private boolean matchesEntranceFilter(Devices d) {
+        if (selectedEntranceFilter == null) {
+            return true;
+        }
+        return d.getEntrance() != null && d.getEntrance().getId() == selectedEntranceFilter.getId();
+    }
+
+    private boolean matchesPositionFilter(Devices d) {
+        if (selectedPositionFilter == null || selectedPositionFilter.isEmpty()) {
+            return true;
+        }
+        if ("UNASSIGNED".equalsIgnoreCase(selectedPositionFilter)) {
+            return d.getEntrance() == null;
+        }
+        return d.getDevicePosition() != null
+                && selectedPositionFilter.equalsIgnoreCase(d.getDevicePosition().name());
+    }
+
+    public String getActiveFiltersText() {
+        List<String> parts = new ArrayList<>();
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            parts.add("Search: " + searchQuery);
+        }
+        if (selectedEntranceFilter != null) {
+            parts.add("Entrance: " + selectedEntranceFilter.getEntranceName());
+        }
+        if (selectedPositionFilter != null && !selectedPositionFilter.isEmpty()) {
+            parts.add("Position: " + ("UNASSIGNED".equals(selectedPositionFilter) ? "Unassigned" : selectedPositionFilter));
+        }
+        return parts.isEmpty() ? "" : String.join(", ", parts);
+    }
+
+    public List<Entrances> searchEntrances(String query) {
+        if (availableEntrances == null || availableEntrances.isEmpty()) {
+            availableEntrances = entranceService.findAllEntrances();
+        }
+        if (query == null || query.trim().isEmpty()) {
+            return availableEntrances;
+        }
+        final String q = query.toLowerCase();
+        return availableEntrances.stream()
+                .filter(e -> (e.getEntranceName() != null && e.getEntranceName().toLowerCase().contains(q))
+                || (e.getEntranceDeviceId() != null && e.getEntranceDeviceId().toLowerCase().contains(q)))
+                .collect(Collectors.toList());
+    }
+
+
     public int getTotalDevices() {
-        return devices.size();
+        return devices != null ? devices.size() : 0;
     }
 
     public long getEntryDevices() {
@@ -257,276 +425,111 @@ public class DeviceMangementBean implements Serializable {
         return devices.stream().filter(d -> d.getEntrance() == null).count();
     }
 
-//   public void filterDevices(String filterType) {
-//    this.currentFilter = filterType;
-//
-//    Comparator<Devices> byRecentActivityDesc = Comparator
-//        .comparing(
-//            d -> Optional.ofNullable(d.getUpdatedAt())
-//                         .orElse(d.getCreatedAt().toInstant()
-//                                          .atZone(ZoneId.systemDefault())
-//                                          .toLocalDateTime()),
-//            Comparator.reverseOrder()
-//        );
-//
-//    switch (filterType.toLowerCase()) {
-//        case "entry":
-//            filteredDevices = devices.stream()
-//                    .filter(d -> d.getDevicePosition() == DevicePosition.ENTRY)
-//                    .sorted(byRecentActivityDesc)
-//                    .collect(Collectors.toList());
-//            break;
-//        case "exit":
-//            filteredDevices = devices.stream()
-//                    .filter(d -> d.getDevicePosition() == DevicePosition.EXIT)
-//                    .sorted(byRecentActivityDesc)
-//                    .collect(Collectors.toList());
-//            break;
-//        case "unassigned":
-//            filteredDevices = devices.stream()
-//                    .filter(d -> d.getEntrance() == null)
-//                    .sorted(byRecentActivityDesc)
-//                    .collect(Collectors.toList());
-//            break;
-//        default:
-//            filteredDevices = new ArrayList<>(devices);
-//            filteredDevices.sort(byRecentActivityDesc);
-//            break;
-//    }
-//}
-//
-//    public List<Devices> getFilteredDevices() {
-//        if (filteredDevices == null) {
-//            filterDevices("all"); // Initialize with all devices
-//        }
-//        return filteredDevices;
-//    }
-    public boolean filterActive(String filterType) {
-        return currentFilter.equalsIgnoreCase(filterType);
+    public boolean filterActive(String key) {
+        return currentFilter != null && currentFilter.equalsIgnoreCase(key);
     }
 
-    public List<Entrances> searchEntrances(String query) {
-
-        if (availableEntrances == null) {
-            availableEntrances = entranceService.findAllEntrances();
-        }
-
-        if (query == null || query.trim().isEmpty()) {
-            return availableEntrances;
-        }
-
-        List<Entrances> filtered = availableEntrances.stream()
-                .filter(entrance -> entrance.getEntranceName().toLowerCase()
-                .contains(query.toLowerCase())
-                || entrance.getEntranceDeviceId().toLowerCase()
-                        .contains(query.toLowerCase()))
-                .collect(Collectors.toList());
-
-        return filtered;
+    public Devices getDevice() {
+        return device;
     }
 
-    public void reset() {
-        selectedEntrance = null;
-        device = new Devices();
-        JSF.addSuccessMessageWithSummary("Reset.....", "Form reseted.");
+    public void setDevice(Devices device) {
+        this.device = device;
     }
 
-    public void setupBreadcrumb() {
-        breadcrumbBean.setManageEntrancesDevices();
+    public List<Devices> getDevices() {
+        return devices;
     }
 
-    public void searchDevices() {
-        applyAllFilters();
+    public void setDevices(List<Devices> devices) {
+        this.devices = devices;
     }
 
-// Filter by entrance - called when entrance dropdown changes
-    public void filterByEntrance() {
-        applyAllFilters();
+    public List<Devices> getFilteredDevices() {
+        return filteredDevices;
     }
 
-// Filter by position - called when position dropdown changes  
-    public void filterByPosition() {
-        applyAllFilters();
+    public void setFilteredDevices(List<Devices> filteredDevices) {
+        this.filteredDevices = filteredDevices;
     }
 
-    // Clear all filters button
-    public void clearAllFilters() {
-        searchQuery = "";
-        selectedEntranceFilter = null;
-        selectedPositionFilter = "";
-        currentFilter = "all";
-        applyAllFilters();
+    public List<Entrances> getAvailableEntrances() {
+        return availableEntrances;
     }
 
-    // Enhanced filter method that combines your existing logic with new filters
-    private void applyAllFilters() {
-        // Start with all devices
-        List<Devices> baseFilteredDevices;
-
-        // Apply your existing filter logic first
-        Comparator<Devices> byRecentActivityDesc = Comparator
-                .comparing(
-                        d -> Optional.ofNullable(d.getUpdatedAt())
-                                .orElse(d.getCreatedAt().toInstant()
-                                        .atZone(ZoneId.systemDefault())
-                                        .toLocalDateTime()),
-                        Comparator.reverseOrder()
-                );
-
-        switch (currentFilter.toLowerCase()) {
-            case "entry":
-                baseFilteredDevices = devices.stream()
-                        .filter(d -> d.getDevicePosition() == DevicePosition.ENTRY)
-                        .collect(Collectors.toList());
-                break;
-            case "exit":
-                baseFilteredDevices = devices.stream()
-                        .filter(d -> d.getDevicePosition() == DevicePosition.EXIT)
-                        .collect(Collectors.toList());
-                break;
-            case "unassigned":
-                baseFilteredDevices = devices.stream()
-                        .filter(d -> d.getEntrance() == null)
-                        .collect(Collectors.toList());
-                break;
-            default:
-                baseFilteredDevices = new ArrayList<>(devices);
-                break;
-        }
-
-        // Now apply additional filters on top of the base filter
-        filteredDevices = baseFilteredDevices.stream()
-                .filter(this::matchesSearchQuery)
-                .filter(this::matchesEntranceFilter)
-                .filter(this::matchesPositionFilter)
-                .sorted(byRecentActivityDesc)
-                .collect(Collectors.toList());
+    public void setAvailableEntrances(List<Entrances> availableEntrances) {
+        this.availableEntrances = availableEntrances;
     }
 
-    // Filter predicates - these check individual conditions
-    private boolean matchesSearchQuery(Devices device) {
-        if (searchQuery == null || searchQuery.trim().isEmpty()) {
-            return true;
-        }
-
-        String query = searchQuery.toLowerCase();
-        return (device.getDeviceName() != null && device.getDeviceName().toLowerCase().contains(query))
-                || (device.getDeviceId() != null && device.getDeviceId().toLowerCase().contains(query));
+    public String getCurrentFilter() {
+        return currentFilter;
     }
 
-    private boolean matchesEntranceFilter(Devices device) {
-        if (selectedEntranceFilter == null) {
-            return true;
-        }
-
-        return device.getEntrance() != null
-                && device.getEntrance().getId()==(selectedEntranceFilter.getId());
+    public void setCurrentFilter(String currentFilter) {
+        this.currentFilter = currentFilter;
     }
 
-    private boolean matchesPositionFilter(Devices device) {
-        if (selectedPositionFilter == null || selectedPositionFilter.isEmpty()) {
-            return true;
-        }
-
-        if ("UNASSIGNED".equals(selectedPositionFilter)) {
-            return device.getEntrance() == null;
-        }
-
-        return selectedPositionFilter.equals(device.getDevicePosition().name());
+    public String getSearchQuery() {
+        return searchQuery;
     }
 
-// Get active filters text for display
-    public String getActiveFiltersText() {
-        List<String> activeFilters = new ArrayList<>();
-
-        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
-            activeFilters.add("Search: " + searchQuery);
-        }
-
-        if (selectedEntranceFilter != null) {
-            activeFilters.add("Entrance: " + selectedEntranceFilter.getEntranceName());
-        }
-
-        if (selectedPositionFilter != null && !selectedPositionFilter.isEmpty()) {
-            String positionLabel = "UNASSIGNED".equals(selectedPositionFilter)
-                    ? "Unassigned" : selectedPositionFilter.toLowerCase();
-            activeFilters.add("Position: " + positionLabel);
-        }
-
-        return activeFilters.isEmpty() ? "" : String.join(", ", activeFilters);
+    public void setSearchQuery(String searchQuery) {
+        this.searchQuery = searchQuery;
     }
 
-// Update your existing filterDevices method to work with new system
-    public void filterDevices(String filterType) {
-        this.currentFilter = filterType;
-        // Clear other filters when using stats-based filtering
-        searchQuery = "";
-        selectedEntranceFilter = null;
-        selectedPositionFilter = "";
-        applyAllFilters();
+    public Entrances getSelectedEntranceFilter() {
+        return selectedEntranceFilter;
     }
 
-// Update your existing methods to refresh filters after operations
-    public void saveDevice() {
-        try {
-            if (!validateDeviceData()) {
-                String details = "Device data validation failed.";
-                auditLogService.logActivity(isNewDevice() ? AuditActionType.CREATE : AuditActionType.UPDATE, "Manage Devices", ActionResult.FAILED, details, userSession.getCurrentUser());
-                return;
-            }
-
-            assignSelectedEntrance();
-            device.setDeleted(false);
-
-            if (isNewDevice()) {
-                deviceService.registerDevice(device);
-                devices.add(device);
-                String successDetail = "Successfully added new " + device.getDevicePosition() + " device with ID: " + device.getId() + " for " + device.getEntrance().getEntranceName();
-                auditLogService.logActivity(AuditActionType.CREATE, "Manage Devices", ActionResult.SUCCESS, successDetail, userSession.getCurrentUser());
-                JSF.addSuccessMessage("Device added successfully.");
-            } else {
-                deviceService.updateDevice(device);
-                String successDetail = "Successfully updated " + device.getDevicePosition() + " device with ID: " + device.getId() + " for " + device.getEntrance().getEntranceName();
-                auditLogService.logActivity(AuditActionType.UPDATE, "Save Device", ActionResult.SUCCESS, successDetail, userSession.getCurrentUser());
-                updateDeviceInList(device);
-                JSF.addSuccessMessage("Device updated successfully.");
-            }
-
-            reset();
-            // Apply current filters after saving
-            applyAllFilters();
-
-        } catch (Exception e) {
-            String errorDetail = "Failed to save device with ID: " + (device.getId() != 0 ? device.getId() : "Unknown") + ". Error: " + e.getMessage();
-            auditLogService.logActivity(isNewDevice() ? AuditActionType.CREATE : AuditActionType.UPDATE, "Save Device", ActionResult.FAILED, errorDetail, userSession.getCurrentUser());
-            JSF.addErrorMessage("Error saving device: " + e.getLocalizedMessage());
-            e.printStackTrace();
-        }
+    public void setSelectedEntranceFilter(Entrances selectedEntranceFilter) {
+        this.selectedEntranceFilter = selectedEntranceFilter;
     }
 
-    public void deleteDevice(Devices selected) {
-        try {
-            if (selected == null || selected.getId() == 0) {
-                String details = "No device selected for deletion.";
-                auditLogService.logActivity(AuditActionType.DELETE, "Delete Device", ActionResult.FAILED, details, userSession.getCurrentUser());
-                JSF.addErrorMessage("No device selected for deletion.");
-                return;
-            }
+    public String getSelectedPositionFilter() {
+        return selectedPositionFilter;
+    }
 
-            deviceService.deleteDevice(selected.getId());
+    public void setSelectedPositionFilter(String selectedPositionFilter) {
+        this.selectedPositionFilter = selectedPositionFilter;
+    }
 
-            String successDetail = "Successfully deleted " + selected.getDevicePosition() + " device with ID: " + selected.getDeviceId() + " for " + selected.getEntrance().getEntranceName();
-            auditLogService.logActivity(AuditActionType.DELETE, "Delete Device", ActionResult.SUCCESS, successDetail, userSession.getCurrentUser());
+    public String getDeviceId() {
+        return deviceId;
+    }
 
-            // Refresh devices list and apply current filters
-            devices = deviceService.getAllDevices();
-            applyAllFilters();
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+    }
 
-            JSF.addWarningMessage("Device is deleted.");
-        } catch (Exception e) {
-            String errorDetail = "Failed to delete device with ID: " + (selected != null ? selected.getDeviceId() : "Unknown") + ". Error: " + e.getMessage();
-            auditLogService.logActivity(AuditActionType.DELETE, "Delete Device", ActionResult.FAILED, errorDetail, userSession.getCurrentUser());
-            JSF.addErrorMessage("Error deleting device: " + e.getLocalizedMessage());
-        }
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
+    }
+
+    public DevicePosition getDevicePosition() {
+        return devicePosition;
+    }
+
+    public void setDevicePosition(DevicePosition devicePosition) {
+        this.devicePosition = devicePosition;
+    }
+
+    public Entrances getSelectedEntrance() {
+        return selectedEntrance;
+    }
+
+    public void setSelectedEntrance(Entrances selectedEntrance) {
+        this.selectedEntrance = selectedEntrance;
+    }
+
+    public boolean isEditMode() {
+        return editMode;
+    }
+
+    public void setEditMode(boolean editMode) {
+        this.editMode = editMode;
     }
 }

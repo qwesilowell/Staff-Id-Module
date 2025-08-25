@@ -277,7 +277,7 @@
                                 <br/>
                                 <div class="face-content-container">
                                     <div class="input-group">
-                                        <p:outputLabel for="faceNationalId" value="National ID:" styleClass="input-label"/>
+                                        <p:outputLabel for="faceNationalId" value="Ghana Card Pin:" styleClass="input-label"/>
                                         <p:inputText id="faceNationalId" value="#{wizardBean.ghanaCardNumber}" 
                                                      placeholder="GHA-XXXXXXXX-X" required="false"
                                                      requiredMessage="National ID is required for facial verification"
@@ -313,7 +313,7 @@
                                 <br/>
 
                                 <!-- Ghana Card Input -->
-                                <h:outputLabel for="ghanaCard" value="Enter Ghana Card here" style="font-size: large; font-weight: bolder;"/>
+                                <h:outputLabel for="ghanaCard" value="Enter GhanaCard Pin Number here" style="font-size: large; font-weight: bolder;"/>
                                 <br/>
                                 <p:inputText id="ghanaCardPin" value="#{wizardBean.ghanaCardNumber}" 
                                              placeholder="GHA-XXXXXXXXX-X"/>
@@ -375,7 +375,7 @@
                         <h:panelGroup layout="block" styleClass="form-container">
                             <!-- Left Column -->
                             <h:panelGroup styleClass="form-left">
-                                <h:outputLabel value="Ghana Card Number:" styleClass="design" />
+                                <h:outputLabel value="National ID:" styleClass="design" />
                                 <p:inputText value="#{wizardBean.ghanaCardNumberDisplay}" disabled="true"
                                              style="background-color:#f0f0f0; color:black; width:100%; padding:5px; margin-bottom:1rem; font-weight:bold;" />
 
@@ -504,7 +504,6 @@
         <h:outputScript library="js" name="webcam.js"/>
         <h:outputScript library="js" name="cropper.min.js"/>
         <h:outputScript library="js" name="facial.js"/>
-        <h:outputScript library="js" name="bioVerification.js"/>
         <h:outputStylesheet library="css" name="cropper.min.css"/>
         <h:outputStylesheet library="css" name="onboardEmployee.css"/>
 

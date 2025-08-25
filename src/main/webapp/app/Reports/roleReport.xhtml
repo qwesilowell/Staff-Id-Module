@@ -141,7 +141,7 @@
                     <br/>
 
                     <div style="margin-bottom: 1rem;">
-                        <strong>Employees :</strong>
+                        <strong>Full Name(s) :</strong>
                         <br/><br/>
 
                         <ui:repeat value="#{roleReportController.selectedRoleEmployee}" var="employee">
@@ -202,7 +202,7 @@
                         <div class="summary-section">                           
                             <p:outputLabel value="Role: #{roleReportController.selectedRole.roleName}" styleClass="label-style"/>
                             <br/>
-                            <h4><i class="pi pi-users text-success"></i> Employees</h4>
+                            <h4><i class="pi pi-users text-success"></i> Names:</h4>
                             <p:outputLabel value="Total Employees: #{roleReportController.selectedRoleEmployee.size()}" styleClass="value-style" />
                             <ul>
                                 <ui:repeat value="#{roleReportController.selectedRoleEmployee}" var="emp">

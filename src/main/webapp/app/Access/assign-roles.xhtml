@@ -93,7 +93,7 @@
                         </h:panelGroup>
                     </p:column>
 
-                    <p:column headerText="Assign Time Rule">    
+                    <p:column headerText="Assign Time Rule" style="text-align:center;">    
                         <p:commandButton  class="rounded-button ui-button-info ui-button-outlined"  icon="fa-solid fa-business-time" action="#{assignRoleBean.prepareDayTimeRules(role)}"
                                           update=":mainForm:sidebar2" oncomplete="PF('sidebar2').show()" process="@this" />
                     </p:column>
@@ -159,6 +159,41 @@
 
                         <p:separator/>
                         <p:outputLabel value="Days"/>
+                        
+                        <!-- Quick Selection Buttons -->
+                        <div class="quick-select-buttons" style="margin-bottom: 15px;">
+                            <p:commandButton value="Select All" 
+                                             icon="pi pi-check-square" 
+                                             action="#{assignRoleBean.selectAllDays}" 
+                                             update="daysCheckbox dayTimeInputs" 
+                                             process="@this"
+                                             styleClass="ui-button-outlined ui-button-sm"
+                                             style="margin-right: 8px;" />
+
+                            <p:commandButton value="Weekdays" 
+                                             icon="pi pi-briefcase" 
+                                             action="#{assignRoleBean.selectWeekdays}" 
+                                             update="daysCheckbox dayTimeInputs" 
+                                             process="@this"
+                                             styleClass="ui-button-outlined ui-button-sm"
+                                             style="margin-right: 8px;" />
+
+                            <p:commandButton value="Weekends" 
+                                             icon="pi pi-home" 
+                                             action="#{assignRoleBean.selectWeekends}" 
+                                             update="daysCheckbox dayTimeInputs" 
+                                             process="@this"
+                                             styleClass="ui-button-outlined ui-button-sm"
+                                             style="margin-right: 8px;" />
+
+                            <p:commandButton value="Clear All" 
+                                             icon="pi pi-times" 
+                                             action="#{assignRoleBean.clearAllDays}" 
+                                             update="daysCheckbox dayTimeInputs" 
+                                             process="@this"
+                                             styleClass="ui-button-outlined ui-button-danger ui-button-sm" />
+                        </div>
+                        
                         <p:selectManyCheckbox value="#{assignRoleBean.selectedDays}" layout="grid" columns="3" id="daysCheckbox">
                             <f:selectItem itemLabel="Monday" itemValue="MONDAY" />
                             <f:selectItem itemLabel="Tuesday" itemValue="TUESDAY" />
@@ -175,7 +210,54 @@
 
                         <p:spacer height="10px"/>
 
-                        <h:panelGroup id="dayTimeInputs" layout="block">
+                        <h:panelGroup id="dayTimeInputs" layout="block" >
+                            <!-- Default Time Section -->
+                            <p:outputPanel class="default-time-section" rendered="#{assignRoleBean.selectedDays.size()>0}"
+                                 style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                                <h4 style="margin-top: 0; color: #495057; display: flex; align-items: center;">
+                                    <i class="pi pi-clock" style="margin-right: 8px; color: #007bff;"></i>
+                                    Set Default Time for All Selected Days
+                                </h4>
+
+                                <div class="default-time-inputs" style="display: flex; align-items: end; gap: 15px; justify-content: space-between; flex-wrap: wrap;">
+                                    <div class="time-group">
+                                        <p:outputLabel value="Default Start:" styleClass="default-label" />
+                                        <p:datePicker id="defaultStartTime"
+                                                      value="#{assignRoleBean.defaultStartTime}"
+                                                      timeOnly="true"
+                                                      placeholder="HH:MM"
+                                                      pattern="HH:mm"
+                                                      hourFormat="12"
+                                                      showTime="true"
+                                                      showIcon="false"
+                                                      stepMinute="1"
+                                                      styleClass="small-time-picker" />
+                                    </div>
+
+                                    <div class="time-group">
+                                        <p:outputLabel value="Default End:" styleClass="default-label" />
+                                        <p:datePicker id="defaultEndTime"
+                                                      value="#{assignRoleBean.defaultEndTime}"
+                                                      timeOnly="true"
+                                                      placeholder="HH:MM"
+                                                      pattern="HH:mm"
+                                                      hourFormat="12"
+                                                      showTime="true"
+                                                      showIcon="false"
+                                                      stepMinute="1"
+                                                      styleClass="small-time-picker" />
+                                    </div>
+
+                                    <p:commandButton value="Fill All Selected Days" 
+                                                     icon="pi pi-copy" 
+                                                     action="#{assignRoleBean.fillDefaultTimesToSelectedDays}" 
+                                                     update="dayTimeInputs" 
+                                                     process="@this defaultStartTime defaultEndTime"
+                                                     styleClass="ui-button-success ui-button-sm"
+                                                     disabled="#{empty assignRoleBean.selectedDays}" />
+                                </div>
+                            </p:outputPanel>
+                            
                             <h3 class="section-title">
                                 <i class="pi pi-calendar" style="margin-right:8px;color:#22C55E;" />
                                 Assign Time Range For Days
@@ -183,7 +265,16 @@
                             <ui:repeat value="#{assignRoleBean.selectedDays}" var="day">
                                 <div class="day-time-block">
                                     <!-- Day label -->
-                                    <h:outputText value="#{day}" styleClass="day-title" />
+                                    <div class="day-header" style="display: flex;justify-content: space-between;">
+                                        <h:outputText value="#{day}" styleClass="day-title" />
+                                        <p:commandButton icon="pi pi-trash" 
+                                                         styleClass="rounded-button ui-button-danger ui-button-outlined deletebutton" 
+                                                         title="Remove this day" 
+                                                         process="@this" 
+                                                         actionListener="#{assignRoleBean.deleteDayTimeRule(day)}" 
+                                                         update=":mainForm:dayTimeInputs :mainForm:daysCheckbox  :mainForm:assignedRolesTable" />
+                                    </div>
+                                    
                                     <div class="time-row">
                                         <div class="time-group">
                                             <i class="pi pi-clock" style="color:#6366F1;" />
@@ -393,6 +484,12 @@
                 font-weight: 600; /* Make the labels bold */
                 color: #374151; /* Apply the label color */
             }
+            .default-label {
+                font-weight: 600 !important; /* Make the labels bold */
+                color: #374151 !important; /* Apply the label color */
+                display: flex;
+                text-align: start;
+            }
 
             .value-style {
                 color: #111827; /* Apply the value color */
@@ -490,7 +587,7 @@
             /* Align label, icon, and input within each group */
             .time-group {
                 display: flex;
-                align-items: center;
+                align-items: start;
                 gap: 6px;
             }
 
@@ -499,12 +596,105 @@
                 width: 100% !important;
                 font-size: 0.75rem !important;
                 padding: 4px 6px !important;
+                font-weight: bolder;
             }
 
             /* Optional: reduce margin around output labels */
             .label-style {
                 font-size: 0.75rem;
                 margin: 0;
+            }
+
+            .quick-select-buttons {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 10px;
+                background-color: #f8f9fa;
+                border-radius: 6px;
+                border: 1px solid #e9ecef;
+            }
+
+            .quick-select-buttons .ui-button {
+                font-size: 12px;
+                padding: 6px 12px;
+                border-radius: 4px;
+                transition: all 0.2s;
+            }
+
+            .quick-select-buttons .ui-button:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            /* Default Time Section Styling */
+            .default-time-section {
+                animation: fadeIn 0.3s ease-in;
+            }
+
+            .default-time-inputs {
+                align-items: flex-end;
+            }
+
+            .default-time-inputs .time-group {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .default-time-inputs .fill {
+                display:flex !important;
+               align-items: flex-end !important;
+               
+            }
+
+            /* Fill button styling */
+            .ui-button-success.ui-button-sm {
+                background: linear-gradient(135deg, #28a745, #20c997);
+                border: none;
+                box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+                transition: all 0.2s;
+                white-space: nowrap;
+                margin-left: auto;
+            }
+
+            .ui-button-success.ui-button-sm:hover:not(:disabled) {
+                background: linear-gradient(135deg, #218838, #1ea085);
+                box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+                transform: translateY(-1px);
+            }
+
+            .ui-button-success.ui-button-sm:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            /* Individual day time settings */
+            .day-time-block {
+                border-left: 3px solid #007bff;
+                padding-left: 15px;
+                margin-bottom: 15px;
+                background-color: #fff;
+                border-radius: 6px;
+                padding: 12px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+
+            .day-title {
+                font-weight: 600;
+                color: #007bff;
+                font-size: 14px;
+                text-transform: capitalize;
+            }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
             @media (max-width: 600px) {
                 .time-row {
@@ -513,6 +703,19 @@
                 }
                 .time-group .p-datepicker {
                     width: 100%; /* Full width on mobile */
+                }
+                .quick-select-buttons {
+                    flex-direction: column;
+                }
+
+                .quick-select-buttons .ui-button {
+                    width: 100%;
+                    justify-content: center;
+                }
+
+                .default-time-inputs {
+                    flex-direction: column;
+                    gap: 10px;
                 }
             }
         </style>

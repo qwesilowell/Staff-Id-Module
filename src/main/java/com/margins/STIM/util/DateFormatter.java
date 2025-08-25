@@ -5,12 +5,16 @@
 package com.margins.STIM.util;
 
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  *
@@ -105,5 +109,56 @@ public class DateFormatter {
         return (word != null && word.length() >= 1) ? word.substring(0, 1).toUpperCase() : "?";
     }
     
-    
+    public static String formatDateAsTimeString(Date date) {
+        if (date == null) {
+            return "";
+        }
+
+        LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        LocalDate now = LocalDate.now();
+        LocalDate then = dateTime.toLocalDate();
+
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mm a");
+        DateTimeFormatter fullFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy, h:mm a");
+        DayOfWeek dayOfWeek = then.getDayOfWeek();
+
+        long daysBetween = ChronoUnit.DAYS.between(then, now);
+
+        if (daysBetween == 0) {
+            return "Today, " + dateTime.format(timeFormatter);
+        } else if (daysBetween == 1) {
+            return "Yesterday, " + dateTime.format(timeFormatter);
+        } else if (daysBetween <= 6) {
+            String dayName = dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+            return dayName + ", " + dateTime.format(timeFormatter);
+        } else {
+            return dateTime.format(fullFormatter);
+        }
+    }
+
+    public static String formatLocalDateAsTimeString(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return "";
+        }
+
+        LocalDate now = LocalDate.now();
+        LocalDate then = dateTime.toLocalDate();
+
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mm a");
+        DateTimeFormatter fullFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy, h:mm a");
+        DayOfWeek dayOfWeek = then.getDayOfWeek();
+
+        long daysBetween = ChronoUnit.DAYS.between(then, now);
+
+        if (daysBetween == 0) {
+            return "Today, " + dateTime.format(timeFormatter);
+        } else if (daysBetween == 1) {
+            return "Yesterday, " + dateTime.format(timeFormatter);
+        } else if (daysBetween <= 6) {
+            String dayName = dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+            return dayName + ", " + dateTime.format(timeFormatter);
+        } else {
+            return dateTime.format(fullFormatter);
+        }
+    }
 }

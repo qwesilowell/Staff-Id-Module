@@ -23,14 +23,14 @@
             <h:form id="entryExitForm">
                 <div style="display: flex; justify-content: space-between;">
                     <div>
-                    <h3>ACCESS REPORT</h3>
+                        <h3>ACCESS REPORT</h3>
                     </div>
                     <div>
-                    <p:commandButton value="Export" 
-                                     icon="pi pi-file-pdf" 
-                                     action="#{entryExitBean.export()}"
-                                     ajax="false"
-                                     styleClass="ui-button-success" style="margin-top: 10%" />
+                        <p:commandButton value="Export" 
+                                         icon="pi pi-file-pdf" 
+                                         action="#{entryExitBean.export()}"
+                                         ajax="false"
+                                         styleClass="ui-button-success" style="margin-top: 10%" />
                     </div>
                 </div>
                 <br/>
@@ -83,7 +83,9 @@
                                          styleClass="ui-button-success" style="margin-left: 1%" />
                     </div>
                 </p:panel>
-
+                <div class="scroll-hint" rendered="#{not empty entryExitBean.accessHistoryList}">
+                    <i class="pi pi-arrow-right floating-icon" title="See More Details" onclick="scrollTableToRightSmooth()"></i>
+                </div>
                 <div class="table-container" >
                     <p:dataTable id="resultsTable"
                                  value="#{entryExitBean.accessHistoryList}"
@@ -94,19 +96,20 @@
                                  rowIndexVar="rowIndex"
                                  resizableColumns="true"
                                  style="min-width: 250%"
+                                 scrollable="true"
                                  >
 
-                        <p:column headerText="Employee" style="width:5%">
+                        <p:column headerText="Full Name" style="width:4%">
                             <h:outputText value="#{record.employeeName}" style="font-weight: bolder;"/>
                             <br/>
-                             <h:outputText value="#{record.ghanaCardNumber}" style="font-size: 0.9em; color: rgba(0, 0, 0, 0.6);"  />
+                            <h:outputText value="#{record.ghanaCardNumber}" style="font-size: 0.9em; color: rgba(0, 0, 0, 0.6);"  />
                         </p:column>
 
-                        <p:column headerText="Entrance" style="width:5%;">
+                        <p:column headerText="Entrance" style="width:3%;">
                             <h:outputText value="#{record.entranceName}" />
                         </p:column>
 
-                        <p:column headerText="Entry Device" style="width:5%;">
+                        <p:column headerText="Entry Device" style="width:3%;">
                             <h:outputText value="#{entryExitBean.getDisplayDeviceEntryName(record)}" />
                         </p:column>
 
@@ -147,19 +150,12 @@
                             <h:outputText rendered="#{record.timeEntered == null and record.timeExited != null}"
                                           value="Missing Entry"
                                           styleClass="ui-tag ui-tag-warning" />
-                            
+
                             <h:outputText rendered="#{record.timeEntered != null and record.timeExited != null}"
                                           value="COMPLETE"
                                           styleClass="ui-tag ui-tag-success" />
                         </p:column>
                     </p:dataTable>
-
-                    <div class="scroll-indicator left" id="scrollLeft" style="display: none;">
-                        <i class="pi pi-chevron-left"></i>
-                    </div>
-                    <div class="scroll-indicator right" id="scrollRight">
-                        <i class="pi pi-chevron-right"></i>
-                    </div>
                 </div>
             </h:form>
 
@@ -175,11 +171,11 @@
             }
 
             .modern-table .text-success {
-                color: #10b981; 
+                color: #10b981;
             }
 
             .modern-table .text-danger {
-                color: #ef4444; 
+                color: #ef4444;
             }
 
             .granted-box {
@@ -208,8 +204,44 @@
                 padding: 0;
                 margin: 0;
             }
-        </style>
 
-        <!--        <h:outputScript library="js" name="entrnaceAccessReport.js" target="body" />-->
+            .scroll-hint {
+                position: absolute;
+                top: 50%;
+                right: 20px;
+                transform: translateY(-50%);
+                z-index: 10;
+                pointer-events: auto;
+                cursor: pointer;
+            }
+
+            .floating-icon {
+                font-size: 1.5rem !important;
+                color: black;
+                animation: pulseArrow 1.5s infinite ease-in-out;
+            }
+            .highlighted-row {
+                background-color: #f2ffe6 !important;
+                border-left: 4px solid #4CAF50;
+                transition: background-color 0.5s ease;
+            }
+
+
+            @keyframes pulseArrow {
+                0% {
+                    transform: translateX(0);
+                    opacity: 0.5;
+                }
+                50% {
+                    transform: translateX(5px);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateX(0);
+                    opacity: 0.5;
+                }
+            }
+        </style>
+                <h:outputScript library="js" name="entranceAccessReport.js" target="body" />
     </ui:define>
 </ui:composition>

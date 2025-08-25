@@ -10,6 +10,10 @@ import com.margins.STIM.entity.Entrances;
 import com.margins.STIM.entity.enums.ActionResult;
 import com.margins.STIM.entity.enums.AuditActionType;
 import com.margins.STIM.entity.enums.LocationState;
+import com.margins.STIM.report.ReportGenerator;
+import com.margins.STIM.report.ReportManager;
+import com.margins.STIM.report.model.OccupantState;
+import com.margins.STIM.report.util.ReportOutputFileType;
 import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.EmployeeEntranceStateService;
 import com.margins.STIM.service.Employee_Service;
@@ -26,6 +30,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 
 /**
  *
@@ -53,6 +58,8 @@ public class EmployeeStateBean implements Serializable {
 
     @Inject
     private BreadcrumbBean breadcrumbBean;
+    @Inject
+    private ReportManager rm;
 
     private List<EmployeeEntranceState> allStates;
     private List<EmployeeEntranceState> filteredStates;
@@ -123,6 +130,29 @@ public class EmployeeStateBean implements Serializable {
         }
     }
 
+    public void export(String fileType){
+    
+        List<OccupantState> os = new ArrayList<>();
+        
+        for(EmployeeEntranceState es: filteredStates){
+        OccupantState ocs = new OccupantState();
+        ocs.setEntranceName(es.getEntrance().getEntranceName());
+        ocs.setFullName(es.getEmployee().getFullName());
+        ocs.setNationalID(es.getEmployee().getGhanaCardNumber());
+        ocs.setLastUpdated(es.getFormattedLastModifiedDate());
+        ocs.setPosition(es.getCurrentState().toString());
+        ocs.setUpdatedBy(es.getLastUpdatedBy());
+        
+        os.add(ocs);
+        }
+        ReportOutputFileType type = ReportOutputFileType.valueOf(fileType.toUpperCase());
+        rm.addParam("printedBy", userSession.getUsername());
+        rm.addParam("occupantState", new JRBeanCollectionDataSource(os));
+        rm.setReportFile(ReportGenerator.OCCUPANT_STATE);
+        rm.setReportData(Arrays.asList(new Object()));
+        rm.generateReport(type);
+    }
+    
     private void refresh() {
         allStates = stateService.findAllEmployeeEntranceStates();
         applyFilters();

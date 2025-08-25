@@ -7,33 +7,34 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets">
 
-        <ui:define name="metadata">
-            <f:metadata>
-                <f:viewAction action="#{anomalyBean.breadcrumb()}" />
-            </f:metadata>
-        </ui:define>
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{anomalyBean.breadcrumb()}" />
+        </f:metadata>
+    </ui:define>
 
     <ui:define name="title">Anomaly Management</ui:define>
     <ui:define name="content">
         <div class="main-content">
             <h:outputStylesheet library="css" name="anomalyCss.css"/>
+            <p:growl id="messages"  widgetVar="messages"  showSummary= "true" showDetail="true" life="6000" globalOnly="false"/>
 
             <h:form id="anomalyForm">
                 <div class="anomalies-container">
                     <!-- Page Header -->
                     <div style="display: flex; justify-content: space-between">
-                    <div class="page-header">
-                        <h2><i class="fa-solid fa-building-shield" style="color: black;"></i> Anomaly Management</h2>
-<!--                        <h1 class="page-title" style="margin: 0;">Anomalies Management</h1>-->
-                        <p class="page-subtitle">Monitor and manage access anomalies </p>
-                    </div>
-                        
+                        <div class="page-header">
+                            <h2><i class="fa-solid fa-building-shield" style="color: black;"></i> Anomaly Management</h2>
+                            <!--                        <h1 class="page-title" style="margin: 0;">Anomalies Management</h1>-->
+                            <p class="page-subtitle">Monitor and manage access anomalies </p>
+                        </div>
+
                         <div>
-                           <p:commandButton value="Export to PDF" 
-                                     icon="pi pi-file-pdf" 
-                                     styleClass="ui-button-success"
-                                     action="#{anomalyBean.export()}"
-                                     ajax="false"/> 
+                            <p:commandButton value="Export to PDF" 
+                                             icon="pi pi-file-pdf" 
+                                             styleClass="ui-button-success"
+                                             action="#{anomalyBean.export()}"
+                                             ajax="false"/> 
                         </div>
                     </div>
 
@@ -95,27 +96,44 @@
                                 <p:commandButton value="Unattended" 
                                                  styleClass="toggle-btn #{anomalyBean.selectedStatus == 'UNATTENDED' ? 'active UNATTENDED' : ''}"
                                                  action="#{anomalyBean.filterByStatus('UNATTENDED')}" 
-                                                 update="@form" />
+                                                 update="@form messages">
+                                    <span class="UNATTENDED_badge">#{anomalyBean.unattendedCount}</span>
+                                </p:commandButton>
                                 <p:commandButton value="Pending" 
                                                  styleClass="toggle-btn #{anomalyBean.selectedStatus == 'PENDING' ? 'active PENDING' : ''}"
                                                  action="#{anomalyBean.filterByStatus('PENDING')}" 
-                                                 update="@form" />
+                                                 update="@form messages">
+                                    <span class="PENDING_badge">#{anomalyBean.pendingCount}</span>
+                                </p:commandButton>
                                 <p:commandButton value="Resolved" 
                                                  styleClass="toggle-btn #{anomalyBean.selectedStatus == 'RESOLVED' ? 'active RESOLVED' : ''}"
                                                  action="#{anomalyBean.filterByStatus('RESOLVED')}" 
-                                                 update="@form" />
+                                                 update="@form messages">
+                                    <span class="RESOLVED_badge">#{anomalyBean.resolvedCount}</span>
+                                </p:commandButton>
                             </div>
                         </div>
 
                         <!-- Filters -->
                         <div class="filters-row">
                             <div class="filter-group">
+                                <label class="filter-label">Search Ref Number</label>
+                                <p:inputText value="#{anomalyBean.refNumber}" 
+                                             styleClass="modern-input"
+                                             placeholder="Enter ref number...">
+                                    <p:ajax event="keyup" update="anomaliesTable"
+                                            listener="#{anomalyBean.applyFilters}" /> 
+                                </p:inputText>
+                            </div>
+
+                            <div class="filter-group">
                                 <label class="filter-label">Search Employee</label>
                                 <p:inputText value="#{anomalyBean.employeeFilter}" 
                                              styleClass="modern-input"
-                                             placeholder="Enter employee name..."
-                                             onkeyup="if (event.keyCode === 13)
-                                                         PF('filterBtn').click();" />
+                                             placeholder="Enter employee name...">
+                                    <p:ajax event="keyup" update="anomaliesTable"
+                                            listener="#{anomalyBean.applyFilters}" />
+                                </p:inputText>
                             </div>
 
                             <div class="filter-group">
@@ -156,13 +174,14 @@
                                              styleClass="ui-button-raised ui-button-danger"
                                              icon="fa-solid fa-spinner" iconPos="left" 
                                              action="#{anomalyBean.clearFilters}" 
-                                             update="@form" />
+                                             update="@form messages" />
                             <p:commandButton id="filterBtn" 
+                                             widgetVar="filterBtn"
                                              value="Apply Filters" 
                                              styleClass="ui-button-raised ui-button-success"
                                              icon="pi pi-search" iconPos="left" 
                                              action="#{anomalyBean.applyFilters}" 
-                                             update="@form" />
+                                             update="@form messages" />
                         </div>
                     </div>
 
@@ -202,7 +221,11 @@
                                 <div class="anomaly-row">
                                     <div class="anomaly-header">
                                         <div class="anomaly-info">
-                                            <div class="anomaly-title">#{anomalyBean.formatAnomalyType(anomaly.anomalyType)}</div>
+                                            <div class="anomaly-head">
+                                                <div class="anomaly-ref">#{anomaly.anomalyRef}</div>
+                                                <div class="anomaly-title">(#{anomalyBean.formatAnomalyType(anomaly.anomalyType)})</div>
+                                            </div>
+
                                             <div class="anomaly-meta">
                                                 <div class="meta-item">
                                                     <i class="fas fa-user"></i>
@@ -241,19 +264,19 @@
                                         <p:commandButton value="Mark as Pending" 
                                                          styleClass="action-btn primary ui-button-raised ui-button-warning"
                                                          action="#{anomalyBean.markAsPending(anomaly)}" 
-                                                         update="@form"
+                                                         update="@form messages"
                                                          rendered="#{anomaly.anomalyStatus == 'UNATTENDED'}" />
 
                                         <p:commandButton value="Resolve" 
                                                          styleClass="action-btn success"
                                                          action="#{anomalyBean.resolveAnomaly(anomaly)}" 
-                                                         update="@form"
+                                                         update="@form messages"
                                                          rendered="#{anomaly.anomalyStatus != 'RESOLVED'}" />
 
                                         <p:commandButton value="Assign Handler" 
                                                          styleClass="action-btn secondary"
                                                          action="#{anomalyBean.showAssignDialog(anomaly)}" 
-                                                         update=":assignDialog"
+                                                         update=":assignDialog messages"
                                                          oncomplete="PF('assignDialog').show()"
                                                          rendered="#{anomaly.handledBy == null}" />
 
@@ -286,9 +309,9 @@
                         <p:commandButton value="Assign" 
                                          styleClass="ui-confirmdialog-yes rounded-button"
                                          action="#{anomalyBean.assignHandler}" 
-                                         update=":anomalyForm:anomaliesTable"
+                                         update=":anomalyForm:anomaliesTable messages"
                                          oncomplete ="PF('assignDialog').hide();" />
-                        
+
                         <p:commandButton value="Cancel" 
                                          styleClass="ui-confirmdialog-no rounded-button ui-button-secondary"
                                          oncomplete ="PF('assignDialog').hide();" />
@@ -300,16 +323,19 @@
             <p:dialog id="detailsDialog" header="Anomaly Details" widgetVar="detailsDialog" modal="true" resizable="false" width="600">
                 <h:form>
                     <div style="display: flex; justify-content: flex-end;">
-                           <p:commandButton value="Export to PDF" 
-                                     icon="pi pi-file-pdf" 
-                                     styleClass="ui-button-success"
-                                     action="#{anomalyBean.print()}"
-                                     ajax="false"/> 
-                        </div>
-                    
+                        <p:commandButton value="Export to PDF" 
+                                         icon="pi pi-file-pdf" 
+                                         styleClass="ui-button-success"
+                                         action="#{anomalyBean.print()}"
+                                         ajax="false"/> 
+                    </div>
+
                     <p:panelGrid columns="2" style="width: 100%;">
+                        <p:outputLabel value="Ref Number:" style="font-weight: bold; " />
+                        <h:outputText value="#{anomalyBean.selectedAnomaly.anomalyRef}" style="font-weight: bold; font-style: italic; font-size: 1.1rem;" />
+
                         <p:outputLabel value="Type:" style="font-weight: bold;" />
-                        
+
                         <h:outputText rendered="#{not empty anomalyBean.selectedAnomaly and not empty anomalyBean.selectedAnomaly.anomalyType}"
                                       value="#{anomalyBean.getFormattedAnomalyType(anomalyBean.selectedAnomaly.anomalyType)}"/>
                         <h:outputText rendered="#{empty anomalyBean.selectedAnomaly or empty anomalyBean.selectedAnomaly.anomalyType}"

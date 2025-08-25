@@ -30,6 +30,10 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
         <ui:insert name="head"/>
         <title><ui:insert name="title"/></title>
         <h:outputScript library="js" name="menuscript.js" target="body" />
+        <script type="text/javascript">
+            let notificationSound = new Audio('#{request.contextPath}/resources/sounds/notificationSound.mp3');
+        </script>
+
     </h:head>
 
     <h:body>
@@ -42,7 +46,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
 
 
 
-            <h:form>
+            <h:form id="navBar" prependId="false">
                 <div class="header-right">
                     <p:commandLink action="#{anomalyBean.navigateToAnomalyPage}" styleClass="notification-bell" ajax="false"
                                    immediate="true">
@@ -56,9 +60,118 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                                  styleClass="notification-badge" rendered="#{anomalyBean.unattended > 0}" />
                     </p:commandLink>
 
+
+                    <div class="navbar-actions">
+                        <div class="notification-bell" onclick=" fetchNotifications();">
+                            <i class="fas fa-bell"></i>
+                            <p:badge  id="notificationBadge" severity="danger" styleClass="notification-badge #{notificationBean.unreadCount == 0 ? 'hidden' : ''}"
+                                      value="#{notificationBean.unreadCount > 99 ? '99+' : notificationBean.unreadCount}" />
+                        </div>
+                    </div>
+
+                    <div class="notification-sidebar" id="notificationSidebar">
+                        <!-- Sidebar Header -->
+                        <div class="sidebar-header">
+                            <h3><i class="fas fa-bell mr-2"></i> Notifications</h3>
+                            <button type="button" class="close-btn" onclick="closeNotifications()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <!-- Notification Actions -->
+                        <div class="notification-actions">
+                            <p:commandButton 
+                                value="Mark All Read" 
+                                icon="fas fa-check-double" 
+                                styleClass="action-btn mark-all-read"
+                                actionListener="#{notificationBean.markAllAsRead()}" 
+                                update="notificationBadge notificationsList" 
+                                process="@this"
+                                ajax="true"/>
+
+                            <p:commandButton 
+                                value=" Clear All" 
+                                icon="fas fa-trash" 
+                                styleClass="action-btn clear-all"
+                                actionListener="#{notificationBean.clearAll()}" 
+                                update="notificationBadge notificationsList" 
+                                process="@this"
+                                ajax="true"/>
+                        </div>
+
+                        <!-- Notifications List -->
+                        <p:remoteCommand 
+                            name="fetchNotifications" 
+                            action="#{notificationBean.loadNotifications()}"  
+                            update="notificationBadge notificationsList" 
+                            oncomplete="toggleNotifications();"/>
+
+                        <h:panelGroup id="notificationsList" layout="block" styleClass="notifications-list" >
+                            <ui:repeat value="#{notificationBean.notifications}" var="notification" varStatus="status" > 
+                                <div class="notification-item #{notification.status.name() == 'UNREAD' ? 'unread' : ''}" 
+                                     onclick="" >
+                                    <div class="priority-indicator #{notification.priority}"></div>
+                                    <div class="notification-content">
+                                        <div class="notification-icon #{notification.priority}">
+                                            <i class="#{notificationBean.getIconClass(notification)}"></i>
+                                        </div>
+                                        <div class="notification-details">
+                                            <div class="notification-title">#{notification.title}</div>
+                                            <div class="notification-message">#{notification.message}</div>
+                                            <div class="notification-time">
+                                                <i class="fas fa-clock"></i>
+                                                #{notificationBean.showTime(notification)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Hover-activated action buttons -->
+                                    <div class="notification">
+                                        <p:commandButton 
+                                            styleClass="action-button mark-read-btn"
+                                            title="Mark as read"
+                                            action="#{notificationBean.markAsRead(notification.id)}"
+                                            update="notificationsList"
+                                            process="@this"
+                                            onstart="addMarkingClass(this); return true;" 
+                                            oncomplete="removeMarkingClass();"
+                                            rendered="#{notification.status.name() == 'UNREAD'}"
+                                            icon="fas fa-check"
+                                            style="width: 28px !important; height: 28px !important; padding: 0 !important;"
+                                            ajax="true"/>
+
+                                        <p:commandButton 
+                                            styleClass="action-button dismiss-btn" 
+                                            title="Dismiss"
+                                            action="#{notificationBean.dismiss(notification)}"
+                                            update="notificationsList"
+                                            process="@this"
+                                            onstart="addDismissingClass(this); return true;" 
+                                            oncomplete="removeDismissingClass();" icon="fas fa-times"
+                                            style="width: 28px !important; height: 28px !important; padding: 0 !important;"
+                                            ajax="true"/>
+                                        
+                                        <p:commandButton 
+                                            styleClass="action-button view-btn"
+                                            title="View"
+                                            rendered="#{notification.actionUrl != null}"
+                                            action="#{notificationBean.openNotification(notification)}"
+                                            update="notificationsList"
+                                            process="@this"
+                                            icon="pi pi-eye"
+                                            style="width: 28px !important; height: 28px !important; padding: 0 !important;"/>
+
+
+                                    </div>
+                                </div>
+                            </ui:repeat>
+                        </h:panelGroup>
+                    </div>
+
+                    <!-- Overlay -->
+                    <div class="overlay" id="overlay" onclick="closeNotifications()"></div>
+
                     <p:menu overlay="true" trigger="userMenu" my="left top" at="left bottom">
                         <p:submenu label="#{userSession.username}">
-<!--                            <p:menuitem value="Profile" url="profile.xhtml" icon="pi pi-user" />-->
                             <p:menuitem value="Settings" outcome="/app/Settings/settingsPage?faces-redirect=true" icon="pi pi-cog" />
                             <p:separator />
                             <p:menuitem value="Logout" action="#{userSession.logout()}" icon="pi pi-sign-out" />
@@ -71,7 +184,9 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                         listener="#{anomalyBean.loadUnattendedCount}" 
                         update="@(.notification-badge)" 
                         global="false" 
-                        async="true" />
+                        async="true"
+                        oncomplete="checkForNewNotifications();" />
+
             </h:form>
 
 
@@ -94,8 +209,8 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     <p:submenu label="Home" expanded="true" styleClass="custom-label">
                         <p:menuitem value="Dashboard" icon="pi pi-fw pi-chart-bar" outcome="/app/dashboard2?faces-redirect=true"/>
                     </p:submenu>
-                    
-                
+
+
                     <!-- Employee Menu -->
                     <p:submenu label="Employee" expanded="true" styleClass="custom-label" rendered="#{userSession.hasAnyPermission('Onboard Employee','Employee Profiles','Update Employee Details')}">
                         <p:menuitem value="Onboard Employee" outcome="/app/OnboardEmployee/onboardEmployee?faces-redirect=true" icon="fa-solid fa-user-large" rendered="#{userSession.hasPermission('Onboard Employee')}"/>
@@ -117,9 +232,9 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     <p:submenu label="Entrances and Devices Management" expanded="true" styleClass="custom-label"  rendered="#{userSession.hasAnyPermission('Manage Entrances','Manage Entrance Devices','Strict Mode Reset')}">
                         <p:menuitem value="Manage Entrances" outcome="/app/Entrances/manageEntrances?faces-redirect=true" icon="fa-solid fa-door-open" rendered="#{userSession.hasPermission('Manage Entrances')}"/>
                         <p:menuitem value="Manage Entrance Devices" outcome="/app/Entrances/manageDevices?faces-redirect=true" icon="fa-solid fa-mobile-screen-button" rendered="#{userSession.hasPermission('Manage Entrance Devices')}"/>
-                        <p:menuitem value="Strict Mode Reset" outcome="/app/Entrances/resetEmployeeEntranceState?faces-redirect=true" icon="pi pi-refresh" rendered="#{userSession.hasPermission('Strict Mode Reset')}"/>
+                        <p:menuitem value="Occupant Status" outcome="/app/Entrances/resetEmployeeEntranceState?faces-redirect=true" icon="pi pi-refresh" rendered="#{userSession.hasPermission('Strict Mode Reset')}"/>
                     </p:submenu>
-                  
+
                     <p:submenu label="Entrance Test" expanded="true" styleClass="custom-label" rendered="#{userSession.hasAnyPermission('Entrance Access Test')}">
                         <p:menuitem value="Entrance Access Test" outcome="/app/Entrances/accessControl?faces-redirect=true"  icon="fa-sharp-duotone fa-solid fa-fingerprint fa-beat" rendered="#{userSession.hasPermission('Entrance Access Test')}"/>
                     </p:submenu>
@@ -142,10 +257,10 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
         </div>
 
         <!-- Footer --> 
-<!--        <div class="layout-footer"> 
-            <div class="footer-content"> <span>Version 1.0.0</span> 
-            </div> 
-        </div>-->
+        <!--        <div class="layout-footer"> 
+                    <div class="footer-content"> <span>Version 1.0.0</span> 
+                    </div> 
+                </div>-->
 
 
     </h:body>

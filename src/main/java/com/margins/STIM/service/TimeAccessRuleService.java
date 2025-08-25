@@ -145,6 +145,16 @@ public class TimeAccessRuleService {
             em.merge(existing); // Soft delete by marking it
         }
     }
+    
+    public void deleteRoleTimeAccess(EmployeeRole role, Entrances entrance, String dayStr) {
+    DayOfWeek day = DayOfWeek.valueOf(dayStr.toUpperCase());
+
+    RoleTimeAccess existing = findByRoleEntranceAndDay(role, entrance, day);
+    if (existing != null) {
+        existing.setDeleted(true);
+        em.merge(existing); // Soft delete by marking it as deleted
+    }
+}
 
     public long countCustomTimeAccessRules() {
         return em.createQuery("SELECT COUNT(c) FROM CustomTimeAccess c", Long.class).getSingleResult();

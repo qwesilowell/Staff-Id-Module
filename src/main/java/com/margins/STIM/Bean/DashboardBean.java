@@ -106,7 +106,7 @@ public class DashboardBean implements Serializable {
     private List<RoleCount> rolesWithMostEmployeesLimit = new ArrayList<>();
     private List<RoleCount> rolesWithMostEmployees = new ArrayList<>();
     private LocalDate[] dateRange;
-    private LocalDate startFrom;
+    private LocalDate startFrom ;
     private LocalDate endAt;
 
     private Map<String, String> employeeNameMap;
@@ -217,13 +217,20 @@ public class DashboardBean implements Serializable {
 
             mostAccessedEntrance = lineCharts.buildEntryExitLineChart(startFrom.atStartOfDay(), endAt.atTime(LocalTime.MAX));
         } else {
+            if (endAt == null) {
+                endAt = LocalDate.now(); // Default to today
+            }
+            if (startFrom == null) {
+                startFrom = endAt.minusMonths(6); // Default to 30 days ago
+            }
+
             LocalDateTime end = endAt.atTime(LocalTime.MAX);
             LocalDateTime start = startFrom.atTime(LocalTime.MAX);
 
             mostAccessedEntrance = lineCharts.buildEntryExitLineChart(start, end);
 
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Date range not specified. Defaulting to the last 7 days.", null));
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Date range not specified."," Defaulting to the last 6 months."));
         }
     }
 

@@ -52,7 +52,7 @@
 				<text><![CDATA[NAME]]></text>
 			</element>
 			<element kind="staticText" uuid="d43c6a7e-e505-4046-8e1d-42215b778f90" x="80" y="1" width="90" height="30" forecolor="#FFFFFF" fontSize="11.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
-				<text><![CDATA[GHANA CARD]]></text>
+				<text><![CDATA[NATIONAL ID]]></text>
 			</element>
 			<element kind="staticText" uuid="6a2bc3ba-6b29-4535-b672-3b38d49468ed" x="170" y="1" width="120" height="30" forecolor="#FFFFFF" fontSize="11.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
 				<text><![CDATA[EMAIL]]></text>
@@ -74,74 +74,74 @@
 	<columnHeader height="5" splitType="Stretch"/>
 	<detail>
 		<band height="35" splitType="Stretch">
-			<element kind="textField" uuid="cc8886eb-5232-4d6f-99d5-4106f4a76819" x="0" y="0" width="80" height="32" fontSize="10.0" hTextAlign="Center" vTextAlign="Middle">
+			<element kind="textField" uuid="cc8886eb-5232-4d6f-99d5-4106f4a76819" x="0" y="0" width="80" height="32" fontSize="10.0" textAdjust="StretchHeight" hTextAlign="Center" vTextAlign="Middle">
 				<expression><![CDATA[$F{empName} != null ? $F{empName} : "N/A"]]></expression>
 				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
 					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#121111"/>
 					<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#141212"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="134ef9c8-8b16-401a-99a0-e887797486e7" x="80" y="0" width="90" height="32" fontSize="10.0" hTextAlign="Center" vTextAlign="Middle">
+			<element kind="textField" uuid="134ef9c8-8b16-401a-99a0-e887797486e7" x="80" y="0" width="90" height="32" fontSize="10.0" textAdjust="StretchHeight" hTextAlign="Center" vTextAlign="Middle">
 				<expression><![CDATA[$F{ghanaCardNumber} != null ? $F{ghanaCardNumber} : "N/A"]]></expression>
 				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
 					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
 					<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#141212"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="61e2ad6f-928d-46f9-b813-b53e09d97337" x="170" y="0" width="120" height="32" fontSize="10.0" hTextAlign="Center" vTextAlign="Middle">
+			<element kind="textField" uuid="61e2ad6f-928d-46f9-b813-b53e09d97337" x="170" y="0" width="120" height="32" fontSize="10.0" textAdjust="StretchHeight" hTextAlign="Center" vTextAlign="Middle">
 				<expression><![CDATA[$F{email} != null ? $F{email} : "N/A"]]></expression>
 				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
 					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
 					<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#141212"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="f519058f-adde-4e79-9222-adc9daf978e2" x="290" y="0" width="60" height="32" fontSize="10.0" hTextAlign="Center" vTextAlign="Middle">
+			<element kind="textField" uuid="f519058f-adde-4e79-9222-adc9daf978e2" x="290" y="0" width="60" height="32" fontSize="10.0" textAdjust="StretchHeight" hTextAlign="Center" vTextAlign="Middle">
 				<expression><![CDATA[$F{gender} != null ? $F{gender} : "N/A"]]></expression>
 				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
 					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
 					<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#141212"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="307b9843-1699-435f-85a2-8d7ca82f4e58" x="350" y="0" width="80" height="32" fontSize="10.0" hTextAlign="Center" vTextAlign="Middle">
+			<element kind="textField" uuid="307b9843-1699-435f-85a2-8d7ca82f4e58" x="350" y="0" width="80" height="32" fontSize="10.0" textAdjust="StretchHeight" hTextAlign="Center" vTextAlign="Middle">
 				<expression><![CDATA[$F{phoneNumber} != null ? $F{phoneNumber} : "N/A"]]></expression>
 				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
 					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
 					<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#141212"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="38ac77d2-4fb8-4779-a23d-90cc37208502" x="430" y="0" width="65" height="32" fontSize="10.0" hTextAlign="Center" vTextAlign="Middle">
+			<element kind="textField" uuid="38ac77d2-4fb8-4779-a23d-90cc37208502" x="430" y="0" width="65" height="32" fontSize="10.0" textAdjust="StretchHeight" hTextAlign="Center" vTextAlign="Middle">
 				<expression><![CDATA[$F{employmentStatus} != null ? $F{employmentStatus} : "Temp"]]></expression>
 				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
 					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
 					<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#141212"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="0150ec6c-930a-44a0-b5d5-aa5fb47fc8ee" x="495" y="0" width="60" height="32" fontSize="10.0" hTextAlign="Center" vTextAlign="Middle">
+			<element kind="textField" uuid="0150ec6c-930a-44a0-b5d5-aa5fb47fc8ee" x="495" y="0" width="60" height="32" fontSize="10.0" textAdjust="StretchHeight" hTextAlign="Center" vTextAlign="Middle">
 				<expression><![CDATA[$F{role} != null ? $F{role} : "N/A"]]></expression>
 				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
 					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
 					<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#141212"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#141212"/>
 				</box>
 			</element>
 		</band>

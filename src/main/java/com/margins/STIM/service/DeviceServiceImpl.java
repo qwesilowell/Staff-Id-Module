@@ -54,7 +54,7 @@ public class DeviceServiceImpl implements DeviceService {
             throw new IllegalArgumentException("deviceId is null");
         }
 
-        Devices existingDevice = em.find(Devices.class, updatedDevice.getDeviceId());
+        Devices existingDevice = em.find(Devices.class, updatedDevice.getId());
         if (existingDevice != null && !existingDevice.isDeleted()) {
             existingDevice.setDeviceName(updatedDevice.getDeviceName());
             existingDevice.setDevicePosition(updatedDevice.getDevicePosition());

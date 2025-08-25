@@ -9,6 +9,7 @@ import com.margins.STIM.entity.SystemUserRoles;
 import com.margins.STIM.entity.Users;
 import com.margins.STIM.entity.ViewPermission;
 import com.margins.STIM.entity.enums.PagePermission;
+import com.margins.STIM.entity.enums.UserStatus;
 import com.margins.STIM.entity.enums.UserType;
 import com.margins.STIM.util.JSF;
 import java.util.List;
@@ -93,10 +94,36 @@ public class User_Service {
             existingUser.setUserType(updatedUser.getUserType());
             existingUser.setUserRole(updatedUser.getUserRole());
             existingUser.setStatus(updatedUser.getStatus());
+            existingUser.setEmail(updatedUser.getEmail());
             em.merge(existingUser);
             return existingUser;
         }
         throw new EntityNotFoundException("User: " + updatedUser.getGhanaCardNumber() + " not found.");
+    }
+
+    public void updatePassword(int userId, String newHashedPassword) {
+        Users user = findUserById(userId);
+        if (user != null) {
+            user.setPassword(newHashedPassword);
+
+            // If they were pending, make them active after successful update
+            if (user.getStatus() == UserStatus.PENDING_PASSWORD_CHANGE) {
+                user.setStatus(UserStatus.ACTIVE);
+            }
+
+            em.merge(user);
+            em.flush();
+        }
+    }
+    
+    public void resetPassword(int userId, String tempHashedPassword) {
+        Users user = findUserById(userId);
+        if (user != null) {
+            user.setPassword(tempHashedPassword);
+            user.setStatus(UserStatus.PENDING_PASSWORD_CHANGE);
+            em.merge(user);
+            em.flush();
+        }
     }
 
     /**
@@ -113,7 +140,7 @@ public class User_Service {
                 .findFirst()
                 .orElse(null);
     }
-    
+
     /**
      * Find user by email address - matches the pattern of findUserByGhanaCard
      *
@@ -141,6 +168,23 @@ public class User_Service {
                 .getResultList();
     }
 
+    public List<Users> findActiveUsersByType(UserType ut) {
+        return em.createQuery(
+                "SELECT u FROM Users u WHERE u.userType = :type"
+                + " AND u.status = :activeStatus"
+                + " ORDER BY u.createdAt DESC", Users.class)
+                .setParameter("activeStatus", UserStatus.ACTIVE)
+                .setParameter("type", ut)
+                .getResultList();
+    }
+
+    public List<Users> findAllUsersByType(UserType ut) {
+        return em.createQuery(
+                "SELECT u FROM Users u WHERE u.userType = :type", Users.class)
+                .setParameter("type", ut)
+                .getResultList();
+    }
+
     /**
      * Retrieve all users.
      *
@@ -148,6 +192,12 @@ public class User_Service {
      */
     public List<Users> findAllUsers() {
         return em.createQuery("SELECT u FROM Users u WHERE u.deleted = false ORDER BY u.createdAt DESC", Users.class)
+                .getResultList();
+    }
+
+    public List<Users> findAllActiveUsers() {
+        return em.createQuery("SELECT u FROM Users u WHERE u.deleted = false AND u.status = :activeStatus ORDER BY u.createdAt DESC", Users.class)
+                .setParameter("activeStatus", UserStatus.ACTIVE)
                 .getResultList();
     }
 
@@ -174,7 +224,6 @@ public class User_Service {
             throw new EntityNotFoundException("User not found.");
         }
     }
-    
 
     /**
      * Find user by email regardless of status (for admin purposes)

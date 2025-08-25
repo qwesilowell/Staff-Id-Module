@@ -8,7 +8,7 @@
                 xmlns:ui="jakarta.faces.facelets"
                 xmlns:f="jakarta.faces.core">
 
-    <ui:define name="title">Reset Employee State</ui:define>
+    <ui:define name="title">Occupant State</ui:define>
     
     <ui:define name ="metadata">
         <f:metadata>
@@ -19,7 +19,18 @@
     <ui:define name="content">
         <div class="main-content">
             <h:form id="filterForm">
-                <h1>Strict Mode Reset</h1>
+                <div style="display: flex; justify-content: space-between;">
+                <h1>Occupant State Management</h1>
+                <div style="margin-top: 20px;">
+                <p:commandButton value="Export PDF" 
+                                 icon="pi pi-file-pdf" 
+                                 styleClass="ui-button-secondary"
+                                 ajax="false"
+                                 actionListener="#{employeeStateBean.export('PDF')}" />
+                </div>
+                
+                </div>
+                
                 <p:panel header="Filters" styleClass="custom-panel" toggleable="true">
                     <p:panelGrid columns="4">
                         <p:outputPanel>
@@ -75,18 +86,17 @@
 
                     <f:facet name="header">
                         <div class="flex align-items-center justify-content-between">
-                            <span>MANAGE EMPLOYEE ENTRANCE STATE</span>
+                            <span>MANAGE OCCUPANT STATE</span>
                         </div>
                     </f:facet>
 
-                    <p:column headerText="Employee" sortBy="#{state.employee.firstname}" styleClass="employee">
-                        <i class="pi pi-user" style="color:#6366F1; margin-right:5px"/>
+                    <p:column headerText="Full Name" sortBy="#{state.employee.firstname}" styleClass="employee">
                         <div style="font-weight: bold">
                         #{state.employee.firstname} #{state.employee.lastname}
                         </div>
                     </p:column>
 
-                    <p:column headerText="Ghana Card">
+                    <p:column headerText="National Id">
                         #{state.employee.ghanaCardNumber}
                     </p:column>
 
@@ -151,12 +161,6 @@
                 </h:form>
             </p:dialog>
         </div>
-        
-        <style>
-            .employee{
-                display: flex;
-                justify-content: flex-start
-            }
-        </style>
+
     </ui:define>
 </ui:composition>

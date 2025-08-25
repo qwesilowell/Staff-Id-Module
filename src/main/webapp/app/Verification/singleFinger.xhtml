@@ -73,7 +73,7 @@
                 border-radius: 5px;
             }
 
-      
+
         </style>
     </ui:define>
 
@@ -126,7 +126,6 @@
 
                             <h:inputText id="socketData" style="display: none;" value="#{singlefingerBean.socketData}" disabled="true"/>
                             <h:inputHidden id="socketDataHidden"/>
-                            <h3 style="display:flex; text-align: left; ">#{singlefingerBean.verificationType} Verification</h3>
 
                             <!--  Multi finger Verification-->
                             <p:panel rendered="#{singlefingerBean.verificationType == 'Multi Finger'}"  style="border: none; ">
@@ -134,7 +133,8 @@
 
                                 <div style="display: flex; flex-direction: row; gap: 20px;">
 
-                                    <p:commandButton value="Reset" styleClass=" ui-button-warning ui-button-danger" onclick="doSendNoId('action:stop')" action="#{singlefingerBean.reset()}" update="@form" style="margin-right: 20px;"/>
+                                    <p:commandButton value="Reset" styleClass=" ui-button-warning ui-button-danger" onclick="doSendNoId('action:stop')" action="#{singlefingerBean.reset()}" update="@form"
+                                                     style="margin-right: 20px;" />
                                 </div>
 
                                 <br/>
@@ -244,7 +244,7 @@
                                     <h3 class="verification-heading">Facial Verification</h3>
 
                                     <div class="input-group">
-                                        <p:outputLabel for="faceNationalId" value="National ID:" styleClass="input-label"/>
+                                        <p:outputLabel for="faceNationalId" value="Enter GhanaCard Pin:" styleClass="input-label"/>
                                         <p:inputText id="faceNationalId" value="#{singlefingerBean.ghanaCardNumber}"
                                                      placeholder="GHA-XXXXXXXX-X" required="false"
                                                      requiredMessage="National ID is required for facial verification"
@@ -274,10 +274,10 @@
                             <!-- Ghana Card Input -->
                             <p:panel header="Ghana Card and Single Finger Verification" 
                                      rendered="#{singlefingerBean.verificationType == 'Single Finger'}"
-                                     style="width: 600px; margin: auto; margin-top:10px; height:auto; color: blue; text-align: center;">
+                                     style=" margin: auto; margin-top:10px; height:auto; color: blue; text-align: center;">
 
                                 <!-- Ghana Card Input -->
-                                <h:outputLabel for="ghanaCard" value="Enter Ghana Card Number here" style="font-size: large; font-weight: bolder;"/>
+                                <h:outputLabel for="ghanaCard" value="Enter Ghana Card Pin Number here" style="font-size: large; font-weight: bolder;"/>
                                 <br/>
                                 <p:inputText id="ghanaCardPin" value="#{singlefingerBean.ghanaCardNumber}"
                                              placeholder="GHA-XXXXXXXXX-X"/>
@@ -343,7 +343,7 @@
                         <h:panelGroup layout="block" styleClass="form-container">
                             <!-- Left Column -->
                             <h:panelGroup styleClass="form-left">
-                                <h:outputLabel value="Ghana Card Number:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem; " />
+                                <h:outputLabel value="National ID:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem; " />
                                 <p:inputText value="#{singlefingerBean.foundEmployee.ghanaCardNumber}" disabled="true"
                                              styleClass="display-form"/>
 
@@ -365,12 +365,12 @@
 
                                 <h:outputLabel value="Gender:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
                                 <p:inputText value="#{singlefingerBean.foundEmployee.gender}" disabled="true"
-                                             styleClass="display-form"/>
+                                              style="width:100%; padding:5px; margin-bottom:1rem;" />
 
                                 <h:outputLabel value="Assigned Role:" style="font-weight:bold; display:block; font-family: Roboto, sans-serif; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); margin-bottom:0.5rem;" />
                                 <p:inputText value="#{singlefingerBean.foundEmployee.role.roleName}"
                                              disabled="true"
-                                             styleClass="display-form"/>
+                                              style="width:100%; padding:5px; margin-bottom:1rem;" />
                             </h:panelGroup>
 
                             <!-- Right Column -->
@@ -421,9 +421,9 @@
         <h:outputScript library="js" name="webcam.js"/>
         <h:outputScript library="js" name="cropper.min.js"/>
         <h:outputScript library="js" name="facial.js"/>
+        <h:outputScript library="js" name="orbis.js" target="head"/>
         <h:outputStylesheet library="css" name="cropper.min.css"/>
         <h:outputStylesheet library="css" name="onboardEmployee.css"/>
-        <h:outputScript library="js" name="bioVerification.js"/>
 
     </ui:define>
 </ui:composition>

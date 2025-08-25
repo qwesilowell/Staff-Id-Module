@@ -45,32 +45,31 @@
                         <p:column headerText="Role">
                             <h:outputText value="#{employee.role.roleName}"/>
                         </p:column>
-                        <p:column headerText="Ghana Card">
+                        <p:column headerText="National ID">
                             <h:outputText value="#{employee.ghanaCardNumber}"/>
                         </p:column>
                         <p:column headerText="Actions">
-                            <p:commandButton value="#{employee.customEntrances.isEmpty() ? 'Assign Entrances' : 'Edit Entrances'}"
-                                             action="#{assignEntranceBean.openAssignPopup(employee)}"
-                                             update=":assignEntranceForm:assignEntranceDialog"
-                                             oncomplete="PF('assignEntranceDialog').show()"
-                                             style="#{employee.customEntrances.isEmpty() 
-                                                      ? 'background: #007bff; color: white; border-radius: 4px;' 
-                                                      : 'background: #28a745; color: white; border-radius: 4px;'}"/>
+                            <p:commandLink value="#{employee.customEntrances.isEmpty() ? 'Assign Entrances' : 'Edit Entrances'}"
+                                           action="#{assignEntranceBean.openAssignPopup(employee)}"
+                                           update=":assignEntranceForm:assignEntranceDialog"
+                                           oncomplete="PF('assignEntranceDialog').show()"
+                                           style="#{employee.customEntrances.isEmpty() 
+                                                    ? 'background: transparent; color: blue; border-radius: 4px; border:none;' 
+                                                    : 'background: transparent; color: green; border-radius: 4px; border:none'}"/>
                         </p:column>
-                        <p:column headerText="Assign Time Rule">    
+                        <p:column headerText="Assign Time Rule" style="text-align: center">    
                             <p:commandButton  class="rounded-button ui-button-info ui-button-outlined"  icon="fa-solid fa-business-time" action="#{assignEntranceBean.viewEmployee(employee)}"
                                               update=":sidebarForm" oncomplete="PF('sidebar2').show()" process="@this" />
                         </p:column>
                     </p:dataTable>
                 </p:panel>
-
                 <!-- Assign Entrance Dialog -->
                 <p:dialog id="assignEntranceDialog" widgetVar="assignEntranceDialog" header="Assign Custom Entrances" modal="true" width="600px">
                     <div class="dialog-content" style="padding-bottom: 60px;">
                         <h:panelGrid columns="2" style="margin-bottom: 15px;">
-                            <h:outputLabel value="Employee Name:"/>
+                            <h:outputLabel value="Full Name:" style="font-weight: bold;" />
                             <h:outputText value="#{assignEntranceBean.selectedEmployee.fullName}"/>
-                            <h:outputLabel value="Ghana Card Number:"/>
+                            <h:outputLabel value="National ID:"/>
                             <h:outputText value="#{assignEntranceBean.selectedEmployee.ghanaCardNumber}"/>
                         </h:panelGrid>
 
@@ -123,7 +122,7 @@
 
                             <!-- Role-Based Entrances Section -->
                             <h:panelGroup rendered="#{not empty assignEntranceBean.assignedRoleEntrances}"> 
-                                <p:outputLabel value="Role-Based Entrances:" style="font-weight: bold; font-size: 1.1em; color: #333; margin-top: 20px;"/> 
+                                <p:outputLabel value="Role-Based Entrances(Default Entrances):" style="font-weight: bold; font-size: 1.1em; color: #333; margin-top: 20px;"/> 
                                 <div class="scrollable-container" style="max-height: 400px; overflow-y: auto;   margin: 10px 0; padding: 5px; background-color: #fcfcfc;">
                                     <p:dataList value="#{assignEntranceBean.assignedRoleEntrances}"  
                                                 var="entrance"  
@@ -159,16 +158,16 @@
                                          style="background: #dc3545; color: white; border-radius: 4px;"/>
                     </div>
                 </p:dialog>
-                
+
                 <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
                     <p:commandButton value="Remove" type="button" styleClass="ui-confirmdialog-yes"/>
                     <p:commandButton value="Cancel" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
-                    
+
                 </p:confirmDialog>
 
             </h:form>
-            
-            
+
+
             <!-- Side Bar -->
             <div class="card" >  
                 <p:sidebar widgetVar="sidebar2" position="right" style="width: 30%; background-color: #f8f9fa; overflow:scroll "  blockScroll= "true">
@@ -176,13 +175,13 @@
                         <h3>Customize Time Access</h3>
                         <div class="same-line-container">
                             <i class="pi pi-user p-mr-2 text-primary icon-style"></i>
-                            <p:outputLabel value="Name: " styleClass="label-style" />
+                            <p:outputLabel value="Full Name: " styleClass="label-style" />
                             <h:outputText value="#{assignEntranceBean.selectedEmployee.fullName}" styleClass="value-style" />
                         </div>
                         <br/>
                         <div class="same-line-container" >
                             <i class="fa-solid fa-address-card p-mr-2 text-primary icon-style"></i>
-                            <p:outputLabel value="Ghana Card: " styleClass="label-style" />
+                            <p:outputLabel value="National ID: " styleClass="label-style" />
                             <h:outputText value="#{assignEntranceBean.selectedEmployee.ghanaCardNumber}" styleClass="value-style" />
                         </div>
                         <p:spacer height="20px"/>
@@ -207,6 +206,41 @@
 
                         <p:separator/>
                         <p:spacer height="30px"/>
+                        <!-- Quick Selection Buttons -->
+                        <div class="quick-select-buttons" style="margin-bottom: 15px;">
+                            <p:commandButton value="Select All" 
+                                             icon="pi pi-check-square" 
+                                             action="#{assignEntranceBean.selectAllDays}" 
+                                             update="daysCheckbox dayTimeInputs" 
+                                             process="@this"
+                                             styleClass="ui-button-outlined ui-button-sm"
+                                             style="margin-right: 8px;" />
+
+                            <p:commandButton value="Weekdays" 
+                                             icon="pi pi-briefcase" 
+                                             action="#{assignEntranceBean.selectWeekdays}" 
+                                             update="daysCheckbox dayTimeInputs" 
+                                             process="@this"
+                                             styleClass="ui-button-outlined ui-button-sm"
+                                             style="margin-right: 8px;" />
+
+                            <p:commandButton value="Weekends" 
+                                             icon="pi pi-home" 
+                                             action="#{assignEntranceBean.selectWeekends}" 
+                                             update="daysCheckbox dayTimeInputs" 
+                                             process="@this"
+                                             styleClass="ui-button-outlined ui-button-sm"
+                                             style="margin-right: 8px;" />
+
+                            <p:commandButton value="Clear All" 
+                                             icon="pi pi-times" 
+                                             action="#{assignEntranceBean.clearAllDays}" 
+                                             update="daysCheckbox dayTimeInputs" 
+                                             process="@this"
+                                             styleClass="ui-button-outlined ui-button-danger ui-button-sm" />
+                        </div>
+
+
                         <h:outputLabel value="Select Days" styleClass="day-title"/>
                         <p:outputPanel id="timeSettings">
                             <p:selectManyCheckbox value="#{assignEntranceBean.selectedDays}" layout="grid" columns="3" id="daysCheckbox">
@@ -227,6 +261,53 @@
                             <p:spacer height="10px"/>
 
                             <h:panelGroup id="dayTimeInputs" layout="block">
+                                <!-- Default Time Section -->
+                                <div class="default-time-section" style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid black;">
+                                    <h4 style="margin-top: 0; color: #495057; display: flex; align-items: center;">
+                                        <i class="pi pi-clock" style="margin-right: 8px; color: #007bff;"></i>
+                                        Set Default Time for All Selected Days
+                                    </h4>
+
+                                    <p:outputPanel class="default-time-inputs" rendered="#{assignEntranceBean.selectedDays.size()>0}"
+                                         style="display: flex; align-items: end; gap: 15px; justify-content: space-between; flex-wrap: wrap;">
+                                        <div class="time-group">
+                                            <p:outputLabel value="Default Start:" styleClass="default-label" />
+                                            <p:datePicker id="defaultStartTime"
+                                                          value="#{assignEntranceBean.defaultStartTime}"
+                                                          timeOnly="true"
+                                                          placeholder="HH:MM"
+                                                          pattern="HH:mm"
+                                                          hourFormat="12"
+                                                          showTime="true"
+                                                          showIcon="false"
+                                                          stepMinute="1"
+                                                          styleClass="small-time-picker" />
+                                        </div>
+
+                                        <div class="time-group">
+                                            <p:outputLabel value="Default End:" styleClass="default-label" />
+                                            <p:datePicker id="defaultEndTime"
+                                                          value="#{assignEntranceBean.defaultEndTime}"
+                                                          timeOnly="true"
+                                                          placeholder="HH:MM"
+                                                          pattern="HH:mm"
+                                                          hourFormat="12"
+                                                          showTime="true"
+                                                          showIcon="false"
+                                                          stepMinute="1"
+                                                          styleClass="small-time-picker" />
+                                        </div>
+
+                                        <p:commandButton value="Fill All Selected Days" 
+                                                         icon="pi pi-copy" 
+                                                         action="#{assignEntranceBean.fillDefaultTimesToSelectedDays}" 
+                                                         update="dayTimeInputs" 
+                                                         process="@this defaultStartTime defaultEndTime"
+                                                         styleClass="ui-button-success ui-button-sm"
+                                                         disabled="#{empty assignEntranceBean.selectedDays}" />
+                                    </p:outputPanel>
+                                </div>
+
                                 <h3 class="section-title">
                                     <i class="pi pi-calendar" style="margin-right:8px;color:#22C55E;" />
                                     Assign CUSTOM Time Range For Days
@@ -338,13 +419,11 @@
 
             /* Handle footer position in dialog */
             .dialog-footer {
-                position: absolute !important;
-                bottom: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                background: #f8f8f8 !important;
-                z-index: 100 !important;
-                box-shadow: 0 -2px 5px rgba(0,0,0,0.1) !important;
+                background: #F9FAFB;
+                padding: 16px;
+                display: flex;
+                justify-content: flex-end;
+                border-top: 1px solid #E5E7EB;
             }
 
             /* Hover effect for buttons */

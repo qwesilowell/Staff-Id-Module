@@ -336,7 +336,7 @@
 
 /* Footer */
 .dialog-footer {
-    background: #fafaf8;
+    background: #F9FAFB;
     padding: 16px;
     display: flex;
     justify-content: flex-end;
@@ -423,7 +423,7 @@
 /* Align label, icon, and input within each group */
 .time-group {
     display: flex;
-    align-items: center;
+    align-items: start;
     gap: 6px;
 }
 
@@ -439,12 +439,111 @@
     font-size: 0.75rem;
     margin: 0;
     font-style: italic;
+    font-weight: bolder;   
 }
 .deletebutton {
     padding: 4px 6px !important;
     font-size: 0.75rem !important;
     height: 32px;
+}
 
+.default-label {
+    font-weight: 600 !important; /* Make the labels bold */
+    color: #374151 !important; /* Apply the label color */
+    display: flex;
+    text-align: start;
+}
+
+.quick-select-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.quick-select-buttons .ui-button {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.quick-select-buttons .ui-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Default Time Section Styling */
+.default-time-section {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.default-time-inputs {
+    align-items: flex-end;
+}
+
+.default-time-inputs .time-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.default-time-inputs .fill {
+    display:flex !important;
+    align-items: flex-end !important;
+
+}
+
+/* Fill button styling */
+.ui-button-success.ui-button-sm {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border: none;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+    transition: all 0.2s;
+    white-space: nowrap;
+    margin-left: auto;
+}
+
+.ui-button-success.ui-button-sm:hover:not(:disabled) {
+    background: linear-gradient(135deg, #218838, #1ea085);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+    transform: translateY(-1px);
+}
+
+.ui-button-success.ui-button-sm:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Individual day time settings */
+.day-time-block {
+    border-left: 3px solid #007bff;
+    padding-left: 15px;
+    margin-bottom: 15px;
+    background-color: #fff;
+    border-radius: 6px;
+    padding: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.day-title {
+    font-weight: 600;
+    color: #007bff;
+    font-size: 14px;
+    text-transform: capitalize;
+}
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 @media (max-width: 600px) {
     .time-row {
@@ -453,5 +552,18 @@
     }
     .time-group .p-datepicker {
         width: 100%; /* Full width on mobile */
+    }
+    .quick-select-buttons {
+        flex-direction: column;
+    }
+
+    .quick-select-buttons .ui-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .default-time-inputs {
+        flex-direction: column;
+        gap: 10px;
     }
 }

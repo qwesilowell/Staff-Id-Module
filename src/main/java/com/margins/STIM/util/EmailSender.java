@@ -27,7 +27,6 @@ public class EmailSender {
         String toEmail = user.getEmail();
 
         // SMTP server properties
-// And try SSL instead of TLS:
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.ssl.enable", "true");           // SSL instead of STARTTLS

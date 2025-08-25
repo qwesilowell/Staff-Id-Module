@@ -7,7 +7,7 @@
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets">
-    
+
     <ui:define name="metadata">
         <f:metadata>
             <f:viewAction action="#{dashboard2.setupBreadcrumb}" />
@@ -18,7 +18,7 @@
     <ui:define name ="content">
         <!-- Main Content -->
         <div class="main-content" >
-            <p:growl widgetVar="fgrowl" id="growl" showSummary= "true" showDetail="true" life="6000" globalOnly="true"/>
+            <p:growl widgetVar="fgrowl" id="growl" showSummary= "true" showDetail="true" life="6000" globalOnly="false"/>
 
             <h1> Dashboard Content </h1>
             <h:form id="dashboardForm" prependId="false">
@@ -95,6 +95,40 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <p:spacer height="50px"/>
+
+                         <p:panel id="adminActiveEntrances" styleClass="mostAccessed"
+                                 style="border-left: 6px solid #95C0F5; border-radius: 10px;">
+
+                            <f:facet name="header">
+                                <p:outputPanel style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+
+                                    <h:outputText value="Active Entrances between" style="font-weight: bold;" />
+
+                                    <p:datePicker value="#{dashboard2.startFrom}" pattern="dd-MM-yyyy"
+                                                  placeholder="Start Date"
+                                                  maxdate="#{dashboard2.endAt}" showIcon="true"
+                                                  style="min-width: 140px;" />
+
+                                    <h:outputText value="and" style="font-weight: bold;" />
+
+                                    <p:datePicker value="#{dashboard2.endAt}" pattern="dd-MM-yyyy"
+                                                  placeholder="End Date"
+                                                  mindate="#{dashboard2.startFrom}" showIcon="true"
+                                                  style="min-width: 140px;" />
+
+                                    <p:commandButton value="Filter" icon="pi pi-search"
+                                                     actionListener="#{dashboard2.updateMostAccessed}"
+                                                     update="activeEntrances :growl"
+                                                     styleClass="p-button-sm p-button-outlined p-button-primary"
+                                                     style="margin-left: auto;" />
+                                </p:outputPanel>
+                            </f:facet>
+
+                            <p:lineChart model="#{dashboard2.mostAccessedEntrance}" style="height: 300px;" />
+                        </p:panel>
+
 
                         <p:spacer height="50px"/>
                         <p:panel id="mostAccessOverAll" styleClass="mostAccessed"
@@ -170,10 +204,10 @@
                                 </p:dataTable>
                             </p:panel>
                         </h:panelGroup>
-                        
+
                         <p:spacer height="30px"/>
                         <p:panel>
-                            
+
                             <f:facet name="header" >
                                 <h:panelGroup layout="block" 
                                               style="display: flex; align-items: center; justify-content: space-between;">
@@ -373,21 +407,23 @@
                                 </div>
 
                                 <!-- Card 4 -->
-                                <div class="card purple" style="border-left: 6px solid #9A35B6;">
-                                    <h:link  styleClass="no-style" > <!-- Settings Recent logins -->
-                                        <div class="card-content">
-                                            <div class="card-title">Employees Onboarded Today</div>
-                                            <div class="card-value">#{dashboard2.employeesUserOnboardedToday}</div>
-                                        </div>
-                                        <div class="card-icon">
-                                            <i class="fa-regular fa-circle-check"></i>
-                                        </div>
-                                    </h:link>
-                                </div>
+                                <ui:fragment rendered="#{userSession.hasPermission('Onboard Employee')}">
+                                    <div class="card purple" style="border-left: 6px solid #9A35B6;">
+                                        <h:link  styleClass="no-style" > <!-- Settings Recent logins -->
+                                            <div class="card-content">
+                                                <div class="card-title">Employees Onboarded Today</div>
+                                                <div class="card-value">#{dashboard2.employeesUserOnboardedToday}</div>
+                                            </div>
+                                            <div class="card-icon">
+                                                <i class="fa-regular fa-circle-check"></i>
+                                            </div>
+                                        </h:link>
+                                    </div>
+                                </ui:fragment>
                             </div>
                         </div>
-                       
-                        
+
+
                         <p:spacer height="50px"/>
 
                         <p:panel id="activeEntrances" styleClass="mostAccessed"
@@ -412,7 +448,7 @@
 
                                     <p:commandButton value="Filter" icon="pi pi-search"
                                                      actionListener="#{dashboard2.updateMostAccessed}"
-                                                     update="activeEntrances"
+                                                     update="activeEntrances :growl"
                                                      styleClass="p-button-sm p-button-outlined p-button-primary"
                                                      style="margin-left: auto;" />
                                 </p:outputPanel>
@@ -423,16 +459,17 @@
 
 
                         <p:spacer height="30px"/>
-                        <p:panel header="Recent Activities">
+                        <p:panel header="Recent Activities" rendered="">
                             <p:dataTable value="#{dashboard2.recentActivities}" var="log">
                                 <p:column headerText="User"><h:outputText value="#{log.performedBy.username}"/></p:column>
-                                <p:column headerText="Time"><h:outputText value="#{dashboard2.timeString(log.createdOn)}"/></p:column>
+                                <p:column headerText="Timestamp"><h:outputText value="#{dashboard2.timeString(log.createdOn)}"/></p:column>
                                 <p:column headerText="Details"><h:outputText value="#{log.details}"/></p:column>
                             </p:dataTable>
                         </p:panel>
 
                         <p:spacer height="30px"/>
-                        <p:panel header="Your Assigned Entrances" styleClass="mostAccessed" style="border-left: 6px solid #95C0F5; border-radius: 10px;">
+                        <p:panel header="Your Assigned Entrances" styleClass="mostAccessed" rendered="#{dashboard2.userAssignedEntrances != null and not empty dashboard2.userAssignedEntrances}"
+                                 style="border-left: 6px solid #95C0F5; border-radius: 10px;">
 
                             <h:panelGroup layout="block" styleClass="entrance-grid">
                                 <ui:repeat value="#{dashboard2.userAssignedEntrances}" var="entrance">
@@ -467,6 +504,46 @@
 
                         </p:panel>
 
+                        <h:panelGroup id="recentAccess" layout="block">
+                            <p:spacer height="20px"/>
+                            <p:panel >
+                                <f:facet name="header">
+                                    <h:panelGroup layout="block" 
+                                                  style="display: flex; align-items: center; justify-content: space-between;">
+                                        <h:outputText value="Recent Entrance Access Attempts"/>
+                                        <p:button icon="pi pi-arrow-circle-right" styleClass="rounded-button " style="color: white!important;" 
+                                                  outcome="/app/Access/historyMonitoring?faces-redirect=true"
+                                                  title="See More Details"
+                                                  rendered="#{userSession.hasPermission('History Monitoring')}"
+                                                  />
+                                    </h:panelGroup>
+                                </f:facet>
+                                <p:dataTable value="#{dashboard2.recentAccessAttempts}" var="log" rowIndexVar="rowIndex"  rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">  
+                                    <p:column headerText="Employee">
+                                        <h:outputText value="#{dashboard2.getEmployeeName(log.employee)}"/>
+                                    </p:column>
+                                    <p:column headerText="GhanaCard No">
+                                        <h:outputText value="#{log.employee.ghanaCardNumber}"/>
+                                    </p:column>
+                                    <p:column headerText="Entrance">
+                                        <h:outputText value="#{log.device.entrance.entranceName}"/>
+                                    </p:column>
+                                    <p:column headerText="Entrance Postion">
+                                        <h:outputText value="#{log.device.devicePosition}"/>
+                                    </p:column>
+                                    <p:column headerText="Result">
+                                        <h:outputText value="#{log.result.toUpperCase()}"
+                                                      styleClass="#{log.result eq 'GRANTED' ? 'granted-box' : 'denied-box'}" />
+
+                                    </p:column>
+                                    <p:column headerText="Time">
+                                        <h:outputText value="#{dashboard2.getFormattedTimestamp(log)}">
+
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </h:panelGroup>
 
 
 
@@ -836,7 +913,7 @@
                         }*/
 
             .pill-card-link {
-                text-decoration: none;
+                text-decoration: none !important;
             }
 
             .pill-card {
@@ -852,6 +929,7 @@
             .pill-card:hover {
                 background-color: #81c784;
                 transform: translateY(-2px);
+                 text-decoration: none !important;
             }
 
             .pill-content {

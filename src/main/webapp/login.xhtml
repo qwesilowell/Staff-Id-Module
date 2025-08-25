@@ -23,57 +23,6 @@
         <h:outputScript library="js" name="orbis.js" target="head"/>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
-        <script>
-            // Wait for the DOM to be fully loaded
-            document.addEventListener("DOMContentLoaded", function () {
-                // Get the button element
-                var imgBtn = document.querySelector('.img-btn');
-
-                if (imgBtn) {
-                    // Add click event listener
-                    imgBtn.addEventListener('click', function () {
-                        // Get the container element
-                        var cont = document.querySelector('.cont');
-
-                        if (cont) {
-                            // Toggle the class
-                            cont.classList.toggle('s-signup');
-                            console.log('Toggle class applied');
-                        } else {
-                            console.error('Container element not found');
-                        }
-                    });
-                    console.log('Event listener added to button');
-                } else {
-                    console.error('Button element not found');
-                }
-            });
-            
-              let cameraOpen = false;
-
-            function toggleCamera() {
-                const cameraBtn = document.getElementById('cameraButton');
-                const captureBtn = document.getElementById('captureButton');
-
-                if (!cameraOpen) {
-                    openCamera(); // existing camera logic
-                    captureBtn.style.display = 'inline-block';
-
-                    cameraBtn.classList.add('camera-button-red');
-                    const buttonSpan = cameraBtn.querySelector('.ui-button-text');
-                    buttonSpan.textContent = 'Reset Camera';
-
-                    
-                    cameraOpen = true;
-                } else {
-                    
-                    openCamera();
-                }
-            }
-        </script>
-
-
-
     </h:head>
     <h:body>
         <!-- Navigation Bar -->
@@ -106,7 +55,7 @@
 
                                     <h:panelGroup>
                                         <div style="margin-bottom: 10px; text-align: center">
-                                            <h:outputLabel for="username" value="Enter GhanaCard Number: *" />
+                                            <h:outputLabel for="username" value="Enter National ID: *" />
                                             <p:inputText id="ghanaCardPin" value="#{loginBean.ghanaCardNumber}"  placeholder="GHA-XXXXXXXXX-X"/>
                                         </div>
 
@@ -114,7 +63,7 @@
                                         <div class="card" >
                                             <div style="display: flex; flex-direction: column; gap: 20px;">
                                                 <div style="display: flex; flex-direction: row; gap: 0px; justify-content: center; align-content: center">
-                                                    <!--                                                        <h:outputLabel for="FingerPrint" value="Select Finger:" style="font-size: 16px; font-weight: bold;" />-->
+                                                    
                                                     <p:selectOneMenu id="position" value="#{loginBean.fingerPosition}" widgetVar="position">
                                                         <f:selectItem itemLabel="SELECT FINGER" itemValue="" noSelectionOption="true"/>
                                                         <f:selectItem itemLabel="Left Thumb" itemValue="LT"/>
@@ -145,12 +94,9 @@
                                         </div>
                                         <br/><br/>
                                         <div class="auth-card" style=" display: flex; align-content: center; justify-content: center">
-                                            <p:commandButton value="Login" action="#{loginBean.submit}"  update="@form"/>
+                                            <p:commandButton value="Login" action="#{loginBean.submit()}" styleClass="verify-button"  update="growl passwordChangeForm"/>
                                             <h:inputText id="socketData" style="display: none;" value="#{loginBean.socketData}" disabled="true"/>
                                             <h:inputHidden id="socketDataHidden"/>
-                                            <h:outputText value="#{loginBean.errorMessage}" 
-                                                          class="error-message" 
-                                                          rendered="#{not empty loginBean.errorMessage}" />
                                         </div>
                                     </h:panelGroup>
 
@@ -167,7 +113,7 @@
                                             <h3 class="verification-heading">Facial Verification</h3>
 
                                             <div class="input-group">
-                                                <p:outputLabel for="faceNationalId" value="National ID:" styleClass="input-label" style=""/>
+                                                <p:outputLabel for="faceNationalId" value="Enter National ID:" styleClass="input-label" style=""/>
                                                 <p:inputText id="faceNationalId" value="#{loginBean.ghanaCardNumber}" 
                                                              placeholder="GHA-XXXXXXXX-X" 
                                                              styleClass="id-input"/>
@@ -181,14 +127,14 @@
                                             <div class="button-container">
                                                 <div class="capture-buttons">
                                                     <p:commandButton id="cameraButton" value="Open Camera"  type="button" icon="pi pi-camera" iconPos="left"
-                                                                     styleClass="ui-button-secondary capture-button" onclick="toggleCamera()" />
+                                                                     styleClass="capture-button" onclick="toggleCamera()" />
                                                     
                                                     <p:commandButton id="captureButton" value="Capture Face" onclick="capture();" type="button" 
-                                                                     styleClass="ui-button-secondary capture-button"/>
+                                                                     styleClass="capture-face"/>
                                                 </div>
                                                 <p:commandButton value="LOGIN" onclick="saveCroppedImage()" 
-                                                                 action="#{loginBean.verifyFace()}" update="@form" 
-                                                                 styleClass="ui-button-success verify-button"/>
+                                                                 action="#{loginBean.verifyFace()}" update="growl passwordChangeForm" 
+                                                                 styleClass="verify-button"/>
                                             </div>
                                         </div>
                                     </h:panelGroup>
@@ -201,11 +147,11 @@
                     <div class="sub-cont">
                         <div class="img">
                             <div class="img-text m-up">
-                                <h2>No Ghana Card?</h2>
+                                <h2>No National ID?</h2>
                                 <p>Use all fingers</p>
                             </div>
                             <div class="img-text m-in">
-                                <h2>Use GhanaCard ?</h2>
+                                <h2>Use National ID ?</h2>
                                 <p></p>
                             </div>
                             <div class="img-btn">
@@ -316,13 +262,89 @@
                                     <p:commandButton value="Capture Thumbs"  styleClass=" ui-button-secondary ui-button-raised" onclick="doSendNoId('action:start:twoThumbs');" type="button" style="font-size: medium; padding:1px; "/>
                                 </div>
 
-                                <p:commandButton value="LOGIN" action="#{loginBean.sendForVerification()}" update="growl" styleClass="ui-button-success" icon="pi pi-check" iconPos="right" style="margin-left:auto; padding:1px;"/>
+                                <p:commandButton value="LOGIN" action="#{loginBean.sendForVerification()}" update="growl passwordChangeForm" styleClass="verify-button" style="margin-left:auto; "/>
 
                             </div>
                         </div>
                     </div>
                 </div>
             </h:form>
+            
+            
+            <!-- Password Change Modal -->
+            <h:form id="passwordChangeForm"  prependId="false">
+                <div id="passwordChangeModal" class="password-modal-overlay" 
+                     style="display: #{loginBean.showPasswordChangeModal ? 'flex' : 'none'};">
+                    <div class="password-modal">
+                        <div class="password-modal-header">
+                            <i class="fas fa-lock"></i>
+                            <h3>Password Change Required</h3>
+                        </div>
+
+
+                        <div class="password-modal-body">
+                            <div class="security-notice">
+                                <strong>Security Notice:</strong> You must change your temporary password before accessing the system.
+                            </div>
+
+                            <div class="password-form-group">
+                                <p:outputLabel for="newPassword" value="New Password:" />
+                                <p:password id="newPassword" 
+                                            value="#{loginBean.newPassword}" 
+                                            styleClass="password-input"
+                                            required="true"
+                                            placeholder="Enter your new password">
+
+                                </p:password>
+                            </div>
+
+                            <div class="password-form-group">
+                                <p:outputLabel for="confirmPassword" value="Confirm New Password:" />
+                                <p:password id="confirmPassword" 
+                                            value="#{loginBean.confirmPassword}" 
+                                            styleClass="password-input"
+                                            required="true"
+                                            placeholder="Confirm your new password" />
+                            </div>
+
+                            <div class="password-requirements">
+                                <h4>Password Requirements:</h4>
+                                <ul>
+                                    <li>At least 8 characters long</li>
+                                    <li>Mix of letters and numbers recommended</li>
+                                    <li>Avoid using personal information</li>
+                                    <li>Choose something you can remember</li>
+                                </ul>
+                            </div>
+
+                            <p:messages id="modalMessages" globalOnly="false" showDetail="true" showSummary="false" />
+                        </div>
+
+                        <div class="password-modal-footer">
+                            <p:commandButton value="Change Password" 
+                                             action="#{loginBean.changePassword}"
+                                             styleClass="modal-btn btn-primary-modal"
+                                             update="@form theForm"
+                                             process="@form"
+                                             />
+
+                            <p:commandButton value="Cancel" 
+                                             action="#{loginBean.cancelPasswordChange}"
+                                             styleClass="modal-btn btn-secondary-modal"
+                                             immediate="true"
+                                             update="@form theForm"
+                                             process="@this" />
+                        </div>
+
+                    </div>
+                </div>
+            </h:form>
+
+            <!-- Auto-focus script for modal -->
+            <h:outputScript library="js" name="subLogin.js"/>
+            <h:outputScript rendered="#{sublogin.showPasswordChangeModal}">
+                document.addEventListener('DOMContentLoaded', focusPasswordModal);
+            </h:outputScript>
         </div>
     </h:body>
 </html>

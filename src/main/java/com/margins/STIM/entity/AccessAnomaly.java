@@ -29,6 +29,9 @@ import lombok.Setter;
 @Entity
 public class AccessAnomaly extends EntityModel implements Serializable {
 
+    @Column(name = "anomaly_ref", unique = true, nullable = true)
+    private String anomalyRef;
+    
     @ManyToOne
     @JoinColumn(name = "employee_id")
     private Employee employee;

@@ -176,7 +176,7 @@ public class BreadcrumbBean implements Serializable {
 
     public void setEntrancesReportBreadcrumb() {
         resetToDashboard();
-        addBreadcrumb("Monitoring and Reports", contextPath + "/app/Reports/Reports");
+        addBreadcrumb("Monitoring and Reports", contextPath + "/app/Reports/Reports.xhtml");
         addBreadcrumb("Reports", contextPath + "/app/Reports/Reports.xhtml");
         addBreadcrumb("Entrances Report", null, true);
     }

@@ -21,12 +21,14 @@ import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.service.AccessLogService;
 import com.margins.STIM.service.AnomalyDetectionService;
+import com.margins.STIM.service.AnomalyRefGeneratorService;
 import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.EmployeeEntranceStateService;
 
 import com.margins.STIM.service.EmployeeRole_Service;
 import com.margins.STIM.service.Employee_Service;
 import com.margins.STIM.service.EntrancesService;
+import com.margins.STIM.service.NotificationService;
 import com.margins.STIM.util.FingerprintProcessor;
 import com.margins.STIM.util.JSF;
 import com.margins.STIM.util.ValidationUtil;
@@ -72,12 +74,17 @@ public class AccessControlBean implements Serializable {
 
     @EJB
     private EmployeeRole_Service employeeRoleService;
+    
+    @Inject
+    private AnomalyRefGeneratorService anomalyRefGen;
 
     @EJB
     private AccessLogService accessLogService;
 
     @Inject
     private AuditLogService auditLogService;
+    @Inject
+    private NotificationService notification;
     @Inject
     private UserSession userSession;
 
@@ -168,7 +175,7 @@ public class AccessControlBean implements Serializable {
 //        String entranceId = null;
         Employee employee = null;
         AccessEvaluationResult evaluation = null;
-         AccessLog log = new AccessLog();
+        AccessLog log = new AccessLog();
         try {
             System.out.println("GHANACARD2 >>>>>>>>>>>>>> " + ghanaCardNumber);
             if (!ValidationUtil.isValidGhanaCardNumber(ghanaCardNumber)) {
@@ -252,7 +259,7 @@ public class AccessControlBean implements Serializable {
                 String errorMessage = "Fingerprint Verification Failed!";
                 JSF.addErrorMessage(errorMessage);
                 auditLogService.logActivity(AuditActionType.ACCESS_CHECK, "Access Control Test", ActionResult.FAILED, errorMessage, userSession.getCurrentUser());
-            log.setResult(result);
+                log.setResult(result);
             } else {
                 Entrances entrance = selectedDevice.getEntrance();
                 if (entrance == null) {
@@ -260,7 +267,7 @@ public class AccessControlBean implements Serializable {
                     String errorMessage = "Selected entrance not found.";
                     JSF.addErrorMessage(errorMessage);
                     auditLogService.logActivity(AuditActionType.ACCESS_CHECK, "Access Control Test", ActionResult.FAILED, errorMessage, userSession.getCurrentUser());
-                log.setResult(result);
+                    log.setResult(result);
                 } else {
                     employee = employeeService.findEmployeeByGhanaCard(ghanaCardNumber);
                     if (employee == null) {
@@ -268,7 +275,7 @@ public class AccessControlBean implements Serializable {
                         String errorMessage = "Employee not found.";
                         JSF.addErrorMessage(errorMessage);
                         auditLogService.logActivity(AuditActionType.ACCESS_CHECK, "Access Control Test", ActionResult.FAILED, errorMessage, userSession.getCurrentUser());
-                    log.setResult(result);
+                        log.setResult(result);
                     } else {
                         log.setEmployee(employee);
                         evaluation = accessLogService.evaluateAccess(employee, selectedDevice);
@@ -331,6 +338,8 @@ public class AccessControlBean implements Serializable {
                     anomaly.setTimestamp(LocalDateTime.now());
                     anomaly.setAccessLog(log);
                     accessLogService.logAnomalies(anomaly);
+                    
+//                    notification.notifyAllAdminsofAnomaly(anomaly);
                 }
             } else {
             }

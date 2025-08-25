@@ -24,19 +24,23 @@
            
             <h:form id="employeeForm">
                 <div style="display: flex; justify-content: space-between">
+                    <div>
                     <h3>EMPLOYEE REPORT</h3>
+                    </div>
+                    <div style="margin-top: 10px">
                     <p:commandButton value="Export" 
                                      icon="pi pi-file-pdf" 
                                      styleClass="ui-button-secondary"
                                      action="#{empReportController.export()}"
                                      ajax="false"/>
+                    </div>
                 </div>
                 <br/>
                 <p:panel toggleable="true" header="Filters">
 
                     <p:panelGrid columns="4">
                         <p:outputPanel>
-                            <p:outputLabel for="@next">Filter by Employee name</p:outputLabel>
+                            <p:outputLabel for="@next">Filter by Full Name</p:outputLabel>
                             <p:inputText value="#{empReportController.employeeName}"
                                          placeholder="Search by Name"
                                          styleClass="search-box"
@@ -45,7 +49,7 @@
                         </p:outputPanel>
 
                         <p:outputPanel>
-                            <p:outputLabel for="@next">Filter by Ghana Card Number</p:outputLabel>
+                            <p:outputLabel for="@next">Filter by National ID</p:outputLabel>
                             <p:inputText  value="#{empReportController.ghanaCardNumber}"
                                           placeholder="Search by GhanaCard"
                                           styleClass="search-box"
@@ -87,23 +91,23 @@
                 <p:dataTable id="employeeTable" value="#{empReportController.employees}" var="employee"
                              paginator="true" paginatorPosition="bottom" rows="10"  rowIndexVar="rowIndex" rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">
 
-                    <p:column headerText="Employee Name" style="width: 300px;" >
+                    <p:column headerText="Full Name" style="width: 200px;" >
                         <p:commandLink value="#{employee.firstname} #{employee.lastname}"
                                        action="#{empReportController.navigateToHistoryName(employee.fullName)}"
-                                       style="color: black" ajax="false" />    
+                                       style="color: black; font-weight: bold;" ajax="false" />    
                     </p:column>
 
-                    <p:column headerText="Ghana Card Number">
+                    <p:column headerText="National ID">
                         <p:commandLink value="#{employee.ghanaCardNumber}"
                                        action="#{empReportController.navigateToHistory(employee.ghanaCardNumber)}"
                                        style="color: black" ajax="false" />   
                     </p:column>
 
-                    <p:column headerText="Employee Role">
+                    <p:column headerText="Role">
                         <h:outputText value="#{employee.role}"/>
                     </p:column>
 
-                    <p:column headerText="Email" style="width: 200px;">
+                    <p:column headerText="Email" style="width: 400px;">
                         <h:outputText value="#{employee.email}" /> 
                     </p:column>
 
@@ -138,12 +142,12 @@
                     <div class="same-line-container" style="margin-top: 1rem;">
                         <div>
                             <i class="pi pi-user p-mr-2 text-primary icon-style"></i>
-                            <p:outputLabel value="Name: " styleClass="label-style" />
+                            <p:outputLabel value="Full Name: " styleClass="label-style" />
                             <h:outputText value="#{empReportController.selectedEmployee.fullName}" styleClass="value-style" />
                         </div>
                         <div>
                             <i class="pi pi-id-card p-mr-2 text-primary icon-style"></i>
-                            <p:outputLabel value="GhanaCard: " styleClass="label-style" />
+                            <p:outputLabel value="National ID: " styleClass="label-style" />
                             <h:outputText value="#{empReportController.selectedEmployee.ghanaCardNumber}" styleClass="value-style" />
                         </div>
                     </div>

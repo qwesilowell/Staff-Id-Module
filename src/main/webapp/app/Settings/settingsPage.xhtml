@@ -42,61 +42,68 @@
                         </div>
 
                         <!-- Sub-cards for User Management -->
-                        <div class="sub-card" data-parent="user-management">
-                            <h:link outcome="/app/Settings/newuser?faces-redirect=true" styleClass="sub-card-header">
-                                <div class="sub-card-icon">
-                                    <i class="pi pi-user-plus"></i>
-                                </div>
-                                <div class="sub-card-content">
-                                    <div class="sub-card-title">Create New User</div>
-                                    <div class="sub-card-description">Add new users to the system with role assignments</div>
-                                </div>
-                            </h:link>
-                        </div>
+                        <ui:fragment rendered="#{userSession.hasPermission('Create New System User')}">
+                            <div class="sub-card" data-parent="user-management">
+                                <h:link outcome="/app/Settings/newuser?faces-redirect=true" styleClass="sub-card-header">
+                                    <div class="sub-card-icon">
+                                        <i class="pi pi-user-plus"></i>
+                                    </div>
+                                    <div class="sub-card-content">
+                                        <div class="sub-card-title">Create New User</div>
+                                        <div class="sub-card-description">Add new users to the system with role assignments</div>
+                                    </div>
+                                </h:link>
+                            </div>
+                        </ui:fragment>
 
+                        <ui:fragment rendered="#{userSession.hasPermission('View All System Users')}">
+                            <div class="sub-card" data-parent="user-management">
+                                <h:link outcome="/app/Settings/viewUsers?faces-redirect=true" styleClass="sub-card-header">
+                                    <div class="sub-card-icon">
+                                        <i class="pi pi-users"></i>
+                                    </div>
+                                    <div class="sub-card-content">
+                                        <div class="sub-card-title">View/Edit Users</div>
+                                        <div class="sub-card-description">Browse and modify existing user accounts</div>
+                                    </div>
+                                </h:link>
+                            </div>
+                        </ui:fragment>
 
-                        <div class="sub-card" data-parent="user-management">
-                            <h:link outcome="/app/Settings/viewUsers?faces-redirect=true" styleClass="sub-card-header">
-                                <div class="sub-card-icon">
-                                    <i class="pi pi-users"></i>
-                                </div>
-                                <div class="sub-card-content">
-                                    <div class="sub-card-title">View/Edit Users</div>
-                                    <div class="sub-card-description">Browse and modify existing user accounts</div>
-                                </div>
-                            </h:link>
-                        </div>
-
-                        <div class="sub-card" data-parent="user-management">
-                            <h:link outcome="/app/Settings/createUserRoles?faces-redirect=true" styleClass="sub-card-header">
-                                <div class="sub-card-icon">
-                                    <i class="pi pi-lock"></i>
-                                </div>
-                                <div class="sub-card-content">
-                                    <div class="sub-card-title">Role Permissions</div>
-                                    <div class="sub-card-description">Configure access levels and permissions for user roles</div>
-                                </div>
-                            </h:link>
-                        </div>
+                        <ui:fragment rendered="#{userSession.hasPermission('Manage User Roles')}">
+                            <div class="sub-card" data-parent="user-management">
+                                <h:link outcome="/app/Settings/createUserRoles?faces-redirect=true" styleClass="sub-card-header">
+                                    <div class="sub-card-icon">
+                                        <i class="pi pi-lock"></i>
+                                    </div>
+                                    <div class="sub-card-content">
+                                        <div class="sub-card-title">Role Permissions</div>
+                                        <div class="sub-card-description">Configure access levels and permissions for user roles</div>
+                                    </div>
+                                </h:link>
+                            </div>
+                        </ui:fragment>
                     </h:panelGroup>
 
                     <!-- Card 2 -->
-                    <div class="card orange">
-                        <h:link outcome="/app/Settings/activitylog?faces-redirect=true" styleClass="no-style" >
-                            <div class="card-content">
-                                <div class="card-title">Activity Log </div>
-                                <br/>
-                                <div class="card-value">View all users recent activity </div>
-                            </div>
-                            <div class="card-icon">
-                                <i class="fa fa-chart-line"></i>
-                            </div>
-                        </h:link>
-                    </div>
+                    <ui:fragment rendered="#{userSession.hasPermission('View All activites')}">
+                        <div class="card orange">
+                            <h:link outcome="/app/Settings/activitylog?faces-redirect=true" styleClass="no-style" >
+                                <div class="card-content">
+                                    <div class="card-title">Activity Log </div>
+                                    <br/>
+                                    <div class="card-value">View all users recent activity </div>
+                                </div>
+                                <div class="card-icon">
+                                    <i class="fa fa-chart-line"></i>
+                                </div>
+                            </h:link>
+                        </div>
+                    </ui:fragment>
 
                     <!-- Card 3 -->
                     <div class="card green">
-                        <h:link outcome="/app/Reports/entrancesReport?faces-redirect=true" styleClass="no-style" >
+                        <h:link outcome="/app/Anomalies/anomaliesPage?faces-redirect=true" styleClass="no-style" >
                             <div class="card-content">
                                 <div class="card-title">Anomaly Information </div>
                                 <br/>

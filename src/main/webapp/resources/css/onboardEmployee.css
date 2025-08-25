@@ -182,7 +182,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
 
 .finger-row {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
     margin-bottom: 15px;
 }
@@ -242,7 +242,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
 }
 
 .capture-btn {
-    padding: 10px 20px;
+    padding: 10px 10px;
     font-size: 0.9rem;
     font-weight: 600;
     border-radius: 8px;
@@ -288,8 +288,8 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
 }
 
 .capture-btn-large, .submit-btn-large {
-    padding: 15px 30px;
-    font-size: 1.1rem;
+    padding: 10px 10px;
+    font-size: 0.68rem;
     font-weight: 600;
     border-radius: 10px;
     min-width: 220px;
@@ -302,8 +302,28 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
         gap: 30px;
     }
 
+    .verification-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
     .finger-row {
         grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .finger-frame {
+        padding: 5px;
+    }
+
+    .hand-section {
+        padding: 15px;
+    }
+
+    .thumbs-action-bar {
+        flex-direction: column;
+        gap: 15px;
     }
 }
 

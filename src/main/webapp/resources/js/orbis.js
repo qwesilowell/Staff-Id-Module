@@ -71,7 +71,7 @@ function doSendNoId(message) {
     var jsonString = JSON.stringify(obj);
     console.log("SENT: " + jsonString);
     websocket.send(jsonString);
-    notify();
+//    notify();
 }
 
 function onOpen(evt) {

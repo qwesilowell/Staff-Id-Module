@@ -254,6 +254,33 @@ body {
     border-radius: 30px !important;
 }
 
+.UNATTENDED_badge, .PENDING_badge, .RESOLVED_badge {
+    display: inline-block;
+    min-width: 18px;
+    height: 18px;
+    line-height: 18px;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    border-radius: 50%;
+    padding: 0 5px;
+    margin-left: 8px;
+    color: #fff;
+    background-color: #888;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Match badge with status color */
+.UNATTENDED_badge {
+    background-color: #f44336;
+}
+.PENDING_badge {
+    background-color: #ff9800;
+}
+.RESOLVED_badge {
+    background-color: #4caf50;
+}
+
 
 .filters-row {
     display: grid;
@@ -340,12 +367,25 @@ body {
 }
 
 .anomaly-title {
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.anomaly-ref {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 0.5rem;
 }
+.anomaly-head{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
 
+}
 .anomaly-meta {
     display: flex;
     flex-wrap: wrap;

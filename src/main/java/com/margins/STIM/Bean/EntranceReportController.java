@@ -302,7 +302,7 @@ public class EntranceReportController implements Serializable {
                 new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", message));
     }
 
-    public void exportPage() {
+    public void exportPage(String fileType) {
         List<EntranceReport> er = new ArrayList<>();
 
         for (EntranceReportDTO e : reportData) {
@@ -323,6 +323,7 @@ public class EntranceReportController implements Serializable {
             er.add(entReport);
         }
 
+        ReportOutputFileType type = ReportOutputFileType.valueOf(fileType.toUpperCase());
         rm.addParam("totalEntrances", getTotalEntrances());
         rm.addParam("activeEntrances", getActiveEntrances());
         rm.addParam("totalAttempts", getTotalAccessAttempts());
@@ -332,8 +333,7 @@ public class EntranceReportController implements Serializable {
         rm.addParam("entranceReportTable", new JRBeanCollectionDataSource(er));
         rm.setReportFile(ReportGenerator.ENTRANCES_REPORT);
         rm.setReportData(Arrays.asList(new Object()));
-        rm.generateReport(ReportOutputFileType.PDF);
-
+        rm.generateReport(type);
     }
 
     public void exportEntranceInfo() {

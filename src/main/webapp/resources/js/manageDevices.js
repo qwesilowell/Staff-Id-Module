@@ -6,7 +6,7 @@
 
 function setPositionUI(position) {
     // Visual feedback for position toggle
-    document.querySelectorAll('.position-toggle .position-option').forEach(opt => {
+    document.querySelectorAll('.position-toggle .position').forEach(opt => {
         opt.classList.remove('active');
     });
     document.querySelector(`.position-option.${position}`).classList.add('active');
@@ -14,7 +14,7 @@ function setPositionUI(position) {
 
 function resetPositionUI() {
     // Clear active class from all position options
-    document.querySelectorAll('.position-toggle .position-option').forEach(opt => {
+    document.querySelectorAll('.position-toggle .position').forEach(opt => {
         opt.classList.remove('active');
     });
 }
@@ -42,17 +42,13 @@ style.textContent = `
                }
            }
   .content-area.expanded {
-                            min-height: calc(100vh - 400px);
                             max-height: none;
                         }
                         
                         .devices-section {
-                            min-height: 500px;
                         }
                         
                         .devices-grid {
-                            min-height: 400px;
-                            max-height: calc(100vh - 500px);
                             overflow-y: auto;
                             padding-right: 10px;
                         }

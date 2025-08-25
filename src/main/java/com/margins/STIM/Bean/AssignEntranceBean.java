@@ -22,6 +22,7 @@ import jakarta.persistence.EntityNotFoundException;
 import java.io.Serializable;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -70,6 +71,10 @@ public class AssignEntranceBean implements Serializable {
     private Map<String, LocalTime> startTimes = new HashMap<>();
 
     private Map<String, LocalTime> endTimes = new HashMap<>();
+    
+    private LocalTime defaultStartTime;
+    
+    private LocalTime defaultEndTime;
 
     @PostConstruct
     public void init() {
@@ -442,6 +447,85 @@ public class AssignEntranceBean implements Serializable {
         JSF.addSuccessMessageWithSummary("Successful", "Time access for " + day + " removed successfully.");
     }
 
+    // Method to fill default times to all selected days
+    public void fillDefaultTimesToSelectedDays() {
+        if (defaultStartTime != null && defaultEndTime != null && !selectedDays.isEmpty()) {
+            for (String day : selectedDays) {
+                startTimes.put(day, defaultStartTime);
+                endTimes.put(day, defaultEndTime);
+            }
+
+            // Optional: Show success message
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            "Success",
+                            "Default times applied to all selected days!"));
+        } else {
+            // Show validation message
+            String message = "";
+            if (selectedDays.isEmpty()) {
+                message = "Please select at least one day first.";
+            } else if (defaultStartTime == null || defaultEndTime == null) {
+                message = "Please set both start and end default times.";
+            }
+
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN,
+                            "Warning", message));
+        }
+    }
+
+    public void selectAllDays() {
+        selectedDays = new ArrayList<>(Arrays.asList(
+                "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY",
+                "FRIDAY", "SATURDAY", "SUNDAY"
+        ));
+        loadDayTimeInputs();
+    }
+
+    public void selectWeekdays() {
+        selectedDays = new ArrayList<>(Arrays.asList(
+                "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"
+        ));
+        loadDayTimeInputs();
+    }
+
+    public void selectWeekends() {
+        selectedDays = new ArrayList<>(Arrays.asList(
+                "SATURDAY", "SUNDAY"
+        ));
+        loadDayTimeInputs();
+    }
+
+    public void clearAllDays() {
+        selectedDays = new ArrayList<>();
+        // Clear the time inputs as well
+        startTimes.clear();
+        endTimes.clear();
+    }
+
+    public void selectWeekdaysWithBusinessHours() {
+        selectWeekdays();
+        setBusinessHoursAsDefault();
+        fillDefaultTimesToSelectedDays();
+    }
+
+    public void selectWeekendsWithFlexibleHours() {
+        selectWeekends();
+        setFlexibleHoursAsDefault();
+        fillDefaultTimesToSelectedDays();
+    }
+
+// Helper methods for common time presets
+    private void setBusinessHoursAsDefault() {
+        defaultStartTime = LocalTime.of(7, 0);   // 7:00 AM
+        defaultEndTime = LocalTime.of(17, 0);    // 5:00 PM
+    }
+
+    private void setFlexibleHoursAsDefault() {
+        defaultStartTime = LocalTime.of(5, 0);  // 5:00 AM
+        defaultEndTime = LocalTime.of(22, 0);    // 10:00 PM
+    }
     private void showMessage(FacesMessage.Severity severity, String title, String message) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, title, message));
     }

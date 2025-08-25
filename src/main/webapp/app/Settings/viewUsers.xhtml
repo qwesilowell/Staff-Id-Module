@@ -25,23 +25,24 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
         <!-- Main Content -->
         <div class="main-content">
             <div class="user-management-container">
-                <h:form>
-                <div style="display: flex; justify-content: flex-end">
-                    <p:commandButton value="Export to PDF" 
-                                     icon="pi pi-file-pdf" 
-                                     styleClass="ui-button-success"
-                                     action="#{viewUsers.export()}"
-                                     ajax="false"/>  
-                </div>
+                <h:form id="userForm">
+                    <div style="display: flex; justify-content: space-between">
+                        <div class="page-header">
+                            <h1 class="page-title">
+                                <i class="pi pi-users"></i>
+                                User Management
+                            </h1>
+                            <p class="page-subtitle">Manage system users, roles, and status</p>
+                        </div>
+                        <div style="margin-top: 50px;">
+                            <p:commandButton value="Export to PDF" 
+                                             icon="pi pi-file-pdf" 
+                                             styleClass="ui-button-success"
+                                             action="#{viewUsers.export()}"
+                                             ajax="false"/>  
+                        </div>
+                    </div>
                 </h:form>
-                
-                <div class="page-header">
-                    <h1 class="page-title">
-                        <i class="pi pi-users"></i>
-                        User Management
-                    </h1>
-                    <p class="page-subtitle">Manage system users, roles, and status</p>
-                </div>
 
                 <h:form id="userManagementForm">
                     <p:growl id="messages" widgetVar="userGrowl" showSummary="false" showDetail="true" life="6000" globalOnly="false" />
@@ -50,7 +51,8 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     <h:panelGroup id="filterCards" layout="block" styleClass="filter-cards">
                         <p:commandLink styleClass="filter-card #{viewUsers.filterType == 'ALL' ? 'active' : ''}" 
                                        action="#{viewUsers.applyFilter('ALL')}" 
-                                       update=":userManagementForm :userManagementForm:filterCards">
+                                       process="@this"
+                                       update="usersDataTable filterCards">
                             <div class="filter-icon all-users">
                                 <i class="pi pi-users"></i>
                             </div>
@@ -62,7 +64,8 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
 
                         <p:commandLink styleClass="filter-card #{viewUsers.filterType == 'ACTIVE' ? 'active' : ''}" 
                                        action="#{viewUsers.applyFilter('ACTIVE')}" 
-                                       update=":userManagementForm :userManagementForm:filterCards">
+                                       process="@this"
+                                       update="usersDataTable filterCards">
                             <div class="filter-icon active-users">
                                 <i class="pi pi-check-circle"></i>
                             </div>
@@ -74,7 +77,8 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
 
                         <p:commandLink styleClass="filter-card #{viewUsers.filterType == 'INACTIVE' ? 'active' : ''}" 
                                        action="#{viewUsers.applyFilter('INACTIVE')}" 
-                                       update=":userManagementForm :userManagementForm:filterCards">
+                                       process="@this"
+                                       update="usersDataTable filterCards">
                             <div class="filter-icon inactive-users">
                                 <i class="pi pi-times-circle"></i>
                             </div>
@@ -84,92 +88,105 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                             </div>
                         </p:commandLink>
 
-
-                        <!-- Hidden input for filter type -->
-                        <p:inputText id="filterType" value="#{viewUsers.filterType}" style="display: none;" />
-
                     </h:panelGroup>
 
-                    <!-- Users Grid -->
-                    <p:outputPanel id="userCardsPanel">
-                        <div class="users-grid">
-                            <ui:repeat value="#{viewUsers.filteredUsers}" var="user">
-                                <div class="user-card">
-                                    <div class="card-actions">
-                                        <p:commandButton icon="pi pi-pencil"
-                                                         title="Edit User"
-                                                         styleClass="card-action-btn edit-action"
-                                                         action="#{viewUsers.openEditDialog(user)}"
-                                                         update="editUserForm:editUserDialog"
-                                                         oncomplete="PF('editUserDialog').show()" />
+                    <div class="datatable-container">
+                        <p:dataTable id="usersDataTable" 
+                                     value="#{viewUsers.filteredUsers}" 
+                                     var="user"
+                                     paginator="true" 
+                                     rows="10"
+                                     paginatorPosition="bottom"
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} users"
+                                     rowsPerPageTemplate="10,20,50,100"
+                                     globalFilterFunction="#{viewUsers.globalFilterFunction}"
+                                     emptyMessage="No users found matching your criteria"
+                                     sortMode="multiple"
+                                     allowUnsorting="true"
+                                     styleClass="modern-datatable"
+                                     rowStyleClass="datatable-row"
+                                     widgetVar="usersTable">
 
-                                        <p:commandButton icon="pi pi-trash"
-                                                         title="Delete User"
-                                                         styleClass="card-action-btn delete-action"
-                                                         action="#{viewUsers.deleteUser(user)}"
-                                                         update="userManagementForm:userCardsPanel userManagementForm:messages"
-                                                         process="@this">   
-                                            <p:confirm header="Confirm Deletion" 
-                                                       message="Are you sure you want to delete #{user.username}?" 
-                                                       icon="pi pi-exclamation-triangle" />
-                                        </p:commandButton>
+                            <f:facet name="header">
+                                <div class="datatable-header">
+                                    <div class="datatable-title">
+                                        <i class="pi pi-list"></i>
+                                        <span>Users Directory</span>
                                     </div>
+                                    <div class="datatable-controls">
+                                        <p:inputText id="globalFilter" 
+                                                     onkeyup="PF('usersTable').filter()" 
 
-                                    <div class="user-avatar">
-                                        #{viewUsers.getUserInitials(user)}
+                                                     placeholder="Search users..."
+                                                     styleClass="search-input">
+                                            <i class="pi pi-search search-icon"></i>
+                                        </p:inputText>
                                     </div>
-
-                                    <div class="user-info">
-                                        <div class="user-name">#{user.username}</div>
-                                        <div class="user-id">ID: #{user.id}</div>
-                                    </div>
-
-                                    <div class="user-details">
-                                        <div class="detail-row">
-                                            <span class="detail-label">
-                                                <i class="pi pi-id-card"></i>
-                                                Ghana Card:
-                                            </span>
-                                            <span class="detail-value">#{user.ghanaCardNumber}</span>
-                                        </div>
-
-                                        <div class="detail-row">
-                                            <span class="detail-label">
-                                                <i class="pi pi-info-circle"></i>
-                                                Status:
-                                            </span>
-                                            <span class="detail-value">
-                                                <span class="status-badge status-#{user.status.name().toLowerCase()}">
-                                                    #{user.status.name()}
-                                                </span>
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div class="role-section">
-                                        <div class="section-header">
-                                            <i class="pi pi-shield"></i>
-                                            <span>Current Role</span>
-                                        </div>
-
-                                        <div class="current-role">
-                                            <span class="role-badge role-#{user.userRole != null ? user.userRole.userRolename.toLowerCase() : 'none'}">
-                                                #{user.userRole != null ? user.userRole.userRolename : 'No Role Assigned'}
-                                            </span>
-                                        </div>
-                                    </div>  
                                 </div>
-                            </ui:repeat>
+                            </f:facet>
 
-                            <h:panelGroup rendered="#{empty viewUsers.filteredUsers}">
-                                <div class="no-users">
-                                    <i class="pi pi-users" style="font-size: 3rem; margin-bottom: 20px; display: block;"></i>
-                                    <h3>No users found</h3>
-                                    <p>#{viewUsers.filterType == 'ALL' ? 'No users in the system' : 'No ' += viewUsers.filterType.toLowerCase() += ' users found'}</p>
+                            <!-- Avatar Column -->
+                            <p:column headerText="User" sortBy="#{user.username}" styleClass="avatar-column">
+                                <div class="user-cell">
+
+                                    <div class="user-cell-info">
+                                        <div class="user-cell-name">#{user.username}</div>
+                                        <div class="user-cell-email">#{user.email}</div>
+                                    </div>
                                 </div>
-                            </h:panelGroup>
-                        </div>
-                    </p:outputPanel>
+                            </p:column>
+
+                            <!-- National ID Column -->
+                            <p:column headerText="National ID" sortBy="#{user.ghanaCardNumber}" styleClass="id-column">
+                                <div class="id-display">
+                                    <span>#{user.ghanaCardNumber}</span>
+                                </div>
+                            </p:column>
+
+                            <!-- Role Column -->
+                            <p:column headerText="Role" sortBy="#{user.userRole.userRolename}" styleClass="role-column">
+                                <span class="role-badge role-#{user.userRole != null ? user.userRole.userRolename.toLowerCase() : 'none'}">
+                                    #{user.userRole != null ? user.userRole.userRolename : 'No Role'}
+                                </span>
+                            </p:column>
+
+                            <!-- Status Column -->
+                            <p:column headerText="Status" sortBy="#{user.status}" styleClass="status-column">
+                                <span class="status-badge status-#{user.status.name().toLowerCase()}">
+                                    <i class="pi #{user.status.name() == 'ACTIVE' ? 'pi-check-circle' : 'pi-times-circle'}"></i>
+                                    #{user.status.name()}
+                                </span>
+                            </p:column>
+
+                            <!-- Actions Column -->
+                            <p:column headerText="Actions" styleClass="actions-column" exportable="false">
+                                <div class="table-actions">
+                                    <p:commandButton icon="pi pi-pencil"
+                                                     title="Edit User"
+                                                     styleClass="table-action-btn edit-action"
+                                                     action="#{viewUsers.openEditDialog(user)}"
+                                                     update="editUserForm:editUserDialog"
+                                                     oncomplete="PF('editUserDialog').show()" />
+
+                                    <p:commandButton icon="pi pi-trash"
+                                                     title="Delete User"
+                                                     styleClass="table-action-btn delete-action"
+                                                     action="#{viewUsers.prepareDeleteUser(user)}"
+                                                     update="deleteUserForm:deleteUserDialog"
+                                                     oncomplete="PF('deleteUserDialog').show()" />
+
+                                    <p:commandButton icon="pi pi-eye"
+                                                     title="View Permissions"
+                                                     styleClass="table-action-btn view-action"
+                                                     action="#{viewUsers.viewUserPermissions(user)}"
+                                                     update="userManagementForm:permissionsDialog"
+                                                     oncomplete="PF('permissionsDialog').show()" />
+                                </div>
+                            </p:column>
+                        </p:dataTable>
+
+                    </div>
 
                     <!-- Permissions Dialog -->
                     <p:dialog id="permissionsDialog" 
@@ -195,7 +212,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                                         <i class="pi pi-check permission-icon"></i>
                                         <div class="permission-details">
                                             <span class="permission-name">#{permission.displayName}</span>
-                                            <span class="permission-desc">#{permission.pagePath}</span>
+                                            <!--                                            <span class="permission-desc">#-{permission.pagePath}</span>-->
                                         </div>
                                     </div>
                                 </ui:repeat>
@@ -209,69 +226,65 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                             </div>
                         </div>
                     </p:dialog>
-
-                    <!-- Confirmation Dialog -->
-                    <p:confirmDialog global="true" showEffect="fade" styleClass="modern-confirm-dialog">
-                        <p:commandButton type="button" value="Yes" styleClass="ui-confirmdialog-yes modern-btn primary-btn"/>
-                        <p:commandButton type="button" value="No" styleClass="ui-confirmdialog-no modern-btn secondary-btn"/>
-                    </p:confirmDialog>
                 </h:form>    
             </div>
 
+            <!-- Edit User Dialog Form (Separate form for edit dialog) -->
             <h:form id="editUserForm">
-                <!-- NEW EDIT USER DIALOG - Single dialog for editing both role and status -->
                 <p:dialog id="editUserDialog" 
                           header="Edit User" 
                           widgetVar="editUserDialog" 
                           modal="true" 
                           width="500"
                           styleClass="edit-user-dialog">
-                    <div id="editUserDialogContent">
-                        <div class="edit-dialog-content">
-                            <div class="user-info">
-                                <div class="user-avatar">
-                                    #{viewUsers.selectedUser != null ? viewUsers.getUserInitials(viewUsers.selectedUser) : ''}
-                                </div>
-                                <div>
-                                    <h4>#{viewUsers.selectedUser.username}</h4>
-                                    <span>ID: #{viewUsers.selectedUser.id}</span>
-                                </div>
-                            </div>
 
-                            <!-- ROLE SELECTION -->
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="pi pi-shield"></i>
-                                    System Role:
-                                </label>
-                                <p:selectOneMenu value="#{viewUsers.selectedUser.userRole}" 
-                                                 styleClass="modern-select"
-                                                 filter="true"
-                                                 filterMatchMode="contains"
-                                                 converter="systemUserRoleConverter">
-                                    <f:selectItem itemLabel="Select Role..." itemValue="#{null}"  noSelectionOption="true"/>
-                                    <f:selectItems value="#{viewUsers.allSystemRoles}"
-                                                   var="role"
-                                                   itemLabel="#{role.userRolename}"
-                                                   itemValue="#{role}" />
-                                </p:selectOneMenu>
+                    <div class="edit-dialog-content">
+                        <div class="user-info">
+                            <div class="user-avatar">
+                                #{viewUsers.selectedUser != null ? viewUsers.getUserInitials(viewUsers.selectedUser) : ''}
                             </div>
-
-                            <!-- STATUS SELECTION -->
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="pi pi-info-circle"></i>
-                                    Status:
-                                </label>
-                                <p:selectOneRadio value="#{viewUsers.selectedUser.status}" 
-                                                  styleClass="status-radio"
-                                                  layout="responsive"
-                                                  columns="2">
-                                    <f:selectItem itemLabel="Active" itemValue="ACTIVE" />
-                                    <f:selectItem itemLabel="Inactive" itemValue="INACTIVE" />
-                                </p:selectOneRadio>
+                            <div>
+                                <h4>#{viewUsers.selectedUser.username}</h4>
+                                <span>#{viewUsers.selectedUser.email}</span>
                             </div>
                         </div>
+
+                        <!-- ROLE SELECTION -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="pi pi-shield"></i>
+                                System Role:
+                            </label>
+                            <p:selectOneMenu value="#{viewUsers.selectedUser.userRole}" 
+                                             styleClass="modern-select"
+                                             filter="true"
+                                             filterMatchMode="contains"
+                                             converter="systemUserRoleConverter">
+                                <f:selectItem itemLabel="Select Role..." itemValue="#{null}"  noSelectionOption="true"/>
+                                <f:selectItems value="#{viewUsers.allSystemRoles}"
+                                               var="role"
+                                               itemLabel="#{role.userRolename}"
+                                               itemValue="#{role}" />
+                            </p:selectOneMenu>
+                        </div>
+
+                        <!-- STATUS SELECTION -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="pi pi-info-circle"></i>
+                                Status:
+                            </label>
+                            <p:selectOneRadio value="#{viewUsers.selectedUser.status}" 
+                                              styleClass="status-radio"
+                                              layout="responsive"
+                                              columns="2">
+                                <f:selectItem itemLabel="Active" itemValue="ACTIVE"  />
+                                <f:selectItem itemLabel="Inactive" itemValue="INACTIVE" />
+                            </p:selectOneRadio>
+                        </div>
+
+                        <p:commandLink value="Reset Password" update="editUserForm:resetDialog"
+                                       oncomplete="PF('editUserDialog').hide(); PF('resetDialog').show();"/>
                     </div>
 
                     <f:facet name="footer">
@@ -280,19 +293,132 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                                              icon="pi pi-save"
                                              styleClass="modern-btn primary-btn"
                                              action="#{viewUsers.updateUserRole()}"
-                                             update="userManagementForm:messages :userManagementForm"
+                                             update="userManagementForm:messages :userManagementForm:usersDataTable :userManagementForm:filterCards"
                                              oncomplete="PF('editUserDialog').hide()">
                             </p:commandButton>
 
                             <p:commandButton value="Cancel" 
                                              icon="pi pi-times"
                                              styleClass="modern-btn secondary-btn"
-                                             type="button"
-                                             onclick="PF('editUserDialog').hide()" />
+                                             update="@form"
+                                             oncomplete="PF('editUserDialog').hide()" />
                         </div>
                     </f:facet>
                 </p:dialog> 
+
+                <!-- Confirm Reset-->
+                <p:dialog id="resetDialog" 
+                          header="Confirm Reset" 
+                          widgetVar="resetDialog" 
+                          modal="true" 
+                          width="450"
+                          styleClass="delete-user-dialog">
+                    <div class="delete-dialog-content">
+                        <div class="delete-warning">
+                            <i class="pi pi-exclamation-triangle warning-icon"></i>
+                            <div class="warning-text">
+                                <h4>Reset User Password</h4>
+                                <p>Are you sure you want to reset password for this user?</p>
+                            </div>
+                        </div>
+
+                        <div class="user-info-delete">
+                            <div class="user-avatar-delete">
+                                #{viewUsers.selectedUser != null ? viewUsers.getUserInitials(viewUsers.selectedUser) : ''}
+                            </div>
+                            <div class="user-details-delete">
+                                <div class="username-delete">#{viewUsers.selectedUser.username}</div>
+                                <div class="email-delete">#{viewUsers.selectedUser.email}</div>
+                                <div class="role-delete">
+                                    Role: #{viewUsers.selectedUser.userRole != null ? viewUsers.selectedUser.userRole.userRolename : 'No Role'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="delete-warning-message">
+                            <i class="pi pi-info-circle"></i>
+                            <span>This action cannot be undone.</span>
+                        </div>
+                    </div>
+
+                    <f:facet name="footer">
+                        <div class="dialog-footer">
+                            <p:commandButton value="Reset" 
+                                             icon="pi pi-spinner"
+                                             styleClass="modern-btn danger-btn"
+                                             action="#{viewUsers.resetPassword()}"
+                                             update=":userManagementForm:messages :userManagementForm:usersDataTable :userManagementForm:filterCards"
+                                             oncomplete="PF('resetDialog').hide()"
+                                             >
+                            </p:commandButton>
+
+                            <p:commandButton value="Cancel" 
+                                             icon="pi pi-times"
+                                             styleClass="modern-btn secondary-btn"
+                                             oncomplete="PF('resetDialog').hide()" />
+                        </div>
+                    </f:facet>
+
+
+                </p:dialog>
             </h:form>
+
+            <!-- Delete User Dialog Form (New separate form for delete confirmation) -->
+            <h:form id="deleteUserForm">
+                <p:dialog id="deleteUserDialog" 
+                          header="Confirm Deletion" 
+                          widgetVar="deleteUserDialog" 
+                          modal="true" 
+                          width="450"
+                          styleClass="delete-user-dialog">
+                    <div class="delete-dialog-content">
+                        <div class="delete-warning">
+                            <i class="pi pi-exclamation-triangle warning-icon"></i>
+                            <div class="warning-text">
+                                <h4>Delete User Account</h4>
+                                <p>Are you sure you want to permanently delete this user?</p>
+                            </div>
+                        </div>
+
+                        <div class="user-info-delete">
+                            <div class="user-avatar-delete">
+                                #{viewUsers.selectedUser != null ? viewUsers.getUserInitials(viewUsers.selectedUser) : ''}
+                            </div>
+                            <div class="user-details-delete">
+                                <div class="username-delete">#{viewUsers.selectedUser.username}</div>
+                                <div class="email-delete">#{viewUsers.selectedUser.email}</div>
+                                <div class="role-delete">
+                                    Role: #{viewUsers.selectedUser.userRole != null ? viewUsers.selectedUser.userRole.userRolename : 'No Role'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="delete-warning-message">
+                            <i class="pi pi-info-circle"></i>
+                            <span>This action cannot be undone.</span>
+                        </div>
+                    </div>
+
+                    <f:facet name="footer">
+                        <div class="dialog-footer">
+                            <p:commandButton value="Delete User" 
+                                             icon="pi pi-trash"
+                                             styleClass="modern-btn danger-btn"
+                                             action="#{viewUsers.confirmDeleteUser()}"
+                                             update="userManagementForm:messages :userManagementForm:usersDataTable :userManagementForm:filterCards"
+                                             oncomplete="PF('deleteUserDialog').hide()">
+                            </p:commandButton>
+
+                            <p:commandButton value="Cancel" 
+                                             icon="pi pi-times"
+                                             styleClass="modern-btn secondary-btn"
+                                             type="button"
+                                             onclick="PF('deleteUserDialog').hide()" />
+                        </div>
+                    </f:facet>
+                </p:dialog>
+            </h:form>
+
 
 
             <style>
@@ -326,16 +452,14 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
 
                 /* Main Container */
                 .user-management-container {
-                    padding: 2rem;
                     background: var(--gray-50);
-                    min-height: 100vh;
                     max-width: 1400px;
                     margin: 0 auto;
                 }
 
                 /* Page Header */
                 .page-header {
-                    text-align: center;
+                    text-align: start;
                     margin-bottom: 2rem;
                 }
 
@@ -345,8 +469,8 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     margin-bottom: 0.5rem;
                     color: var(--gray-800);
                     display: flex;
-                    align-items: center;
-                    justify-content: center;
+                    align-items: start;
+                    justify-content: start;
                     gap: 1rem;
                 }
 
@@ -389,7 +513,6 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                 }
 
                 .filter-card.active {
-
                     background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
                 }
 
@@ -435,182 +558,158 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     letter-spacing: 0.025em;
                 }
 
-                /* Users Grid */
-                .card-actions {
-                    position: absolute;
-                    top: 1rem;
-                    right: 1rem;
-                    display: flex !important;
-                    align-items: center  !important;
-                    justify-content: space-between !important;
-                    gap: 0.5rem;
-                    opacity: 0;
-                    transform: translateY(-10px);
-                    transition: var(--transition);
-                    z-index: 10;
-                }
-
-                .user-card:hover .card-actions {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-
-                .card-action-btn {
-                    width: 2.25rem !important;
-                    height: 2.25rem !important;
-                    border-radius: 50% !important;
-                    border: none !important;
-                    display: flex !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                    transition: var(--transition) !important;
-                    font-size: 0.875rem !important;
-                    box-shadow: var(--shadow-md) !important;
-                    backdrop-filter: blur(10px) !important;
-                }
-
-                .edit-action {
-                    background: rgba(59, 130, 246, 0.9) !important;
-                    color: white !important;
-                }
-
-                .edit-action:hover {
-                    background: var(--primary-color) !important;
-                    transform: scale(1.1) !important;
-                    box-shadow: var(--shadow-lg) !important;
-                }
-
-                .delete-action {
-                    background: rgba(239, 68, 68, 0.9) !important;
-                    color: white !important;
-                }
-
-                .delete-action:hover {
-                    background: var(--danger-color) !important;
-                    transform: scale(1.1) !important;
-                    box-shadow: var(--shadow-lg) !important;
-                }
-
-                .users-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-                    gap: 1.5rem;
-                }
-
-                /* User Card Enhancements */
-                .user-card {
-                    background: rgba(255, 255, 255, 0.95);
-                    border-radius: 20px;
-                    padding: 2rem;
+                /* DataTable Container */
+                .datatable-container {
+                    background: white;
+                    border-radius: var(--border-radius-lg);
                     box-shadow: var(--shadow-lg);
-                    border: 1px solid rgba(255, 255, 255, 0.2);
-                    transition: var(--transition);
-                    position: relative;
                     overflow: hidden;
                 }
 
-                .user-card::before {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    height: 4px;
-                    background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
-                    border-radius: 20px 20px 0 0;
+                /* DataTable Header */
+                .datatable-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 1.5rem;
+                    background: linear-gradient(135deg, var(--gray-50), white);
+                    border-bottom: 1px solid var(--gray-200);
                 }
 
-                .user-avatar {
-                    width: 80px;
-                    height: 80px;
+                .datatable-title {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    font-size: 1.25rem;
+                    font-weight: 600;
+                    color: var(--gray-800);
+                }
+
+                .datatable-title i {
+                    color: var(--primary-color);
+                    font-size: 1.5rem;
+                }
+
+                .datatable-controls {
+                    position: relative;
+                }
+
+                .search-input {
+                    padding: 0.75rem 2.5rem 0.75rem 1rem !important;
+                    border: 2px solid var(--gray-200) !important;
+                    border-radius: var(--border-radius) !important;
+                    font-size: 0.875rem !important;
+                    transition: var(--transition) !important;
+                    background: white !important;
+                    width: 300px !important;
+                }
+
+                .search-input:focus {
+                    outline: none !important;
+                    border-color: var(--primary-color) !important;
+                    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+                }
+
+                .search-icon {
+                    position: absolute;
+                    right: 1rem;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: var(--gray-400);
+                    pointer-events: none;
+                }
+
+                /* DataTable Styling */
+                .modern-datatable .ui-datatable-header {
+                    background: none !important;
+                    border: none !important;
+                    padding: 0 !important;
+                }
+
+                .modern-datatable .ui-datatable-thead > tr > th {
+                    background: var(--gray-100) !important;
+                    border: none !important;
+                    padding: 1rem !important;
+                    font-weight: 600 !important;
+                    color: var(--gray-700) !important;
+                    font-size: 0.875rem !important;
+                    text-transform: uppercase !important;
+                    letter-spacing: 0.025em !important;
+                }
+
+                .modern-datatable .ui-datatable-tbody > tr > td {
+                    border: none !important;
+                    border-bottom: 1px solid var(--gray-100) !important;
+                    padding: 1rem !important;
+                    vertical-align: middle !important;
+                }
+
+                .datatable-row:hover {
+                    background: var(--gray-50) !important;
+                }
+
+                /* User Cell Styling */
+                .user-cell {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                }
+
+                .user-avatar-small {
+                    width: 40px;
+                    height: 40px;
                     border-radius: 50%;
                     background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin: 0 auto 1.5rem;
                     color: white;
-                    font-size: 2rem;
+                    font-size: 1rem;
                     font-weight: bold;
                     text-transform: uppercase;
-                    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+                    flex-shrink: 0;
                 }
 
-                .user-info {
-                    text-align: center;
-                    margin-bottom: 1.5rem;
+                .user-cell-info {
+                    flex: 1;
                 }
 
-                .user-name {
-                    font-size: 1.4rem;
+                .user-cell-name {
                     font-weight: 600;
                     color: var(--gray-800);
-                    margin-bottom: 0.5rem;
+                    margin-bottom: 0.25rem;
                 }
 
-                .user-id {
+                .user-cell-email {
                     font-size: 0.875rem;
                     color: var(--gray-500);
-                    font-family: 'Courier New', monospace;
-                    background: var(--gray-100);
-                    padding: 0.25rem 0.5rem;
-                    border-radius: var(--border-radius);
-                    display: inline-block;
                 }
 
-                /* User Details */
-                .user-details {
-                    margin-bottom: 1.5rem;
-                }
-
-                .detail-row {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 0.75rem;
-                    padding: 0.75rem;
-                    background: var(--gray-50);
-                    border-radius: var(--border-radius);
-                    transition: background-color 0.2s;
-                }
-
-                .detail-row:hover {
-                    background: var(--gray-100);
-                }
-
-                .detail-label {
-                    font-weight: 600;
-                    color: var(--gray-700);
-                    font-size: 0.875rem;
+                /* ID Display */
+                .id-display {
                     display: flex;
                     align-items: center;
                     gap: 0.5rem;
+                    font-size: 0.875rem;
+                    color: var(--gray-600);
+                    font-weight: bold;
                 }
 
-                .detail-label i {
+                .id-display i {
                     color: var(--primary-color);
                 }
 
-                .detail-value {
-                    color: var(--gray-600);
-                    font-size: 0.875rem;
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                }
-
-                /* Status Toggle */
-                .status-toggle {
-                    margin-right: 0.5rem;
-                }
-
-                .status-badge {
+                /* Status and Role Badges */
+                .status-badge, .role-badge {
                     padding: 0.375rem 0.75rem;
                     border-radius: 9999px;
                     font-size: 0.75rem;
                     font-weight: 500;
                     text-transform: uppercase;
                     letter-spacing: 0.025em;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.375rem;
                 }
 
                 .status-active {
@@ -625,72 +724,214 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     border: 1px solid #fecaca;
                 }
 
-                /* Role Section */
-                .role-section {
-                    border-top: 1px solid var(--gray-200);
-                    padding-top: 1.5rem;
+                .status-pending_password_change{
+                    background: #98dcf2;
+                    color: #070549;
+                    border: 2px solid #8cafe9;
                 }
-
-                .section-header {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    margin-bottom: 1rem;
-                    font-weight: 600;
-                    color: var(--gray-700);
-                    font-size: 0.875rem;
-                }
-
-                .section-header i {
-                    color: var(--primary-color);
-                }
-
-                .current-role {
-                    display: flex;
-                    justify-content: center;
-                    margin-bottom: 1.5rem;
-                }
-
-                .role-badge {
-                    padding: 0.5rem 1rem;
-                    border-radius: 9999px;
-                    font-weight: 600;
-                    font-size: 0.75rem;
-                    text-transform: uppercase;
-                    letter-spacing: 0.025em;
-                    text-align: center;
-                }
-
-                /*                .role-admin {
-                                    background: linear-gradient(135deg, var(--danger-color), var(--danger-hover));
-                                    color: white;
-                                    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
-                                }
-                
-                                .role-user {
-                                    background: linear-gradient(135deg, var(--info-color), #1d4ed8);
-                                    color: white;
-                                    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-                                }
-                
-                                .role-manager {
-                                    background: linear-gradient(135deg, var(--warning-color), #d97706);
-                                    color: white;
-                                    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
-                                }*/
-
                 .role-none {
                     background: var(--gray-200);
                     color: var(--gray-700);
                 }
 
-                /* Role Assignment */
-                .role-assignment {
-                    space-y: 1rem;
+                /* Table Actions */
+                .table-actions {
+                    display: flex;
+                    gap: 0.5rem;
+                    justify-content: center;
                 }
 
+                .table-action-btn {
+                    width: 2rem !important;
+                    height: 2rem !important;
+                    border-radius: 50% !important;
+                    border: none !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    transition: var(--transition) !important;
+                    font-size: 0.75rem !important;
+                    cursor: pointer !important;
+                }
+
+                .edit-action {
+                    background: var(--info-color) !important;
+                    color: white !important;
+                }
+
+                .edit-action:hover {
+                    background: #1d4ed8 !important;
+                    transform: scale(1.1) !important;
+                }
+
+                .delete-action {
+                    background: var(--danger-color) !important;
+                    color: white !important;
+                }
+
+                .delete-action:hover {
+                    background: var(--danger-hover) !important;
+                    transform: scale(1.1) !important;
+                }
+
+                .view-action {
+                    background: var(--warning-color) !important;
+                    color: white !important;
+                }
+
+                .view-action:hover {
+                    background: #d97706 !important;
+                    transform: scale(1.1) !important;
+                }
+
+                /* Dialog Styling */
+                .edit-user-dialog .ui-dialog,
+                .delete-user-dialog .ui-dialog,
+                .permissions-dialog .ui-dialog {
+                    border-radius: var(--border-radius-lg) !important;
+                    box-shadow: var(--shadow-lg) !important;
+                    border: none !important;
+                }
+
+                .edit-dialog-content,
+                .delete-dialog-content {
+                    padding: 1rem;
+                }
+
+                .user-info {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    margin-bottom: 2rem;
+                    padding: 1rem;
+                    background: var(--gray-50);
+                    border-radius: var(--border-radius);
+                }
+
+                .user-avatar {
+                    width: 60px;
+                    height: 60px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 1.5rem;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    flex-shrink: 0;
+                }
+
+                .user-info h4 {
+                    margin: 0 0 0.25rem 0;
+                    color: var(--gray-800);
+                    font-size: 1.125rem;
+                }
+
+                .user-info span {
+                    color: var(--gray-600);
+                    font-size: 0.875rem;
+                }
+
+                /* Delete Dialog Specific Styling */
+                .delete-warning {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    margin-bottom: 1.5rem;
+                    padding: 1rem;
+                    background: #fef2f2;
+                    border: 1px solid #fecaca;
+                    border-radius: var(--border-radius);
+                }
+
+                .warning-icon {
+                    font-size: 2rem;
+                    color: var(--danger-color);
+                    flex-shrink: 0;
+                }
+
+                .warning-text h4 {
+                    margin: 0 0 0.5rem 0;
+                    color: var(--gray-800);
+                    font-size: 1.125rem;
+                }
+
+                .warning-text p {
+                    margin: 0;
+                    color: var(--gray-600);
+                }
+
+                .user-info-delete {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    margin-bottom: 1.5rem;
+                    padding: 1rem;
+                    background: var(--gray-50);
+                    border-radius: var(--border-radius);
+                }
+
+                .user-avatar-delete {
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 1.25rem;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    flex-shrink: 0;
+                }
+
+                .user-details-delete {
+                    flex: 1;
+                }
+
+                .username-delete {
+                    font-weight: 600;
+                    color: var(--gray-800);
+                    font-size: 1rem;
+                    margin-bottom: 0.25rem;
+                }
+
+                .email-delete {
+                    font-size: 0.875rem;
+                    color: var(--gray-500);
+                    margin-bottom: 0.25rem;
+                }
+
+                .role-delete {
+                    font-size: 0.75rem;
+                    color: var(--gray-600);
+                    text-transform: uppercase;
+                    font-weight: 500;
+                }
+
+                .delete-warning-message {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    padding: 1rem;
+                    background: #fffbeb;
+                    border: 1px solid #fed7aa;
+                    border-radius: var(--border-radius);
+                    font-size: 0.875rem;
+                    color: var(--gray-700);
+                }
+
+                .delete-warning-message i {
+                    color: var(--warning-color);
+                    flex-shrink: 0;
+                }
+
+                /* Form Styling */
                 .form-group {
-                    margin-bottom: 1rem;
+                    margin-bottom: 1.5rem;
                 }
 
                 .form-label {
@@ -724,60 +965,63 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
                 }
 
-                /* Action Buttons */
-                .action-buttons {
-                    display: flex;
-                    gap: 0.5rem;
-                    flex-wrap: wrap;
+                .status-radio .ui-radiobutton {
+                    margin-right: 0.5rem !important;
                 }
 
-                .update-btn, .view-btn {
-                    padding: 0.75rem 1rem !important;
+                /* Button Styling */
+                .modern-btn {
+                    padding: 0.3rem 0.5rem !important;
                     border-radius: var(--border-radius) !important;
                     font-weight: 600 !important;
-                    font-size: 0.75rem !important;
+                    font-size: 0.875rem !important;
                     transition: var(--transition) !important;
                     border: none !important;
                     cursor: pointer !important;
-                    display: flex !important;
+                    display: inline-flex !important;
                     align-items: center !important;
                     gap: 0.5rem !important;
-                    flex: 1;
-                    justify-content: center !important;
                 }
 
-                .update-btn {
+                .primary-btn {
                     background: linear-gradient(135deg, var(--success-color), var(--success-hover)) !important;
                     color: white !important;
                 }
 
-                .update-btn:hover:not(:disabled) {
+                .primary-btn:hover {
                     background: linear-gradient(135deg, var(--success-hover), #047857) !important;
                     transform: translateY(-1px) !important;
                 }
 
-                .update-btn:disabled {
-                    opacity: 0.5 !important;
-                    cursor: not-allowed !important;
+                .secondary-btn {
+                    background: white !important;
+                    color: var(--gray-700) !important;
+                    border: 2px solid var(--gray-300) !important;
                 }
 
-                .view-btn {
-                    background: linear-gradient(135deg, var(--info-color), #1d4ed8) !important;
+                .secondary-btn:hover {
+                    background: var(--gray-50) !important;
+                    border-color: var(--gray-400) !important;
+                }
+
+                .danger-btn {
+                    background: linear-gradient(135deg, var(--danger-color), var(--danger-hover)) !important;
                     color: white !important;
                 }
 
-                .view-btn:hover {
-                    background: linear-gradient(135deg, #1d4ed8, #1e40af) !important;
+                .danger-btn:hover {
+                    background: linear-gradient(135deg, var(--danger-hover), #b91c1c) !important;
                     transform: translateY(-1px) !important;
                 }
 
-                /* Permissions Dialog */
-                .permissions-dialog .ui-dialog {
-                    border-radius: var(--border-radius-lg) !important;
-                    box-shadow: var(--shadow-lg) !important;
-                    border: none !important;
+                .dialog-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 1rem;
+                    padding: 0.3rem 0 0 0;
                 }
 
+                /* Permissions Dialog */
                 .permissions-header {
                     padding: 1.5rem;
                     border-bottom: 1px solid var(--gray-200);
@@ -868,53 +1112,52 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     display: block;
                 }
 
-                /* No Users State */
-                .no-users {
-                    text-align: center;
-                    color: var(--gray-500);
-                    padding: 3rem 1rem;
-                    grid-column: 1 / -1;
-                }
-
-                .no-users h3 {
-                    color: var(--gray-700);
-                    margin-bottom: 0.5rem;
-                }
-
-                .no-users p {
-                    color: var(--gray-500);
-                    margin: 0;
-                }
-
-                /* Modern Button Styles */
-                .modern-btn {
-                    padding: 0.15rem 0.5rem !important;
-                    border-radius: 5px !important;
-                    font-weight: 500 !important;
-                    font-size: 0.875rem !important;
-                    transition: var(--transition) !important;
+                /* Pagination Styling */
+                .ui-paginator {
+                    background: var(--gray-50) !important;
                     border: none !important;
-                    cursor: pointer !important;
-                    display: inline-flex !important;
-                    align-items: center !important;
-                    gap: 0.2rem !important;
+                    padding: 1rem 1.5rem !important;
+                    border-top: 1px solid var(--gray-200) !important;
                 }
 
-                .primary-btn {
-                    background: linear-gradient(135deg,  #10b981,#059669) !important;
+                .ui-paginator .ui-paginator-pages .ui-paginator-page {
+                    background: white !important;
+                    border: 1px solid var(--gray-300) !important;
+                    color: var(--gray-700) !important;
+                    margin: 0 0.125rem !important;
+                    border-radius: var(--border-radius) !important;
+                    min-width: 2.5rem !important;
+                    height: 2.5rem !important;
+                }
+
+                .ui-paginator .ui-paginator-pages .ui-paginator-page.ui-state-active {
+                    background: var(--primary-color) !important;
+                    border-color: var(--primary-color) !important;
                     color: white !important;
                 }
 
-                .secondary-btn {
-                    background: white !important;
-                    color: var(--gray-700) !important;
-                    border: 2px solid var(--gray-300) !important;
+                .ui-paginator .ui-paginator-pages .ui-paginator-page:hover {
+                    background: var(--gray-100) !important;
                 }
 
-                /* Confirm Dialog */
-                .modern-confirm-dialog .ui-dialog {
-                    border-radius: var(--border-radius-lg) !important;
-                    box-shadow: var(--shadow-lg) !important;
+                .ui-paginator .ui-paginator-first,
+                .ui-paginator .ui-paginator-prev,
+                .ui-paginator .ui-paginator-next,
+                .ui-paginator .ui-paginator-last {
+                    background: white !important;
+                    border: 1px solid var(--gray-300) !important;
+                    color: var(--gray-700) !important;
+                    border-radius: var(--border-radius) !important;
+                    margin: 0 0.125rem !important;
+                    min-width: 2.5rem !important;
+                    height: 2.5rem !important;
+                }
+
+                .ui-paginator .ui-paginator-first:hover,
+                .ui-paginator .ui-paginator-prev:hover,
+                .ui-paginator .ui-paginator-next:hover,
+                .ui-paginator .ui-paginator-last:hover {
+                    background: var(--gray-100) !important;
                 }
 
                 /* Responsive Design */
@@ -927,31 +1170,56 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                         grid-template-columns: 1fr;
                     }
 
-                    .users-grid {
-                        grid-template-columns: 1fr;
-                    }
-
                     .page-title {
                         font-size: 1.875rem;
                         flex-direction: column;
                         gap: 0.5rem;
                     }
 
-                    .action-buttons {
+                    .datatable-header {
                         flex-direction: column;
-                    }
-
-                    .filter-card {
-                        flex-direction: column;
-                        text-align: center;
                         gap: 1rem;
                     }
 
-                    .filter-icon {
-                        width: 3rem;
-                        height: 3rem;
-                        font-size: 1.25rem;
+                    .search-input {
+                        width: 100% !important;
                     }
+
+                    .table-actions {
+                        flex-direction: column;
+                        gap: 0.25rem;
+                    }
+
+                    .dialog-footer {
+                        flex-direction: column-reverse;
+                    }
+
+                    .modern-btn {
+                        width: 100% !important;
+                        justify-content: center !important;
+                    }
+                }
+
+                /* Column Specific Styling */
+                .avatar-column {
+                    width: 250px !important;
+                }
+
+                .id-column {
+                    width: 200px !important;
+                }
+
+                .role-column {
+                    width: 180px !important;
+                }
+
+                .status-column {
+                    width: 120px !important;
+                }
+
+                .actions-column {
+                    width: 150px !important;
+                    text-align: center !important;
                 }
 
                 /* Accessibility */
@@ -964,10 +1232,14 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                 }
 
                 .modern-btn:focus,
-                .filter-card:focus {
+                .filter-card:focus,
+                .table-action-btn:focus {
                     outline: 2px solid var(--primary-color) !important;
                     outline-offset: 2px !important;
                 }
+
+
+
             </style>
         </div>
     </ui:define>

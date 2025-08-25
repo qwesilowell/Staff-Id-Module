@@ -6,6 +6,8 @@ package com.margins.STIM.Bean;
 
 import com.margins.STIM.entity.Users;
 import com.margins.STIM.entity.ViewPermission;
+import com.margins.STIM.entity.enums.ActionResult;
+import com.margins.STIM.entity.enums.AuditActionType;
 import com.margins.STIM.entity.enums.UserStatus;
 import com.margins.STIM.entity.enums.UserType;
 import jakarta.enterprise.context.SessionScoped;
@@ -53,7 +55,11 @@ public class UserSession implements Serializable {
     public boolean userActive() {
         return currentUser != null && currentUser.getStatus() == UserStatus.ACTIVE;
     }
-
+    public boolean userPendingPassword() {
+        return currentUser != null && 
+                (currentUser.getStatus() == UserStatus.PENDING_PASSWORD_CHANGE);
+    }
+    
     public Set<String> fetchViewPermissions() {
         if (currentUser != null && currentUser.getUserRole() != null) {
             Set<ViewPermission> permissions = currentUser.getUserRole().getPermissions();
@@ -131,6 +137,6 @@ public class UserSession implements Serializable {
         currentUser = null;
         ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
         ec.invalidateSession(); // Ends user session
-        ec.redirect(ec.getRequestContextPath() + "/sublogin.xhtml");
+        ec.redirect(ec.getRequestContextPath() + "/login.xhtml");
     }
 }

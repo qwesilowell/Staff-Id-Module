@@ -58,6 +58,12 @@ public class AccessLogService {
     @Inject
     private EmployeeEntranceStateService employeeEntranceStateService;
 
+    @Inject
+    private AnomalyRefGeneratorService anomalyRefGen;
+
+    @Inject
+    private NotificationService notification;
+
     @PersistenceContext
     private EntityManager em;
 
@@ -68,9 +74,24 @@ public class AccessLogService {
     }
 
     public void logAnomalies(AccessAnomaly log) {
+        log.setAnomalyRef(anomalyRefGen.generateUniqueAnomalyRef());
         em.persist(log);
         em.flush();
+        notifyAdmin(log);
+        
         em.clear();
+        //Consider batch processing to flush and clear 
+    }
+
+    private void notifyAdmin(AccessAnomaly log) {
+        try {
+            AccessAnomaly aa = anomalyRefGen.findByAnomalyRef(log.getAnomalyRef());
+            notification.notifyAllAdminsofAnomaly(aa);
+            JSF.addWarningMessageWithSummary("Notify!","New Anomaly Found");
+        } catch (Exception e) {
+            e.printStackTrace();
+            JSF.addErrorMessage("Failed To Notify ");
+        }
     }
 
     // For dashboard later
@@ -579,7 +600,7 @@ public class AccessLogService {
                     result.addAnomaly(AnomalyType.OUT_OF_TIME_RANGE_EXIT);
                     result.setGranted(true);
                     result.setResult("GRANTED");
-                    result.setMessage("Exit allowed in lenient mode.");
+                    result.setMessage("Exit Allowed: Outside Time Range.");
                     return result;
                 }
                 result.setGranted(true);
@@ -747,6 +768,18 @@ public class AccessLogService {
 
     public long countAllLogs() {
         return em.createQuery("SELECT COUNT(a) FROM AccessLog a", Long.class).getSingleResult();
+    }
+
+    public long getTotalAnomalyCount() {
+        return (Long) em.createQuery("SELECT COUNT(a) FROM AccessAnomaly a").getSingleResult();
+    }
+
+    public List<AccessAnomaly> getMostRecentAnomalies(int count) {
+        return em.createQuery(
+                "SELECT a FROM AccessAnomaly a ORDER BY a.timestamp DESC",
+                AccessAnomaly.class)
+                .setMaxResults(count)
+                .getResultList();
     }
 
     public List<AccessLog> findLogsBetweenDates(LocalDateTime start, LocalDateTime end, Integer entranceId) {
