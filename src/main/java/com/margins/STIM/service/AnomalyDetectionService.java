@@ -84,8 +84,9 @@ public class AnomalyDetectionService {
      * @param device
      */
     public void checkFrequentDeniedAccess(Employee employee, Devices device) {
+        System.out.println("Checking Frequent Access>>>>>>>>>>");
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime windowStart = now.minusMinutes(1); // 1-minute window
+        LocalDateTime windowStart = now.minusMinutes(3); // 3-minute window
 
         // Count failed attempts in the last 2 minutes for this employee+device combo
         Long recentDenials = accessLogService.countDeniedAttemptsInTimeWindow(
@@ -103,7 +104,7 @@ public class AnomalyDetectionService {
                 anomaly.setAnomalyType(AnomalyType.FREQUENT_DENIED_ACCESS);
                 anomaly.setAnomalySeverity(anomaly.getAnomalyType().getSeverity());
                 anomaly.setEmployee(employee);
-                anomaly.setMessage("Multiple denied attempts (" + recentDenials + ") within 1 minutes");
+                anomaly.setMessage("Multiple denied attempts (" + recentDenials + ") within 3 minutes");
                 anomaly.setDevice(device);
                 anomaly.setEntrance(device.getEntrance());
                 anomaly.setTimestamp(now);

@@ -60,6 +60,7 @@ public class NotificationService {
      */
     public void createAnomalyNotification(AccessAnomaly anomaly, Users recipient) {
         try {
+            System.out.println("This is runnning>>>>>>>>>>>>>>>>>> " + anomaly.getId());
             AnomalyNotification notification = new AnomalyNotification();
             notification.setAnomaly(anomaly);
             notification.setRecipient(recipient);
@@ -112,7 +113,7 @@ public class NotificationService {
                 for (Users admin : admins) {
                     createAnomalyNotification(anomaly, admin);
                 }
-            }else {
+            } else {
                 System.out.println("No >>>>>>>>active admins found.");
             }
 
@@ -318,7 +319,14 @@ public class NotificationService {
 
     // ===== HELPER METHODS =====
     private void saveNotification(Notification notification) {
-        entityManager.persist(notification);
+        try {
+            entityManager.persist(notification);
+            entityManager.flush();
+            System.out.println("This should log the anomaly>>>>>>>");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to log anomaly>>>>>>>>>>");
+        }
     }
 
     private NotificationPriority mapSeverityToPriority(AnomalySeverity severity) {

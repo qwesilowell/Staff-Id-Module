@@ -18,11 +18,22 @@
         <ui:insert name="head"/>
         <title><ui:insert name="title"/></title>
         <h:outputScript library="js" name="template.js" target="body" />
-      
+        <script type="text/javascript">
+            let notificationSound = new Audio('#{request.contextPath}/resources/sounds/notificationSound.mp3');
+        </script>
+
     </h:head>
     <h:body>
         <!-- Sidebar Toggle Button -->
-        <button class="toggle-btn" onclick="toggleSidebar()"><i class="pi pi-bars"></i></button>
+        <button class="toggle-btnS" onclick="toggleSidebar()"><i class="pi pi-bars"></i></button>
+
+        <!--        <div class="topbar" id="topbar">
+                                <div class="staff-id-section">
+                                    <h:outputText value="Staff ID Module" style="font-weight: bold;" />
+                                    <p:graphicImage name="id-card-svgrepo-com.svg" library="images" style="height:30px; vertical-align: middle;"/>
+                                </div>
+                </div>
+        -->
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <p:spacer height="20px"/>
@@ -33,85 +44,316 @@
                 </div>
                 <div class="logo">
                     <div class="logo-text">
-                        STAFF ID_MODULE<br/>
+                        STAFF ID MODULE<br/>
                         <span><strong>#{userSession.userRoleName()}</strong></span>
                     </div>
                 </div>
             </div>
 
-            <h:link outcome="/app/dashboard2" styleClass="active">
-                📊 <span>Dashboard</span>
-                <f:param name="faces-redirect" value="true" />
+            <h:link outcome="/app/dashboard2?faces-redirect=true" title="Dashboard" styleClass="#{userSession.isActive('/app/dashboard2.xhtml')?'active':''}">
+                <i class="pi pi-fw pi-chart-bar" style="color: red;"></i> <span class="identify">Dashboard</span>
             </h:link>
 
-            <h2>EMPLOYEE</h2>
-            <h:link outcome="/app/OnboardEmployee/onboardEmployee?faces-redirect=true" >
-                &#129489;&#8205;&#128188;<span>Onboard Employee</span>    
-            </h:link>
+            <ui:fragment rendered="#{userSession.hasAnyPermission('Onboard Employee','Employee Profiles','Update Employee Details')}">
 
-            <h:link outcome="/app/employeeList?faces-redirect=true">
-                <i class="fa-solid fa-users" style="color: buttonface;"></i> <span style="padding-left: 5px;"> Employee Profiles</span>
-            </h:link>
+                <h2>EMPLOYEE</h2>
+                <ui:fragment rendered="#{userSession.hasPermission('Onboard Employee')}">
+                    <h:link outcome="/app/OnboardEmployee/onboardEmployee?faces-redirect=true" styleClass="#{userSession.isActive('/app/OnboardEmployee/onboardEmployee.xhtml')?'active':''}"
+                            title="Click to onboard a new employee" >
+                        <i class="fa-solid fa-user-large " style="color:  #16579d;"/>
+                        <span class="identify">Onboard Employee</span>    
+                    </h:link>
+                </ui:fragment>
 
-            <h2>Employee Roles</h2>
-            <h:link outcome="/app/EmployeeRoles/assignRole?faces-redirect=true">
-                <i class="fa-regular fa-pen-to-square" style="color: #f29326;"></i><span style="padding-left: 5px;">Update Employee Role</span>
-            </h:link>
-            <h:link outcome="/app/EmployeeRoles/createRole?faces-redirect=true">
-                ✍ <span style="padding-left: 5px;">Create Employee Role</span>
-            </h:link>
-            <h:link outcome="/app/OnboardEmployee/empStatusPage?faces-redirect=true">
-                <i class="fa-solid fa-square-plus" style="color: #e3be35;"></i> <span style="padding-left: 5px;"> Add Employee Status</span>
-            </h:link>
+                <ui:fragment rendered="#{userSession.hasPermission('Employee Profiles')}">
+                    <h:link outcome="/app/employeeList?faces-redirect=true" title="Click to view employee's profiles" styleClass="#{userSession.isActive('/app/employeeList.xhtml')?'active':''}">
+                        <i class="fa-solid fa-users" style="color:#607b6e;"></i> <span style="padding-left: 5px;"> Employee Profiles</span>
+                    </h:link>
+                </ui:fragment>
 
-            <h2>Assign Access</h2>
-            <h:link outcome="/app/Access/assign-roles?facess-redirect=true">
-                <i class="fa-solid fa-door-open" style="color: #EA580C;"></i> <span style="padding-left: 5px;" >Assign Roles to Entrances</span>
-            </h:link>
-            <h:link outcome="/app/Access/assignEntrance?faces-redirect=true">
-                <i class="fa-solid fa-building-user" style="color: buttonhighlight;"></i> <span style="padding-left: 5px;">Assign Custom Entrance</span>
-            </h:link>
+                <ui:fragment rendered="#{userSession.hasPermission('Update Employee Details')}">
+                    <h:link outcome="/app/Verification/singleFinger?faces-redirect=true" title="Update Employee Details" 
+                            styleClass="#{userSession.isActive('/app/Verification/singleFinger.xhtml')?'active':''}">
+                        <i class="fa-solid fa-user-pen" style="color:#237c8b;"></i> <span style="padding-left: 5px;"> Update Employee Details</span>
+                    </h:link>
+                </ui:fragment>       
+            </ui:fragment>
 
-            <h2>Entrances</h2>
-            <h:link outcome="/app/Entrances/manageEntrances?faces-redirect=true">
-                <i class="fa-solid fa-door-closed" style="color:#67e8f9;"></i><span style="padding-left: 5px;">Manage Entrances</span>
-            </h:link>
-            <h:link outcome="/app/Entrances/accessControl?faces-redirect=true">
-                <i class="fa-sharp-duotone fa-solid fa-fingerprint fa-beat"></i><span style="padding-left: 5px;">Entrance Access Test</span>
-            </h:link>
+            <ui:fragment rendered="#{userSession.hasAnyPermission('Update Employee Role','Create Employee Role','Add Employee Status')}">
+                <h2>Employee Roles</h2>
 
-            <h2>Monitoring and Reports</h2>
-            <h:link outcome="/app/Access/liveMonitoring?faces-redirect=true">
-                <i class="fa-solid fa-chart-line" id="liveMonitoringIcon" style="color: #ef1f68;"></i><span style="padding-left: 5px;">Real Live Monitoring</span>
-            </h:link>
-            <h:link outcome="/app/Access/historyMonitoring?faces-redirect=true">
-                <i class="fa-solid fa-clock-rotate-left"></i> <span style="padding-left: 5px;">History Monitoring</span>
-            </h:link>
-            <h:link outcome="/app/Reports/Reports?faces-redirect=true">📜 <span> Reports</span>
-            </h:link>
-            
-            <a href="#">⚙️ <span>Settings</span></a>
+                <ui:fragment rendered="#{userSession.hasPermission('Update Employee Role')}" >
+                    <h:link outcome="/app/EmployeeRoles/assignRole?faces-redirect=true" title="Click to Update Employee's Role"
+                            styleClass="#{userSession.isActive('/app/EmployeeRoles/assignRole.xhtml')?'active':''}">
+                        <i class="fa-solid fa-user-tie fa-lg" style="color: #4c4183;"/><span style="padding-left: 5px;">Update Employee Role</span>
+                    </h:link>
+                </ui:fragment>
+
+                <ui:fragment rendered="#{userSession.hasPermission('Create Employee Role')}">
+                    <h:link outcome="/app/EmployeeRoles/createRole?faces-redirect=true" title="Click To Add A New Employee Role"
+                            styleClass="#{userSession.isActive('/app/EmployeeRoles/createRole.xhtml')?'active':''}">
+                        <i class="fa-regular fa-pen-to-square fa-flip-vertical" style="color: black;"/> <span style="padding-left: 5px;">Create Employee Role</span>
+                    </h:link>
+                </ui:fragment>
+
+                <ui:fragment rendered="#{userSession.hasPermission('Add Employee Status')}">
+                    <h:link outcome="/app/OnboardEmployee/empStatusPage?faces-redirect=true" title="Add A New Employee Status"
+                            styleClass="#{userSession.isActive('/app/OnboardEmployee/empStatusPage.xhtml')?'active':''}">
+                        <i class="fa-solid fa-square-plus" style="color: #185377e6;"></i> <span style="padding-left: 5px;"> Add Employee Status</span>
+                    </h:link>
+                </ui:fragment>
+            </ui:fragment>
+
+            <ui:fragment rendered="#{userSession.hasAnyPermission('Assign Roles to Entrances','Assign Custom Entrance')}">
+
+                <h2>Assign Access</h2>
+
+                <ui:fragment rendered="#{userSession.hasPermission('Assign Roles to Entrances')}">
+                    <h:link outcome="/app/Access/assign-roles?facess-redirect=true" title="Configure which roles have permission to use this entranc"
+                            styleClass="#{userSession.isActive('/app/Access/assign-roles.xhtml')?'active':''}">
+                        <i class="fa-solid fa-door-open" style="color: #203f67;"></i> <span style="padding-left: 5px;" >Assign Roles to Entrances</span>
+                    </h:link>
+                </ui:fragment>
+
+                <ui:fragment rendered="#{userSession.hasPermission('Assign Custom Entrance')}">
+                    <h:link outcome="/app/Access/assignEntrance?faces-redirect=true" title="Manage Who Can Access This Entrance"
+                            styleClass="#{userSession.isActive('/app/Access/assignEntrance.xhtml')?'active':''}">
+                        <i class="fa-solid fa-building-user" style="color: #417b37;"></i> <span style="padding-left: 5px;">Assign Custom Entrance</span>
+                    </h:link>
+                </ui:fragment>
+
+            </ui:fragment>
+
+            <ui:fragment rendered="#{userSession.hasAnyPermission('Manage Entrances','Manage Entrance Devices','Strict Mode Reset')}">
+                <h2>Entrances and Device Management</h2>
+                <ui:fragment rendered="#{userSession.hasPermission('Manage Entrances')}" >
+                    <h:link outcome="/app/Entrances/manageEntrances?faces-redirect=true" title="Create and Manage Entrances"
+                            styleClass="#{userSession.isActive('/app/Entrances/manageEntrances.xhtml')?'active':''}">
+                        <i class="fa-solid fa-door-closed" style="color: #4f1010"></i><span style="padding-left: 5px;">Manage Entrances</span>
+                    </h:link>
+                </ui:fragment>
+
+                <ui:fragment rendered="#{userSession.hasPermission('Manage Entrance Devices')}">
+                    <h:link outcome="/app/Entrances/manageDevices?faces-redirect=true" title="Manage Entry/Exit Devices"
+                            styleClass="#{userSession.isActive('/app/Entrances/manageDevices.xhtml')?'active':''}">
+                        <i class="fa-solid fa-mobile-screen-button" style="color: #1b74b5"></i><span style="padding-left: 5px;">Manage Entrance Devices</span>
+                    </h:link>
+                </ui:fragment>
+
+                <ui:fragment rendered="#{userSession.hasPermission('Strict Mode Reset')}">
+                    <h:link outcome="/app/Entrances/resetEmployeeEntranceState?faces-redirect=true" title="Monitor real-time occupant status and location"
+                            styleClass="#{userSession.isActive('/app/Entrances/resetEmployeeEntranceState.xhtml')?'active':''}">
+                        <i class="pi pi-refresh" style="color: #1a2aa9"></i><span style="padding-left: 5px;">Occupant Status</span>
+                    </h:link>
+                </ui:fragment>
+            </ui:fragment>
+
+            <ui:fragment rendered="#{userSession.hasAnyPermission('Entrance Access Test')}">
+                <h2>Entrance Test</h2>
+                <ui:fragment rendered="#{userSession.hasPermission('Entrance Access Test')}">
+                    <h:link outcome="/app/Entrances/accessControl?faces-redirect=true" title="Click Here To Test Access"
+                            styleClass="#{userSession.isActive('/app/Entrances/accessControl.xhtml')?'active':''}">
+                        <i class="fa-sharp-duotone fa-solid fa-fingerprint" style=" color: black"></i>
+                        <span style="padding-left: 5px;">Entrance Access Test</span>
+                    </h:link>
+                </ui:fragment>
+            </ui:fragment>
+
+            <ui:fragment rendered="#{userSession.hasAnyPermission('Real-Time Monitoring','History Monitoring','Reports Page')}">
+                <h2>Monitoring and Reports</h2>
+                <ui:fragment rendered="#{userSession.hasPermission('Real-Time Monitoring')}">
+                    <h:link outcome="/app/Access/liveMonitoring?faces-redirect=true" title="Monitor real-time access grants and denials"
+                            styleClass="#{userSession.isActive('/app/Access/liveMonitoring.xhtml')?'active':''}">
+                        <i class="fa-solid fa-chart-line" id="liveMonitoringIcon" style="color: #ef1f68;"></i>
+                        <span style="padding-left: 5px;">Real-Time Access Monitoring</span>
+                    </h:link>
+                </ui:fragment>
+
+                <ui:fragment rendered="#{userSession.hasPermission('History Monitoring')}">
+                    <h:link outcome="/app/Access/historyMonitoring?faces-redirect=true" title="View access grant and denial history"
+                            styleClass="#{userSession.isActive('/app/Access/historyMonitoring.xhtml')?'active':''}">
+                        <i class="pi pi-history" style="color: #689f38"></i>
+                        <span style="padding-left: 5px;">Access History</span>
+                    </h:link>
+                </ui:fragment>
+
+                <ui:fragment rendered="#{userSession.hasPermission('Reports Page')}">
+                    <h:link outcome="/app/Reports/Reports?faces-redirect=true" title="View All Reports"
+                            styleClass="#{userSession.isActive('/app/Reports/Reports.xhtml')?'active':''}">
+                        <i class="pi pi-book" style="color: #795718"/>
+                        <span class="identify">Reports</span>
+                    </h:link>
+                </ui:fragment>
+
+            </ui:fragment>
+
+            <ui:fragment>
+                <h2>Settings</h2>
+                <ui:fragment rendered="#{userSession.hasPermission('Settings')}">
+                    <h:link outcome="/app/Settings/settingsPage?faces-redirect=true" title="Settings"
+                            styleClass="#{userSession.isActive('/app/Settings/settingsPage.xhtml')?'active':''}">
+                        <i class="pi pi-cog" style="color: #2e4f6d"/>
+                        <span class="identify"> Settings</span>
+                    </h:link>
+                </ui:fragment>
+            </ui:fragment>
         </div>
         <!-- Topbar -->
         <div class="topbar" id="topbar">
-            <div class="avatar">
-                <h:form>
-                    <div class="header-right">
-                        <p:menu overlay="true" trigger="userMenu" my="left top" at="left bottom">
-                            <p:submenu label="#{userSession.username}">
-                                <p:menuitem value="Profile" url="profile.xhtml" icon="pi pi-user" />
-                                <p:menuitem value="Settings" url="settings.xhtml" icon="pi pi-cog" />
-                                <p:separator />
-                                <p:menuitem value="Logout" action="#{dashboard2.logout()}" icon="pi pi-sign-out" />
-                            </p:submenu>
-                        </p:menu>
-                        <p:commandButton id="userMenu" type="button" value="PA" class="initials-button" />
-                    </div>
-                </h:form>
+            <div class="userRole">
+                <span style="display: block; text-align: center; font-size: larger; color: whitesmoke"><strong>#{userSession.userRoleName()}</strong></span>
             </div>
+            <h:form id="navBar" prependId="false">
+                <div class="header-right">
+                    <p:commandLink action="#{anomalyBean.navigateToAnomalyPage}" styleClass="notification-bell" ajax="false"
+                                   immediate="true">
+                        <ui:fragment rendered="#{anomalyBean.unattended > 0}">
+                            <i class="fa-solid fa-bell fa-bounce fa-xl" style="color: whitesmoke !important;"></i>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{anomalyBean.unattended == 0}">
+                            <i class="fa-solid fa-bell fa-xl" style="color: whitesmoke !important;"></i>
+                        </ui:fragment>
+                        <p:badge value="#{anomalyBean.unattendedDisplayCount}" severity="danger"
+                                 styleClass="notification-badge" rendered="#{anomalyBean.unattended > 0}" />
+                    </p:commandLink>
+
+
+                    <div class="navbar-actions">
+                        <div class="notification-bell" onclick=" fetchNotifications();">
+                            <i class="fas fa-bell"></i>
+                            <p:badge  id="notificationBadge" severity="danger" styleClass="notification-badge #{notificationBean.unreadCount == 0 ? 'hidden' : ''}"
+                                      value="#{notificationBean.unreadCount > 99 ? '99+' : notificationBean.unreadCount}" />
+                        </div>
+                    </div>
+
+                    <div class="notification-sidebar" id="notificationSidebar">
+                        <!-- Sidebar Header -->
+                        <div class="sidebar-header">
+                            <h3><i class="fas fa-bell mr-2"></i> Notifications</h3>
+                            <button type="button" class="close-btn" onclick="closeNotifications()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <!-- Notification Actions -->
+                        <div class="notification-actions">
+                            <p:commandButton 
+                                value="Mark All Read" 
+                                icon="fas fa-check-double" 
+                                styleClass="action-btn mark-all-read"
+                                actionListener="#{notificationBean.markAllAsRead()}" 
+                                update="notificationBadge notificationsList" 
+                                process="@this"
+                                ajax="true"/>
+
+                            <p:commandButton 
+                                value=" Clear All" 
+                                icon="fas fa-trash" 
+                                styleClass="action-btn clear-all"
+                                actionListener="#{notificationBean.clearAll()}" 
+                                update="notificationBadge notificationsList" 
+                                process="@this"
+                                ajax="true"/>
+                        </div>
+
+                        <!-- Notifications List -->
+                        <p:remoteCommand 
+                            name="fetchNotifications" 
+                            action="#{notificationBean.loadNotifications()}"  
+                            update="notificationBadge notificationsList" 
+                            oncomplete="toggleNotifications();"/>
+
+                        <h:panelGroup id="notificationsList" layout="block" styleClass="notifications-list" >
+                            <ui:repeat value="#{notificationBean.notifications}" var="notification" varStatus="status" > 
+                                <div class="notification-item #{notification.status.name() == 'UNREAD' ? 'unread' : ''}" 
+                                     onclick="" >
+                                    <div class="priority-indicator #{notification.priority}"></div>
+                                    <div class="notification-content">
+                                        <div class="notification-icon #{notification.priority}">
+                                            <i class="#{notificationBean.getIconClass(notification)}"></i>
+                                        </div>
+                                        <div class="notification-details">
+                                            <div class="notification-title">#{notification.title}</div>
+                                            <div class="notification-message">#{notification.message}</div>
+                                            <div class="notification-time">
+                                                <i class="fas fa-clock"></i>
+                                                #{notificationBean.showTime(notification)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Hover-activated action buttons -->
+                                    <div class="notification">
+                                        <p:commandButton 
+                                            styleClass="action-button mark-read-btn"
+                                            title="Mark as read"
+                                            action="#{notificationBean.markAsRead(notification.id)}"
+                                            update="notificationsList"
+                                            process="@this"
+                                            onstart="addMarkingClass(this); return true;" 
+                                            oncomplete="removeMarkingClass();"
+                                            rendered="#{notification.status.name() == 'UNREAD'}"
+                                            icon="fas fa-check"
+                                            style="width: 28px !important; height: 28px !important; padding: 0 !important;"
+                                            ajax="true"/>
+
+                                        <p:commandButton 
+                                            styleClass="action-button dismiss-btn" 
+                                            title="Dismiss"
+                                            action="#{notificationBean.dismiss(notification)}"
+                                            update="notificationsList"
+                                            process="@this"
+                                            onstart="addDismissingClass(this); return true;" 
+                                            oncomplete="removeDismissingClass();" icon="fas fa-times"
+                                            style="width: 28px !important; height: 28px !important; padding: 0 !important;"
+                                            ajax="true"/>
+
+                                        <p:commandButton 
+                                            styleClass="action-button view-btn"
+                                            title="View"
+                                            rendered="#{notification.actionUrl != null}"
+                                            action="#{notificationBean.openNotification(notification)}"
+                                            update="notificationsList"
+                                            process="@this"
+                                            icon="pi pi-eye"
+                                            style="width: 28px !important; height: 28px !important; padding: 0 !important;"/>
+
+
+                                    </div>
+                                </div>
+                            </ui:repeat>
+                        </h:panelGroup>
+                    </div>
+
+                    <!-- Overlay -->
+                    <div class="overlay" id="overlay" onclick="closeNotifications()"></div>
+
+                    <p:menu overlay="true" trigger="userMenu" my="left top" at="left bottom">
+                        <p:submenu label="#{userSession.username}">
+                            <p:menuitem value="Settings" outcome="/app/Settings/settingsPage?faces-redirect=true" icon="pi pi-cog" />
+                            <p:separator />
+                            <p:menuitem value="Logout" action="#{userSession.logout()}" icon="pi pi-sign-out" />
+                        </p:submenu>
+                    </p:menu>
+                    <p:commandButton id="userMenu" type="button" value="#{userSession.userInitials}" class="initials-button" />
+                </div>
+
+                <p:poll interval="5" 
+                        listener="#{anomalyBean.loadUnattendedCount}" 
+                        update="@(.notification-badge)" 
+                        global="false" 
+                        async="true"
+                        oncomplete="checkForNewNotifications();" />
+            </h:form>     
         </div>
+
+
         <!-- Main Content -->
         <div class="content" id="main-content">
+            <div class="breadcrumb-container">
+                <h:form>
+                    <p:breadCrumb model="#{breadcrumbBean.model}" styleClass="custom-breadcrumb"/>
+                </h:form>
+            </div>
             <ui:insert name="content">
                 <h1> Dashboard Content </h1>
                 <p>This is the main content area.</p>
@@ -119,10 +361,10 @@
         </div>
 
         <!--Footer-->
-<!--        <div class="layout-footer"> 
-            <div class="footer-content"> <span>Version 1.0.0</span> 
-            </div> 
-        </div>-->
+        <!--        <div class="layout-footer"> 
+                    <div class="footer-content"> <span>Version 1.0.0</span> 
+                    </div> 
+                </div>-->
 
 
     </h:body>

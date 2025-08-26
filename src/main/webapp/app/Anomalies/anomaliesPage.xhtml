@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
-<ui:composition template="/WEB-INF/templates.xhtml"
+<ui:composition template="/WEB-INF/template2.xhtml"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:h="jakarta.faces.html"
                 xmlns:f="jakarta.faces.core"
@@ -162,10 +162,10 @@
 
                             <div class="filter-group">
                                 <label class="filter-label">Date</label>
-                                <p:calendar value="#{anomalyBean.dateFilter}"                                            
-                                            style="width: 100%;"
-                                            pattern="dd-MM-yyyy" 
-                                            placeholder="Select date..." />
+                                <p:datePicker selectionMode="range"  placeholder="Select date..." pattern="dd-MM-yyyy" 
+                                              monthNavigator="true" yearNavigator="true" showButtonBar="true"
+                                              value="#{anomalyBean.dateFilter}" style="width: 100%"/>
+
                             </div>
                         </div>
 

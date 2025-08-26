@@ -139,4 +139,12 @@ public class UserSession implements Serializable {
         ec.invalidateSession(); // Ends user session
         ec.redirect(ec.getRequestContextPath() + "/login.xhtml");
     }
+    
+    public String getCurrentViewId() {
+        return FacesContext.getCurrentInstance().getViewRoot().getViewId();
+    }
+
+    public boolean isActive(String path) {
+        return getCurrentViewId().equals(path);
+    }
 }

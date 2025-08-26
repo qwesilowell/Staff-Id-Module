@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
-<ui:composition template="/WEB-INF/templates.xhtml"
+<ui:composition template="/WEB-INF/template2.xhtml"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:h="jakarta.faces.html"
                 xmlns:f="jakarta.faces.core"
@@ -64,7 +64,8 @@
                     </p:dataTable>
                 </p:panel>
                 <!-- Assign Entrance Dialog -->
-                <p:dialog id="assignEntranceDialog" widgetVar="assignEntranceDialog" header="Assign Custom Entrances" modal="true" width="600px">
+                <p:dialog id="assignEntranceDialog" widgetVar="assignEntranceDialog" header="Assign Custom Entrances" modal="true" 
+                          width="600px" blockScroll= "true" style="overflow-y: auto; max-height: 100%;" >
                     <div class="dialog-content" style="padding-bottom: 60px;">
                         <h:panelGrid columns="2" style="margin-bottom: 15px;">
                             <h:outputLabel value="Full Name:" style="font-weight: bold;" />
@@ -148,13 +149,13 @@
                                          action="#{assignEntranceBean.saveCustomEntrances}"
                                          update=":assignEntranceForm:employeeTable :assignEntranceForm:messages"
                                          oncomplete="PF('assignEntranceDialog').hide()"
-                                         styleClass="action-button save-button"
+                                         styleClass="action-buttons save-button"
                                          style="background: #007bff; color: white; border-radius: 4px; margin-right: 10px;"/>
                         <p:commandButton value="Cancel" 
                                          action="#{assignEntranceBean.cancel}"
                                          update=":assignEntranceForm"
                                          oncomplete="PF('assignEntranceDialog').hide()"
-                                         styleClass="action-button cancel-button"
+                                         styleClass="action-buttons cancel-button"
                                          style="background: #dc3545; color: white; border-radius: 4px;"/>
                     </div>
                 </p:dialog>
@@ -427,7 +428,7 @@
             }
 
             /* Hover effect for buttons */
-            .action-button:hover {
+            .action-buttons:hover {
                 opacity: 0.9;
                 transition: opacity 0.2s;
             }

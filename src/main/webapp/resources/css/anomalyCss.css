@@ -14,20 +14,13 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background: #f8fafc!important;
     overflow-x: hidden;
 }
 
-/*.main-content {
-    margin-left: 130px;
-    padding: 10px;
-    margin-bottom: 1px !important;
-    min-height: calc(100vh - 55px - 50px);
-    overflow-x: hidden;
-    flex-grow: 1;
-    max-width: calc(100vw - 130px);
-}*/
+.main-content {
+       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
 
 .anomalies-container {
     padding: 0.5rem;

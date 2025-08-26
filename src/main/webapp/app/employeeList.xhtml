@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<ui:composition template="/WEB-INF/templates.xhtml"
+<ui:composition template="/WEB-INF/template2.xhtml"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:h="jakarta.faces.html"
                 xmlns:f="jakarta.faces.core"
@@ -113,7 +113,7 @@
                                     <div class="profile-actions">
                                         <h:commandButton value=" Default Entrances"
                                                          action="#{manageEmployeesBean.toggleEntrances}"
-                                                         styleClass="action-button">
+                                                         styleClass="action-buttons">
                                             <f:ajax render="entrancesPanel" />
                                         </h:commandButton>
 
@@ -135,7 +135,7 @@
                                     <div class="profile-actions">
                                         <h:commandButton value=" Custom Entrances"
                                                          action="#{manageEmployeesBean.toggleCustomEntrances}"
-                                                         styleClass="action-button">
+                                                         styleClass="action-buttons">
                                             <f:ajax render="CustomEntrancesPanel" />
                                         </h:commandButton>
 

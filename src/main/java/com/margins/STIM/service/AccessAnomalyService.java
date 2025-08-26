@@ -15,6 +15,7 @@ import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -51,7 +52,7 @@ public class AccessAnomalyService {
                 .setParameter("status", status)
                 .getSingleResult();
     }
-    
+
     //OverLoad for users 
     public long countByStatus(AnomalyStatus status, Users user) {
         return em.createQuery("SELECT COUNT(a) FROM AccessAnomaly a WHERE"
@@ -61,7 +62,6 @@ public class AccessAnomalyService {
                 .setParameter("status", status)
                 .getSingleResult();
     }
-
 
     public void markAsResolved(int anomalyId, Users resolvedBy) {
         AccessAnomaly anomaly = em.find(AccessAnomaly.class, anomalyId);
@@ -97,7 +97,6 @@ public class AccessAnomalyService {
                 .setParameter("severity", severity)
                 .getSingleResult();
     }
-    
 
     public long countBySeverityAndStatus(AnomalySeverity severity, AnomalyStatus status) {
         return em.createQuery("SELECT COUNT(a) FROM AccessAnomaly a WHERE a.anomalySeverity = :severity AND a.anomalyStatus = :status", Long.class)
@@ -107,11 +106,13 @@ public class AccessAnomalyService {
     }
 
     /**
-     *This is an overload that takes users to find for users
-     * @param severity     
-     * @param status     
+     * This is an overload that takes users to find for users
+     *
+     * @param severity
+     * @param status
      * @param user     
-     **/
+     *
+     */
     public long countBySeverityAndStatus(AnomalySeverity severity, AnomalyStatus status, Users user) {
         return em.createQuery("SELECT COUNT(a) FROM AccessAnomaly a"
                 + " WHERE a.handledBy = :user"
@@ -124,7 +125,7 @@ public class AccessAnomalyService {
 
     public List<AccessAnomaly> findWithFilters(AnomalySeverity severity, AnomalyStatus status,
             String employeeName, Integer deviceId, String refNumber,
-            Integer entranceId, LocalDate dateFilter , Users user) {
+            Integer entranceId, List<Date> dateFilter, Users user) {
         StringBuilder jpql = new StringBuilder("SELECT a FROM AccessAnomaly a WHERE 1=1");
 
         if (severity != null) {
@@ -133,8 +134,8 @@ public class AccessAnomalyService {
         if (status != null) {
             jpql.append(" AND a.anomalyStatus = :status");
         }
-        if (refNumber != null && !refNumber.trim().isEmpty()){
-        jpql.append(" AND LOWER (a.anomalyRef) LIKE :refNumber");
+        if (refNumber != null && !refNumber.trim().isEmpty()) {
+            jpql.append(" AND LOWER (a.anomalyRef) LIKE :refNumber");
         }
         if (employeeName != null && !employeeName.trim().isEmpty()) {
             jpql.append(" AND (LOWER(CONCAT(a.employee.firstname, ' ', a.employee.lastname)) LIKE :employeeName");
@@ -147,10 +148,9 @@ public class AccessAnomalyService {
         if (entranceId != null) {
             jpql.append(" AND a.entrance.id = :entranceId");
         }
-        if (dateFilter != null) {
-            jpql.append(" AND DATE(a.timestamp) = :dateFilter");
+        if (dateFilter != null && dateFilter.size() == 2) {
+            jpql.append(" AND a.createdAt BETWEEN :start AND :end");
         }
-
         if (user != null) {
             jpql.append(" AND a.handledBy = :user");
         }
@@ -164,7 +164,7 @@ public class AccessAnomalyService {
         if (status != null) {
             query.setParameter("status", status);
         }
-        if(refNumber != null && !refNumber.trim().isEmpty()){
+        if (refNumber != null && !refNumber.trim().isEmpty()) {
             query.setParameter("refNumber", "%" + refNumber.toLowerCase() + "%");
         }
         if (employeeName != null && !employeeName.trim().isEmpty()) {
@@ -177,10 +177,12 @@ public class AccessAnomalyService {
             query.setParameter("entranceId", entranceId);
         }
         if (dateFilter != null) {
-            query.setParameter("dateFilter", dateFilter);
+            query.setParameter("start", dateFilter.get(0));
+            query.setParameter("end", dateFilter.get(1));
         }
-        if (user != null)
+        if (user != null) {
             query.setParameter("user", user);
+        }
         return query.getResultList();
     }
 
@@ -200,9 +202,9 @@ public class AccessAnomalyService {
             em.merge(anomaly);
         }
     }
-    
-    public AccessAnomaly findAnomaly(AccessAnomaly anomaly){
-    return em.find(AccessAnomaly.class, anomaly.getId());
+
+    public AccessAnomaly findAnomaly(AccessAnomaly anomaly) {
+        return em.find(AccessAnomaly.class, anomaly.getId());
     }
 
 }

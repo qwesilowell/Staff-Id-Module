@@ -42,6 +42,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -92,7 +93,7 @@ public class AnomalyBean implements Serializable {
     private String refNumber;
     private Integer deviceFilter;
     private Integer entranceFilter;
-    private LocalDate dateFilter;
+    private List<Date> dateFilter;
     private Users currentUser;
 
     private boolean loading = false;
@@ -420,7 +421,8 @@ public class AnomalyBean implements Serializable {
         rm.addParam("deviceUsed", selectedDevice());
         rm.addParam("entranceSelected", selectedEntrance());
         rm.addParam("anomalyStatus", selectedStatus.toString());
-        rm.addParam("date", (dateFilter != null ? DateFormatter.forLocalDate(dateFilter) : "N/A"));
+        rm.addParam("startDate", (dateFilter != null ? DateFormatter.formatDateAsTimeString(dateFilter.get(0)) : "N/A"));
+        rm.addParam("endDate", (dateFilter != null ? DateFormatter.formatDateAsTimeString(dateFilter.get(1)) : "N/A"));
         rm.addParam("anomalyCount", filteredAnomalies.size());
         rm.addParam("severeCount", getSevereCount());
         rm.addParam("infoCount", getInfoCount());

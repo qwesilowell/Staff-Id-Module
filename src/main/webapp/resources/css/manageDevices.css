@@ -13,12 +13,12 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background: #f8fafc;
     overflow-x: hidden;
 }
 
 .main-content {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     padding: 10px;
     margin-bottom: 1px !important;
     overflow-x: hidden;
@@ -328,7 +328,7 @@ body {
     background-color: white;
     color :#44994C;
     cursor: pointer !important;
-    border: 2px solid #2196f3 !important; 
+    border: 2px solid #2196f3 !important;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 .position.exit.active{

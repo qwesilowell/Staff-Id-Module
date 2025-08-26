@@ -240,7 +240,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     </p:submenu>
                     <p:submenu label="Monitoring and Reports" expanded="true" styleClass="custom-label" rendered="#{userSession.hasAnyPermission('Real-Time Monitoring','History Monitoring','Reports Page')}" >
                         <p:menuitem value="Real Time Monitoring" outcome="/app/Access/liveMonitoring?faces-redirect=true"  icon="pi pi-chart-line"  rendered="#{userSession.hasPermission('Real-Time Monitoring')}"/>
-                        <p:menuitem value="History Monitoring" outcome="/app/Access/historyMonitoring?faces-redirect=true"  icon="pi pi-history"  rendered="#{userSession.hasPermission('History Monitoring')}"/>
+                        <p:menuitem value="Access History" outcome="/app/Access/historyMonitoring?faces-redirect=true"  icon="pi pi-history"  rendered="#{userSession.hasPermission('History Monitoring')}"/>
                         <p:menuitem value="Reports" outcome="/app/Reports/Reports?faces-redirect=true"  icon="pi pi-book"  rendered="#{userSession.hasPermission('Reports Page')}"/>
 
                     </p:submenu>
