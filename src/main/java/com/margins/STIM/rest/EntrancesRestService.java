@@ -4,9 +4,12 @@
  */
 package com.margins.STIM.rest;
 
+import com.margins.STIM.DTO.EntranceDTO;
 import com.margins.STIM.entity.Entrances;
+import com.margins.STIM.service.EntrancesService;
 import java.util.List;
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.ws.rs.Consumes;
@@ -29,84 +32,47 @@ import jakarta.ws.rs.core.Response;
 @Consumes("application/json")
 public class EntrancesRestService {
 
-    @PersistenceContext
-    private EntityManager entityManager;
+    @Inject
+    private EntrancesService entranceService;
 
-    /**
-     * Create a new entrance.
-     *
-     * @param entrance The entrance to create.
-     * @return Response indicating success or failure.
-     */
+    @PersistenceContext
+    private EntityManager em;
+
     @POST
     public Response createEntrance(Entrances entrance) {
-        entityManager.persist(entrance);
+        entranceService.save(entrance);
         return Response.ok("Entrance created successfully").build();
     }
 
-    /**
-     * Retrieve all entrances.
-     *
-     * @return A list of entrances.
-     */
     @GET
-    public List<Entrances> getAllEntrances() {
-        return entityManager.createQuery("SELECT e FROM Entrances e", Entrances.class).getResultList();
+    public List<EntranceDTO> getAllEntrances() {
+        List<Entrances> entrances = entranceService.findAllEntrances(); 
+        return entrances.stream()
+                .map(EntranceDTO::new)
+                .toList();
     }
 
-    /**
-     * Retrieve a specific entrance by ID.
-     *
-     * @param id The ID of the entrance.
-     * @return The entrance or a 404 response if not found.
-     */
     @GET
     @Path("/{id}")
-    public Response getEntranceById(@PathParam("id") String id) {
-        Entrances entrance = entityManager.find(Entrances.class, id);
+    public Response getEntranceById(@PathParam("id") int id) {
+        Entrances entrance = entranceService.findEntranceById(id);
         if (entrance != null) {
-            return Response.ok(entrance).build();
+            return Response.ok(new EntranceDTO(entrance)).build();
         }
         return Response.status(Response.Status.NOT_FOUND).entity("Entrance not found").build();
     }
 
-    /**
-     * Update an existing entrance.
-     *
-     * @param id       The ID of the entrance to update.
-     * @param entrance The updated entrance details.
-     * @return Response indicating success or failure.
-     */
     @PUT
     @Path("/{id}")
-    public Response updateEntrance(@PathParam("id") String id, Entrances entrance) {
-        Entrances existingEntrance = entityManager.find(Entrances.class, id);
-        if (existingEntrance != null) {
-            existingEntrance.setEntranceDeviceId(entrance.getEntranceDeviceId());
-            existingEntrance.setEntranceName(entrance.getEntranceName());
-            existingEntrance.setEntranceLocation(entrance.getEntranceLocation());
-            entityManager.merge(existingEntrance);
+    public Response updateEntrance(@PathParam("id") int id, Entrances entrance) {
+        Entrances existing = entranceService.findEntranceById(id);
+        if (existing != null) {
+            existing.setEntranceId(entrance.getEntranceId());
+            existing.setEntranceName(entrance.getEntranceName());
+            existing.setEntranceLocation(entrance.getEntranceLocation());
+            entranceService.updateEntrance(id, existing);
             return Response.ok("Entrance updated successfully").build();
         }
         return Response.status(Response.Status.NOT_FOUND).entity("Entrance not found").build();
     }
-
-    /**
-     * Delete an entrance by ID.
-     *
-     * @param id The ID of the entrance to delete.
-     * @return Response indicating success or failure.
-     */
-    @DELETE
-    @Path("/{id}")
-    public Response deleteEntrance(@PathParam("id") String id) {
-        Entrances entrance = entityManager.find(Entrances.class, id);
-        if (entrance != null) {
-            entrance.setDeleted(true);
-            entityManager.merge(entrance);
-            return Response.ok("Entrance deleted successfully").build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).entity("Entrance not found").build();
-    }
 }
-

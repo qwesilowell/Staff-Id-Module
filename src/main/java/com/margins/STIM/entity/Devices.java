@@ -37,7 +37,7 @@ public class Devices extends EntityModel implements Serializable {
     private DevicePosition devicePosition; // ENTRY or EXIT
 
     @ManyToOne(optional = true)
-    @JoinColumn(name = "entrance_device_id", referencedColumnName = "ENTRANCE_DEVICE_ID")
+    @JoinColumn(name = "entrance_id", referencedColumnName = "ENTRANCE_ID")
     private Entrances entrance; // The entrance this device belongs to
 
     @Column(name = "is_deleted", nullable = false)

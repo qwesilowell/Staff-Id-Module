@@ -64,17 +64,20 @@ public class Employee implements Serializable {
 //    @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL)
 //    private BiometricData biometricData;
     @ManyToOne
-    @JoinColumn(name = "role_id", nullable = true)
+    @JoinColumn(name = "role_id", nullable = false)
     private EmployeeRole role;
     
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted = false;
 
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+    private List<CustomTimeAccess> customAccessList = new ArrayList<>();
+    
     @ManyToMany
     @JoinTable(
             name = "employee_entrance_access",
             joinColumns = @JoinColumn(name = "EMPLOYEE_ID"),
-            inverseJoinColumns = @JoinColumn(name = "ENTRANCE_DEVICE_ID")
+            inverseJoinColumns = @JoinColumn(name = "ENTRANCE_ID")
     )
     private List<Entrances> customEntrances = new ArrayList<>();
 

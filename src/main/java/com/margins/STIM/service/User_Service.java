@@ -60,6 +60,7 @@ public class User_Service {
             systemUser.setUsername("PHILIP MANTE ASARE");
             systemUser.setUserType(UserType.ADMIN);
             systemUser.setGhanaCardNumber("GHA-726682342-4");
+            systemUser.setStatus(UserStatus.ACTIVE);
             systemUser.setUserRole(userRole);
             systemUser.setEmail("philip.asare@margins-id.com");
             systemUser.setPassword(passwordEncoder.encode("InshaAllah"));

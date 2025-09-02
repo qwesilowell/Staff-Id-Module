@@ -5,16 +5,16 @@
 package com.margins.STIM.Bean;
 
 import com.google.gson.Gson;
-import com.margins.STIM.entity.ActivityLog;
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.EmployeeRole;
 import com.margins.STIM.entity.EmploymentStatus;
+import com.margins.STIM.entity.Users;
 import com.margins.STIM.entity.enums.ActionResult;
 import com.margins.STIM.entity.enums.AuditActionType;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.entity.websocket.FingerCaptured;
-import com.margins.STIM.model.CapturedFinger;
+import com.margins.STIM.DTO.CapturedFinger;
 import com.margins.STIM.service.ActivityLogService;
 import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.EmployeeRole_Service;
@@ -205,11 +205,15 @@ public class OnboardEmployeeController implements Serializable {
     @Setter
     private Integer assignedRoleId;
 
+    @Inject
+    private Users currentUser;
+
     @PostConstruct
     public void init() {
         // Load available roles from database
 //        availableRoles = roleService.findAllEmployeeRoles();
 //        availableStatuses = employeeService.findAllEmploymentStatuses();
+        currentUser = userSession.getCurrentUser();
     }
 
     public void setupBreadcrumb() {
@@ -275,7 +279,6 @@ public class OnboardEmployeeController implements Serializable {
     }
 
     public void submit() {
-        String result = "Failed";
         try {
             if (!ValidationUtil.isValidGhanaCardNumber(ghanaCardNumber)) {
                 JSF.addErrorMessage("Invalid Ghana Card Format");
@@ -334,18 +337,11 @@ public class OnboardEmployeeController implements Serializable {
             callBack = g.fromJson(res, VerificationResultData.class);
             System.out.println("Response from API: " + res);
 
-            String userId = (String) FacesContext.getCurrentInstance()
-                    .getExternalContext().getSessionMap().get("username");
-            if (userId == null) {
-                userId = "unknown";
-            }
-
             if (response.statusCode() == 200 && callBack != null) {
                 if ("TRUE".equals(callBack.getData().getVerified())) {
                     JSF.addSuccessMessage("Single Finger Verification Successful!");
 
                     verificationSuccess = true;
-                    result = "Success";
                     currentStep++;
 
                     empImage = "data:image/png;base64," + callBack.data.person.biometricFeed.face.data;
@@ -360,36 +356,26 @@ public class OnboardEmployeeController implements Serializable {
 
                     PrimeFaces.current().ajax().update("wizardForm");
 
-//                    FacesContext.getCurrentInstance().getExternalContext().redirect(BASE_URL + "signup.xhtml");
+                    String details = "Single finger verification succeeded for " + employeeName;
+                    auditLogService.logActivity(AuditActionType.CREATE, "Single Finger Onboard Employee", ActionResult.SUCCESS, details, currentUser);
                 } else {
                     JSF.addErrorMessage("Fingerprint Verification Failed!");
+                    String details = "Single finger verification failed for " + ghanaCardNumber;
+                    auditLogService.logActivity(AuditActionType.CREATE, "Single Finger Onboard Employee", ActionResult.FAILED, details, currentUser);
                 }
             } else {
                 JSF.addErrorMessage("Verification Error:" + (callBack != null ? callBack.msg : "No response from server"));
+                String details = "Single finger verification failed for " + ghanaCardNumber + "reason : " + (callBack != null ? callBack.msg : "No response from server");
+                auditLogService.logActivity(AuditActionType.CREATE, "Single Finger Onboard Employee", ActionResult.FAILED, details, currentUser);
             }
-            String action = "verify_single_finger";
-            String targetId = ghanaCardNumber;
-            String details = result.equals("success") ? "Single finger verification succeeded"
-                    : "Single finger verification failed: " + (callBack != null ? callBack.msg : "No response");
-            ActivityLog log = new ActivityLog(userId, action, targetId, result, details);
-            activityLogService.logActivity(log);
+
         } catch (Exception e) {  // Catch any other unexpected errors
             JSF.addErrorMessage("An unexpected error occurred. Please try again!");
             System.out.println("ERROR 3");
             e.printStackTrace(); // Log the error for debugging
-
-            // Log exception
-            String userId = (String) FacesContext.getCurrentInstance()
-                    .getExternalContext().getSessionMap().get("username");
-            if (userId == null) {
-                userId = "unknown";
-            }
-            String action = "verify_single_finger";
-            String targetId = ghanaCardNumber;
             String details = "Single finger verification error: " + e.getMessage();
-            ActivityLog log = new ActivityLog(userId, action, targetId, result, details);
-            activityLogService.logActivity(log);
-            System.out.println("Logging activity: " + details + " by " + userId);
+            auditLogService.logActivity(AuditActionType.CREATE, "Single Finger Onboard Employee", ActionResult.FAILED, details, currentUser);
+            System.out.println("Logging activity: " + details + " by " + currentUser.getUsername());
         }
 
     }
@@ -513,18 +499,27 @@ public class OnboardEmployeeController implements Serializable {
 
                     PrimeFaces.current().ajax().update("wizardForm");
 
+                    String details = "Multifinger verification succeeded for " + employeeName;
+                    auditLogService.logActivity(AuditActionType.CREATE, "MultiFinger Onboard Employee", ActionResult.SUCCESS, details, currentUser);
+
                 } else {
                     verificationSuccess = false;
                     JSF.addErrorMessage("Verification Failed: " + message);
+                    String details = "Multifinger verification failed. ";
+                    auditLogService.logActivity(AuditActionType.CREATE, "MultiFinger Onboard Employee", ActionResult.FAILED, details, currentUser);
                 }
             } else {
                 verificationSuccess = false;
                 JSF.addErrorMessage("Verification Failed Reason: " + message);
+                String details = "Multi finger verification failed reason : " + (callBack != null ? callBack.msg : "No response from server");
+                auditLogService.logActivity(AuditActionType.CREATE, "MultiFinger Onboard Employee", ActionResult.FAILED, details, currentUser);
             }
         } catch (Exception e) {  // Catch any other unexpected errors
             JSF.addErrorMessage("An unexpected error occurred. Please try again!");
             System.out.println("ERROR 3");
             e.printStackTrace(); // Log the error for debugging
+            String details = "Multi finger verification error: " + e.getMessage();
+            auditLogService.logActivity(AuditActionType.CREATE, "Multi Finger Onboard Employee", ActionResult.FAILED, details, currentUser);
         }
 
     }
@@ -546,6 +541,9 @@ public class OnboardEmployeeController implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_INFO,
                             "Role Assigned", "Role " + assignedRoleName + " has been selected"));
+
+            String details = currentUser.getUsername() + " assigned " + newEmployee.getFullName() + " role: " + assignedRoleName;
+            auditLogService.logActivity(AuditActionType.CREATE, "Onboard Employee Page", ActionResult.SUCCESS, details, currentUser);
         } else {
             // Handle case where no role is selected
             FacesContext.getCurrentInstance().addMessage(null,
@@ -562,7 +560,6 @@ public class OnboardEmployeeController implements Serializable {
     }
 
     public void saveEmployeeToDatabase() {
-        String result = "fail";
         if (!verificationSuccess) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Verification not completed!", null));
@@ -611,7 +608,7 @@ public class OnboardEmployeeController implements Serializable {
 
             String details = "Created employee: " + forenames + " " + surname + "" + "with GhanaCardNumber " + ghanaCardNumber;
 
-            auditLogService.logActivity(AuditActionType.CREATE, "Onboard Employee Page", ActionResult.SUCCESS, details, userSession.getCurrentUser());
+            auditLogService.logActivity(AuditActionType.CREATE, "Onboard Employee Page", ActionResult.SUCCESS, details, currentUser);
 
             FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             FacesContext.getCurrentInstance().addMessage(null,
@@ -624,8 +621,8 @@ public class OnboardEmployeeController implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Employee Already exists in system: " + "Onboarding Aborted", null));
 
-            String details = "Failed to create employee with GhanaCardNumber " + ghanaCardNumber + " reason: "+ e.getMessage() ;
-            auditLogService.logActivity(AuditActionType.CREATE, "Onboard Employee Page", ActionResult.FAILED, details, userSession.getCurrentUser());
+            String details = "Failed to create employee with GhanaCardNumber " + ghanaCardNumber + " reason: " + e.getMessage();
+            auditLogService.logActivity(AuditActionType.CREATE, "Onboard Employee Page", ActionResult.FAILED, details, currentUser);
             resetWizard();
             e.printStackTrace();
         }
@@ -634,6 +631,15 @@ public class OnboardEmployeeController implements Serializable {
 
     public void verifyFace() {
         try {
+            if (ghanaCardNumber == null || ghanaCardNumber.isBlank()) {
+                JSF.addErrorMessage("National ID must be filled");
+                return;
+            }
+
+            if (!ValidationUtil.isValidGhanaCardNumber(ghanaCardNumber)) {
+                JSF.addErrorMessage("Invalid National ID Format");
+                return;
+            }
             VerificationRequest request = new VerificationRequest();
             request.setImage(faceImageData);
             request.setPinNumber(ghanaCardNumber);
@@ -693,20 +699,30 @@ public class OnboardEmployeeController implements Serializable {
                     nationality = callBack.data.person.nationality;
                     gender = callBack.data.person.gender;
 
+                    String details = "Facial verification successful for " + employeeName;
+                    auditLogService.logActivity(AuditActionType.CREATE, "Facial Verification Onboard Employee", ActionResult.SUCCESS, details, currentUser);
+                    
                     PrimeFaces.current().ajax().update("wizardForm");
-
+                    
+                    
                 } else {
                     verificationSuccess = false;
                     JSF.addErrorMessage("Verification Failed: " + callBack.getMsg());
+                    String details = "Facial Verification failed for " + ghanaCardNumber + "reason : " +callBack.getMsg() ;
+                    auditLogService.logActivity(AuditActionType.CREATE, "Facial Verification Onboard Employee", ActionResult.FAILED, details, currentUser);
                 }
             } else {
                 verificationSuccess = false;
                 JSF.addErrorMessage("Verification Failed Reason: " + callBack.getMsg());
+                String details = "Facial Verification failed for " + ghanaCardNumber + "reason : " + callBack.getMsg();
+                auditLogService.logActivity(AuditActionType.CREATE, "Facial Verification Onboard Employee", ActionResult.FAILED, details, currentUser);
             }
         } catch (Exception e) {  // Catch any other unexpected errors
             JSF.addErrorMessage("An unexpected error occurred. Please try again!");
             System.out.println("ERROR 3");
             e.printStackTrace(); // Log the error for debugging
+            String details = "Facial Verification failed for " + ghanaCardNumber + "reason : " + e.getMessage();
+            auditLogService.logActivity(AuditActionType.CREATE, "Facial Verification Onboard Employee", ActionResult.FAILED, details, currentUser);
         }
 
     }

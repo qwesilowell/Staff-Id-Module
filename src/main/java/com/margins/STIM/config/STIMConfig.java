@@ -12,7 +12,7 @@ import jakarta.ws.rs.core.Application;
  * @author PhilipManteAsare
  */
 
-@ApplicationPath("api/v1")
+@ApplicationPath("api")
 public class STIMConfig extends Application{
     
 }

@@ -13,6 +13,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
@@ -34,23 +35,31 @@ public class EmployeeEntranceStateLog {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "employee_id")
     private Employee employee;
 
     @ManyToOne
+    @JoinColumn(name = "entrance_id")
     private Entrances entrance;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "occupant_state")
     private LocationState state; // INSIDE or OUTSIDE
 
+    @Column(name = "created_at")
     private LocalDateTime createdDate;
 
+    @Column(name = "updated_by")
     private String updatedBy;
 
+    @Column(name = "reason")
     private String reason;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "enntrance_mode")
     private EntranceMode mode; // STRICT, LENIENT, etc.
 
     @ManyToOne
+    @JoinColumn(name = "device_id")
     private Devices device;
 }

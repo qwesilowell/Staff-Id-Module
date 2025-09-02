@@ -78,7 +78,7 @@ public class EntrancesService {
     public Entrances updateEntrance(int id, Entrances entrance) {
         Entrances existingEntrance = entityManager.find(Entrances.class, id);
         if (existingEntrance != null) {
-            existingEntrance.setEntranceDeviceId(entrance.getEntranceDeviceId());
+            existingEntrance.setEntranceId(entrance.getEntranceId());
             existingEntrance.setEntranceName(entrance.getEntranceName());
             existingEntrance.setEntranceLocation(entrance.getEntranceLocation());
             existingEntrance.setEntranceMode(entrance.getEntranceMode());
@@ -106,7 +106,7 @@ public class EntrancesService {
     }
 
     public List<Entrances> searchEntrances(String query) {
-        return entityManager.createQuery("SELECT e FROM Entrances e WHERE LOWER(e.entranceName) LIKE :query OR e.entranceDeviceId "
+        return entityManager.createQuery("SELECT e FROM Entrances e WHERE LOWER(e.entranceName) LIKE :query OR e.entranceId "
                 + "LIKE :query", Entrances.class)
                 .setParameter("query", "%" + query.toLowerCase() + "%")
                 .getResultList();

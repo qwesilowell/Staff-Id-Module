@@ -5,7 +5,6 @@
 package com.margins.STIM.service;
 
 import com.margins.STIM.Bean.UserSession;
-import com.margins.STIM.entity.ActivityLog;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -31,25 +30,6 @@ public class ActivityLogService {
     @Inject
     private UserSession userSession;
 
-    public void logActivity(ActivityLog log) {
-        em.persist(log);
-    }
-
-    // For dashboard later
-    public List<ActivityLog> getRecentActivities(String action, int limit) {
-        return em.createQuery("SELECT a FROM ActivityLog a WHERE a.action = :action ORDER BY a.timestamp DESC", ActivityLog.class)
-                .setParameter("action", action)
-                .setMaxResults(limit)
-                .getResultList();
-    }
-
-    public List<ActivityLog> getRecentActivitiesByUser(String action, String userId, int limit) {
-        return em.createQuery("SELECT a FROM ActivityLog a WHERE a.action = :action AND a.userId = :userId ORDER BY a.timestamp DESC", ActivityLog.class)
-                .setParameter("action", action)
-                .setParameter("userId", userId)
-                .setMaxResults(limit)
-                .getResultList();
-    }
 
     public int countByActionAndResultInPeriod(List<String> actions, String result, LocalDateTime start, LocalDateTime end) {
         Long count = em.createQuery(

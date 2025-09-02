@@ -15,7 +15,7 @@ import com.margins.STIM.entity.enums.UserType;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.entity.websocket.FingerCaptured;
-import com.margins.STIM.model.CapturedFinger;
+import com.margins.STIM.DTO.CapturedFinger;
 import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.UserRolesServices;
 import com.margins.STIM.util.DateFormatter;
@@ -469,17 +469,14 @@ public class UserBean implements Serializable {
             return;
         }
 
-        if (!ValidationUtil.isValidGhanaCardNumber(ghanaCardNumber)) {
-            // Check if Ghana Card Number is already registered
-            if (userService.findUserByGhanaCard(ghanaCardNumber) != null) {
-                FacesContext.getCurrentInstance().addMessage(null,
-                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                                "User with Ghana Card Number already registered", null));
-                return;
-            }
-            JSF.addErrorMessage("Invalid GhanaCard Number");
+        // Check if Ghana Card Number is already registered
+        if (userService.findUserByGhanaCard(ghanaCardNumber) != null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "User with Ghana Card Number already registered", null));
             return;
         }
+
         if (!ValidationUtil.isValidEmail(email)) {
             JSF.addErrorMessage("That doesn’t look like a valid email. Please check and try again.");
             return;
@@ -500,11 +497,6 @@ public class UserBean implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, validationMessage, null));
             return;
         }
-        if (selectedUserType == null) {
-            JSF.addErrorMessage("Select A User Type");
-            return;
-        }
-
         Users currentUser = userService.getCurrentUser();
         try {
 

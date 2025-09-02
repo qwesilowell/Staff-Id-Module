@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit this template
+-->
+<!DOCTYPE html>
+
+<ui:composition template="/WEB-INF/template2.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
+   <ui:define name="content">
+    <!-- Main Content -->
+    <div class="main-content">
+<!--        <h:outputScript library="js" name="cardtest.js"/>-->
+        <h2>Ghana Card Reader</h2>
+        
+        <h:form id="cardForm" prependId="false">
+            <div style="margin-bottom: 20px;">
+                <p:commandButton value="Read Card" 
+                                 onclick="readCard(); return false;" 
+                                 styleClass="ui-button ui-button-success" />
+
+                <p:commandButton value="Connect to Reader" 
+                                 onclick="connectWebSocket(); return false;" 
+                                 styleClass="ui-button ui-button-info" 
+                                 style="margin-left: 10px;" />
+                
+                <p:commandButton value="Debug Readers"
+                                 onclick="debugReaders(); return false;"
+                                 styleClass="ui-button ui-button-warning"
+                                 style="margin-left: 10px;" />
+                
+                 <p:commandButton value="Debug Readers"
+                                  action ="#{testBean.loadSmartReader()}"
+                                 styleClass="ui-button ui-button-info"
+                                 style="margin-left: 10px;" />
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <h:outputLabel for="canInput" value="Enter CAN:" style="margin-right:10px;" />
+                <h:inputText id="canInput" style="width:200px;" />
+            </div>
+            
+           
+            
+            <!-- Connection Status -->
+            <div id="connectionStatus" style="margin-bottom: 15px; padding: 10px; border-radius: 4px;">
+                <strong>Status:</strong> <span id="statusText">Disconnected</span>
+            </div>
+            
+            <!-- Card Data Display -->
+            <div id="cardDataContainer" style="display: none; background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                <h3>Card Information</h3>
+                <div class="card-info">
+                    <p><strong>First Name:</strong> <span id="firstName">-</span></p>
+                    <p><strong>Surname:</strong> <span id="surname">-</span></p>
+                    <p><strong>Ghana Card PIN:</strong> <span id="cardPin">-</span></p>
+                    <p><strong>Gender:</strong> <span id="gender">-</span></p>
+                </div>
+            </div>
+            
+            <!-- Error Display -->
+            <div id="errorContainer" style="display: none; background: #f8d7da; color: #721c24; padding: 15px; border-radius: 4px; margin-top: 15px;">
+                <strong>Error:</strong> <span id="errorMessage"></span>
+            </div>
+            
+            <!-- Console Log -->
+            <div style="margin-top: 20px;">
+                <h4>Console Log:</h4>
+                <div id="consoleLog" style="background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 4px; height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+                </div>
+            </div>
+        </h:form>
+        
+        <style>
+            .card-info p {
+                margin: 8px 0;
+                padding: 5px 0;
+                border-bottom: 1px solid #dee2e6;
+            }
+            .card-info p:last-child {
+                border-bottom: none;
+            }
+        </style>
+    </div>
+</ui:define>
+
+</ui:composition>

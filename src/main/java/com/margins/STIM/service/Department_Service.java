@@ -5,7 +5,6 @@
 package com.margins.STIM.service;
 
 import com.margins.STIM.entity.Department;
-import com.margins.STIM.entity.Office;
 import java.util.List;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
@@ -50,7 +49,6 @@ public class Department_Service {
         if (existingDepartment != null) {
             existingDepartment.setDepartmentName(updatedDepartment.getDepartmentName());
             existingDepartment.setDepartmentHead(updatedDepartment.getDepartmentHead());
-            existingDepartment.setOffice(updatedDepartment.getOffice());
             entityManager.merge(existingDepartment);
             return existingDepartment;
         }
@@ -92,15 +90,4 @@ public class Department_Service {
         }
     }
 
-    /**
-     * Find all departments in a specific office.
-     *
-     * @param office The office for which departments are retrieved.
-     * @return A list of departments belonging to the specified office.
-     */
-    public List<Department> findDepartmentsByOffice(Office office) {
-        return entityManager.createQuery("SELECT d FROM Department d WHERE d.office = :office", Department.class)
-                .setParameter("office", office)
-                .getResultList();
-    }
 }

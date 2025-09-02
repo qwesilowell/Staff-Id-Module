@@ -1,12 +1,68 @@
 
 function toggleSidebar() {
-
     const sidebar = document.getElementById('sidebar');
+    const soverlay = document.getElementById('sidebar-overlay'); // Updated ID
 
+    console.log('toggleSidebar called, screen width:', window.innerWidth);
+
+    // Toggle sidebar classes (this works for both desktop and mobile)
     sidebar.classList.toggle('collapsed');
     sidebar.classList.toggle('active');
 
+    console.log('Sidebar classes after toggle:', sidebar.className);
+
+    // Only handle overlay for mobile view (screen width <= 768px)
+    if (window.innerWidth <= 768) {
+        if (sidebar.classList.contains('collapsed')) {
+            soverlay.classList.add('show');
+            console.log('Sidebar soverlay should now be visible');
+        } else {
+            soverlay.classList.remove('show');
+            console.log('Sidebar soverlay should now be hidden');
+        }
+        console.log('Sidebar soverlay classes:', soverlay.className);
+    }
 }
+
+// Initialize elements
+const sidebar = document.getElementById("sidebar");
+const soverlay = document.getElementById("sidebar-overlay"); // Updated ID
+
+// Close sidebar when overlay is clicked (mobile only)
+soverlay.addEventListener("click", () => {
+    if (window.innerWidth <= 768) {
+        sidebar.classList.remove("collapsed");
+        soverlay.classList.remove("show");
+    }
+});
+
+// Optional: Close sidebar when pressing Escape key (mobile only)
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && window.innerWidth <= 768 && sidebar.classList.contains("collapsed")) {
+        sidebar.classList.remove("collapsed");
+        soverlay.classList.remove("show");
+    }
+});
+
+// Optional: Prevent sidebar from closing when clicking inside it (mobile only)
+sidebar.addEventListener("click", (event) => {
+    if (window.innerWidth <= 768) {
+        event.stopPropagation();
+    }
+});
+
+// Handle window resize to clean up overlay state
+window.addEventListener("resize", () => {
+    // If switching from mobile to desktop, hide overlay
+    if (window.innerWidth > 768) {
+        soverlay.classList.remove("show");
+    }
+    // If switching from desktop to mobile and sidebar is collapsed, show overlay
+    else if (window.innerWidth <= 768 && sidebar.classList.contains("collapsed")) {
+        soverlay.classList.add("show");
+    }
+});
+
 //document.addEventListener('DOMContentLoaded', function () {
 //    const icon = document.getElementById('liveMonitoringIcon');
 //    // Check if the icon element exists and if the current page's path matches the target URL

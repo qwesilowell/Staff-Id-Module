@@ -26,8 +26,9 @@ public class AnomalyDetectionScheduler {
      * This is scheduled to run every 30 mins to get all entries without an exit
      * in 12 hrs
      */
-    @Schedule(second = "0", minute = "0,10", hour = "*", persistent = false)  // Every 10mins
+    @Schedule(second = "0", minute = "*/05", hour = "*", persistent = false)  // Every 5min
     public void runUnmatchedEntryAnomalyCheck() {
+        System.out.println("Scheduler Running");
         anomalyDetectionService.detectUnmatchedEntriess();
     }
 }

@@ -38,6 +38,7 @@ public class EmployeeRole extends EntityModel implements Serializable {
             joinColumns = @JoinColumn(name = "role_id"),
             inverseJoinColumns = @JoinColumn(name = "entrance_device_id")
     )   
+    @OrderBy("updatedAt DESC")
     private Set<Entrances> accessibleEntrances = new HashSet<>();
     
 

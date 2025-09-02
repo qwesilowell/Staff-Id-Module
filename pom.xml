@@ -107,17 +107,32 @@
             <version>0.46</version>
         </dependency>
         <dependency>
-    <groupId>org.springframework.security</groupId>
-    <artifactId>spring-security-crypto</artifactId>
-    <version>6.3.0</version> <!-- use latest -->
-</dependency>
-<!--        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+            <version>6.3.0</version> <!-- use latest -->
+        </dependency>
+        <dependency>
+            <groupId>com.c10n</groupId>
+            <artifactId>scalibur-2.0.ghananid.1</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-server</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-container-grizzly-server</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        <!--        <dependency>
             <groupId>com.konghq</groupId>
             <artifactId>unirest-java</artifactId>
             <version>3.14.1</version>
         </dependency>-->
         
-<!--         https://mvnrepository.com/artifact/org.slf4j/slf4j-api 
+        <!--         https://mvnrepository.com/artifact/org.slf4j/slf4j-api 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -135,6 +150,51 @@
             <artifactId>chartjs-java-model</artifactId>
             <version>1.5.0</version>
         </dependency>
+<!--        <dependency>
+            <groupId>com.margins</groupId>
+            <artifactId>biometricsprovider</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.margins</groupId>
+            <artifactId>digitalpersonaprovider</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.margins</groupId>
+            <artifactId>filters</artifactId>
+            <version>2.0.235</version>
+        </dependency>
+        <dependency>
+            <groupId>com.margins</groupId>
+            <artifactId>futronicprovider</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.margins</groupId>
+            <artifactId>hbpkix</artifactId>
+            <version>155</version>
+        </dependency>
+        <dependency>
+            <groupId>com.margins</groupId>
+            <artifactId>hbprov</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.margins</groupId>
+            <artifactId>jnasmartcardioprovider</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.margins</groupId>
+            <artifactId>jnasmartcardio</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+    <groupId>com.margins.nia</groupId>
+    <artifactId>nia-card</artifactId>
+    <version>1.0</version>
+</dependency>-->
     </dependencies>
     
     <build>

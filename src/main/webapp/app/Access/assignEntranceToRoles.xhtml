@@ -1,0 +1,760 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+
+<ui:composition template="/WEB-INF/template2.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="jakarta.faces.facelets">
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{assignRoleEntranceBean.setupBreadcrumb}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="title">Assign Entrance to Roles</ui:define>
+    <ui:define name ="content">
+        <!--Main Content --> 
+        <div class="main-content">
+            <p:growl id="messages" showSummary= "true" showDetail="true" life="6000" />
+
+            <div class="header">
+                <h1><i class="fas fa-door-open"></i> Entrance Role Assignment</h1>
+                <p>Manage access control by assigning entrance access to specific roles</p>
+            </div>
+            <h:form id="roleEntranceForm" prependId="false">
+                <p:panel>
+                    <div class="assignment-panel">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-user-tie"></i>
+                                    Select Role
+                                </label>
+                                <div class="select-wrapper">
+                                    <p:autoComplete id="roles" value="#{assignRoleEntranceBean.selectedRole}"
+                                                    completeMethod="#{assignRoleEntranceBean.searchRole}" 
+                                                    var="role" itemLabel="#{role.roleName}" 
+                                                    itemValue="#{role}"
+                                                    converter="employeeRoleConverter"
+                                                    scrollHeight="200"
+                                                    forceSelection="true" dropdown="true"
+                                                    placeholder="Search or Select Role" 
+                                                    style="width: 100%; overflow: hidden" >
+                                        <!-- Automatically load assigned roles when a role is selected -->
+                                        <p:ajax event="itemSelect" listener="#{assignRoleEntranceBean.loadAssignedEntrances}" update="assignedEntrancesTable entrances" />
+                                    </p:autoComplete>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-door-closed"></i>
+                                    Select Entrances
+                                </label>
+                                <p:selectCheckboxMenu id="entrances" value="#{assignRoleEntranceBean.selectedEntrances}" multiple="true"
+                                                      filter="true"  >
+                                    <f:selectItems value="#{assignRoleEntranceBean.availablEntrancesForSelection}" var="entrance"
+                                                   itemLabel="#{entrance.entranceName}" itemValue="#{entrance}" />
+                                </p:selectCheckboxMenu>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: center; margin-top: 20px;">
+                            <p:commandButton class="assign-btn"  update="messages assignedEntrancesTable entrances"  value=" Assign Entrances to Role"
+                                             action="#{assignRoleEntranceBean.assignEntrancesToRole}" icon="fas fa-plus"/>
+                        </div>
+                    </div>
+                </p:panel>
+
+                <h:panelGroup rendered="#{empty assignRoleEntranceBean.assignedEntrances}">
+                    <div class="assigned-entrances">
+                        <div class="table-header">
+                            <h2 class="table-title">
+                                <i class="fas fa-list-check"></i>
+                                Assigned Entrance Access
+                            </h2>
+                        </div>
+                        <div class="table-body" id="assignedEntrancesTable">
+                            <div class="empty-state">
+                                <i class="fas fa-door-open"></i>
+                                <h3>No assignments yet</h3>
+                                <p>Select a role and entrances above to get started</p>
+                            </div>
+                        </div>
+                    </div>
+                </h:panelGroup>
+
+                <p:panel rendered="#{not empty assignRoleEntranceBean.assignedEntrances}">
+                    <h:panelGroup>
+                        <div class="assigned-entrances">
+                            <div class="table-header">
+                                <h2 class="table-title">
+                                    <i class="fas fa-list-check"></i>
+                                    Assigned Entrance Access
+                                </h2>
+                                
+                            </div>
+                            <!--                    Add the css for the white-row-->
+                            <p:dataTable id="assignedEntrancesTable" value="#{assignRoleEntranceBean.assignedEntrances}" var="entrance"
+                                         style="margin-top: 10px;" class="table-body" paginator="true"
+                                         paginatorPosition="bottom"
+                                         rows="10"
+                                         rowIndexVar="rowIndex"  rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">
+                                
+                                <p:column headerText="Accessible Entrances" 
+                                          filterBy="#{entrance.entranceName}"
+                                          filterMatchMode="contains">
+                                    <h:outputText value="#{entrance.entranceName}"/>
+                                </p:column>
+
+                                <p:column headerText="Time Rules">
+                                    <!-- Show status when entrance has time rules when roles can access them -->
+                                    <h:panelGroup rendered="#{assignRoleEntranceBean.hasTimeRules(entrance)}">
+                                        <span style="color: #28a745; font-family: Times New Roman, serif; font-weight: bold;">
+                                            <i class="fa fa-check-circle" style="margin-right: 5px;"></i>
+                                            Role time access created
+                                        </span>
+                                    </h:panelGroup>
+
+                                    <!-- Show status when role has no time rules -->
+                                    <h:panelGroup rendered="#{!assignRoleEntranceBean.hasTimeRules(entrance)}">
+                                        <span style="color: #993333; font-family: Times New Roman, serif; font-weight: bold;">
+                                            <i class="fa fa-exclamation-triangle" style="margin-right: 5px;"></i>
+                                            No time access configured
+                                        </span>
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <p:column headerText="Assign Time Rule" style="text-align:center;">    
+                                    <p:commandButton  class="rounded-button ui-button-info ui-button-outlined"  icon="fa-solid fa-business-time" action="#{assignRoleEntranceBean.prepareDayTimeRules(entrance)}"
+                                                      update=":roleEntranceForm:sidebar2" oncomplete="PF('sidebar2').show()" process="@this" />
+                                </p:column>
+                                <p:column headerText="Remove">
+                                    <p:commandButton class="rounded-button ui-button-danger ui-button-outlined" 
+                                                     icon="pi pi-trash"                                        
+                                                     process="@this"
+                                                     actionListener="#{assignRoleEntranceBean.setSelectedEntrance(entrance)}"
+                                                     oncomplete="PF('confirmDialog').show()"
+                                                     update=":roleEntranceForm:confirmDialog"/>
+                                </p:column>
+
+
+                            </p:dataTable>
+                        </div>
+                    </h:panelGroup>
+
+                    <p:dialog id="confirmDialog"
+                              widgetVar="confirmDialog" 
+                              showEffect="fade" 
+                              width="300"
+                              hideEffect="fade" 
+                              header="Confirm"
+                              modal="true">
+
+                        <div class="confirm-message">
+                            <span>Delete Role's Access to This Entrance </span>
+                            <span class="role-name">#{assignRoleEntranceBean.selectedEntrance.entranceName}</span>
+                            <span> and all time configuration ?</span>
+                        </div>                    <br/><br/>
+                        <div style="display:flex; flex-direction: row; justify-content: flex-end; gap: 10px;">
+                            <p:commandButton value="Yes" 
+                                             icon="pi pi-check" 
+                                             actionListener="#{assignRoleEntranceBean.removeEntrance()}"
+                                             process="@this" 
+                                             oncomplete="PF('confirmDialog').hide()"
+                                             update="assignedEntrancesTable messages"
+                                             styleClass="rounded-button"
+                                             style="padding: 1px 3px !important;"
+                                             />
+                            <p:commandButton value="No" 
+                                             type="button" 
+                                             styleClass="ui-button-secondary rounded-button" 
+                                             icon="pi pi-times"
+                                             onclick="PF('confirmDialog').hide()" />
+                        </div>
+                    </p:dialog>
+                </p:panel>
+
+                <div class="card"> 
+                    <p:sidebar id ="sidebar2" widgetVar="sidebar2" position="right" style="width: 30%; background-color: #f8f9fa;overflow:scroll "  blockScroll= "true" >
+                        <div class="p-col-12">
+                            <div class="same-line-container">
+                                <i class="pi pi-user p-mr-2 text-primary icon-style"></i>
+                                <p:outputLabel value="Role:" styleClass="label-style" />
+                                <h:outputText value="#{assignRoleEntranceBean.dayRule.employeeRole.roleName}" styleClass="value-style" />
+                            </div>
+                            <br/>
+                            <div class="same-line-container">
+                                <i class="pi pi-map-marker p-mr-2 text-success icon-style"></i>
+                                <p:outputLabel value="Entrance:" styleClass="label-style" />
+                                <h:outputText value="#{assignRoleEntranceBean.dayRule.entrances.entranceName}" styleClass="value-style" />
+                            </div>
+                        </div>
+
+                        <p:separator/>
+                        <p:outputLabel value="Days"/>
+
+                        <!-- Quick Selection Buttons -->
+                        <div class="quick-select-buttons" style="margin-bottom: 15px;">
+                            <p:commandButton value="Select All" 
+                                             icon="pi pi-check-square" 
+                                             action="#{assignRoleEntranceBean.selectAllDays}" 
+                                             update="daysCheckbox dayTimeInputs" 
+                                             process="@this"
+                                             styleClass="ui-button-outlined ui-button-sm"
+                                             style="margin-right: 8px;" />
+
+                            <p:commandButton value="Weekdays" 
+                                             icon="pi pi-briefcase" 
+                                             action="#{assignRoleEntranceBean.selectWeekdays}" 
+                                             update="daysCheckbox dayTimeInputs" 
+                                             process="@this"
+                                             styleClass="ui-button-outlined ui-button-sm"
+                                             style="margin-right: 8px;" />
+
+                            <p:commandButton value="Weekends" 
+                                             icon="pi pi-home" 
+                                             action="#{assignRoleEntranceBean.selectWeekends}" 
+                                             update="daysCheckbox dayTimeInputs" 
+                                             process="@this"
+                                             styleClass="ui-button-outlined ui-button-sm"
+                                             style="margin-right: 8px;" />
+
+                            <p:commandButton value="Clear All" 
+                                             icon="pi pi-times" 
+                                             action="#{assignRoleEntranceBean.clearAllDays}" 
+                                             update="daysCheckbox dayTimeInputs" 
+                                             process="@this"
+                                             styleClass="ui-button-outlined ui-button-danger ui-button-sm" />
+                        </div>
+
+                        <p:selectManyCheckbox value="#{assignRoleEntranceBean.selectedDays}" layout="grid" columns="3" id="daysCheckbox">
+                            <f:selectItem itemLabel="Monday" itemValue="MONDAY" />
+                            <f:selectItem itemLabel="Tuesday" itemValue="TUESDAY" />
+                            <f:selectItem itemLabel="Wednesday" itemValue="WEDNESDAY" />
+                            <f:selectItem itemLabel="Thursday" itemValue="THURSDAY" />
+                            <f:selectItem itemLabel="Friday" itemValue="FRIDAY" />
+                            <f:selectItem itemLabel="Saturday" itemValue="SATURDAY" />
+                            <f:selectItem itemLabel="Sunday" itemValue="SUNDAY" />
+                            <p:ajax event="valueChange"
+                                    listener="#{assignRoleEntranceBean.loadDayTimeInputs}"
+                                    update="dayTimeInputs"
+                                    process="@this" />
+                        </p:selectManyCheckbox>
+
+                        <p:spacer height="10px"/>
+
+                        <h:panelGroup id="dayTimeInputs" layout="block" >
+                            <!-- Default Time Section -->
+                            <p:outputPanel class="default-time-section" rendered="#{assignRoleEntranceBean.selectedDays.size()>0}"
+                                           style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                                <h4 style="margin-top: 0; color: #495057; display: flex; align-items: center;">
+                                    <i class="pi pi-clock" style="margin-right: 8px; color: #007bff;"></i>
+                                    Set Default Time for All Selected Days
+                                </h4>
+
+                                <div class="default-time-inputs" style="display: flex; align-items: end; gap: 15px; justify-content: space-between; flex-wrap: wrap;">
+                                    <div class="time-group">
+                                        <p:outputLabel value="Default Start:" styleClass="default-label" />
+                                        <p:datePicker id="defaultStartTime"
+                                                      value="#{assignRoleEntranceBean.defaultStartTime}"
+                                                      timeOnly="true"
+                                                      placeholder="HH:MM"
+                                                      pattern="HH:mm"
+                                                      hourFormat="12"
+                                                      showTime="true"
+                                                      showIcon="false"
+                                                      stepMinute="1"
+                                                      styleClass="small-time-picker" />
+                                    </div>
+
+                                    <div class="time-group">
+                                        <p:outputLabel value="Default End:" styleClass="default-label" />
+                                        <p:datePicker id="defaultEndTime"
+                                                      value="#{assignRoleEntranceBean.defaultEndTime}"
+                                                      timeOnly="true"
+                                                      placeholder="HH:MM"
+                                                      pattern="HH:mm"
+                                                      hourFormat="12"
+                                                      showTime="true"
+                                                      showIcon="false"
+                                                      stepMinute="1"
+                                                      styleClass="small-time-picker" />
+                                    </div>
+
+                                    <p:commandButton value="Fill All Selected Days" 
+                                                     icon="pi pi-copy" 
+                                                     action="#{assignRoleEntranceBean.fillDefaultTimesToSelectedDays}" 
+                                                     update="dayTimeInputs" 
+                                                     process="@this defaultStartTime defaultEndTime"
+                                                     styleClass="ui-button-success ui-button-sm"
+                                                     disabled="#{empty assignRoleEntranceBean.selectedDays}" />
+                                </div>
+                            </p:outputPanel>
+
+                            <h3 class="section-title">
+                                <i class="pi pi-calendar" style="margin-right:8px;color:#22C55E;" />
+                                Assign Time Range For Days
+                            </h3>
+                            <ui:repeat value="#{assignRoleEntranceBean.selectedDays}" var="day">
+                                <div class="day-time-block">
+                                    <!-- Day label -->
+                                    <div class="day-header" style="display: flex;justify-content: space-between;">
+                                        <h:outputText value="#{day}" styleClass="day-title" />
+                                        <p:commandButton icon="pi pi-trash" 
+                                                         styleClass="rounded-button ui-button-danger ui-button-outlined deletebutton" 
+                                                         title="Remove this day" 
+                                                         process="@this" 
+                                                         actionListener="#{assignRoleEntranceBean.deleteDayTimeRule(day)}" 
+                                                         update=":roleEntranceForm:dayTimeInputs :roleEntranceForm:daysCheckbox  :roleEntranceForm:assignedEntrancesTable" />
+                                    </div>
+
+                                    <div class="time-row">
+                                        <div class="time-group">
+                                            <i class="pi pi-clock" style="color:#6366F1;" />
+                                            <p:outputLabel value="Start:" styleClass="label-style" />
+                                            <p:datePicker id="startTime"
+                                                          value="#{assignRoleEntranceBean.startTimes[day]}"
+                                                          timeOnly="true"
+                                                          placeholder="HH:MM"
+                                                          pattern="HH:mm"
+                                                          hourFormat="12"
+                                                          showTime="true"
+                                                          showIcon="false"
+                                                          stepMinute="1"
+                                                          styleClass="small-time-picker" />
+                                        </div>
+                                        <div class="time-group">
+                                            <i class="pi pi-clock" style="color:#EF4444;" />
+                                            <p:outputLabel value="End:" styleClass="label-style" />
+                                            <p:datePicker id="endTime"
+                                                          value="#{assignRoleEntranceBean.endTimes[day]}"
+                                                          timeOnly="true"
+                                                          placeholder="HH:MM"
+                                                          pattern="HH:mm"
+                                                          hourFormat="12"
+                                                          showTime="true"
+                                                          showIcon="false"
+                                                          stepMinute="1"
+                                                          styleClass="small-time-picker" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <p:spacer height="10px"/>
+                            </ui:repeat>
+                        </h:panelGroup>
+
+                        <div class="dialog-footer">
+                            <p:commandButton value="Save Rule" icon="pi pi-save" 
+                                             action="#{assignRoleEntranceBean.saveDayTimeRules}" 
+                                             update="assignedEntrancesTable messages" 
+                                             oncomplete="if (#{assignRoleEntranceBean.timeRuleValid})PF('sidebar2').hide()" 
+                                             styleClass="save" />
+                        </div>
+                    </p:sidebar>
+                </div>
+
+            </h:form>
+
+
+            <style>
+                .header {
+                    margin-top: 10px;
+                    background: whitesmoke;
+                    color: #495057;
+                    padding: 2px 2px;
+                    position: relative;
+                    overflow: hidden;
+                }
+                .same-line-container {
+                    display: flex;
+                    align-items: center; /* Vertically align items in the container */
+                    gap: 10px; /* Adjust the spacing between the elements as needed */
+                }
+
+                .icon-style {
+                    font-size: 1.2rem; /* Apply the font size to all icons */
+                    margin-right: 0.5rem; /* Add a little space to the right of each icon */
+                    color:#644d12;
+                    ;
+                }
+
+                .label-style {
+                    font-weight: 600; /* Make the labels bold */
+                    color: #374151; /* Apply the label color */
+                }
+                .default-label {
+                    font-weight: 600 !important; /* Make the labels bold */
+                    color: #374151 !important; /* Apply the label color */
+                    display: flex;
+                    text-align: start;
+                }
+
+                .value-style {
+                    color: #111827; /* Apply the value color */
+                }
+
+                .valueColumn {
+                    color: #111827;
+                    width: 65%;
+                }
+
+                .field-value {
+                    font-weight: 500;
+                }
+
+                .field-label i {
+                    vertical-align: middle;
+                }
+
+                .header h1 {
+                    font-weight: 700;
+                    margin-bottom: 10px;
+                    position: relative;
+                    z-index: 1;
+                }
+
+                .header p {
+                    font-size: 1.1rem;
+                    opacity: 0.9;
+                    position: relative;
+                    z-index: 1;
+                }
+                .assignment-panel {
+                    background: white;
+                    border-radius: 20px;
+                    padding: 11px;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+                    margin-bottom: 30px;
+                    border: 1px solid rgba(0, 0, 0, 0.05);
+                }
+
+                .form-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 30px;
+                }
+
+                .form-group {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .form-label {
+                    font-weight: 600;
+                    color: #374151;
+                    margin-bottom: 8px;
+                    font-size: 0.95rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+
+                body .ui-autocomplete .ui-autocomplete-input.ui-autocomplete-dd-input {
+                    width: 80% !important;
+                }
+                body .ui-selectcheckboxmenu {
+                    width: 100% !important;
+                }
+
+                .select-wrapper:focus-within::after {
+                    transform: translateY(-50%) rotate(180deg);
+                }
+
+                .ui-selectcheckboxmenu {
+                    width:100% !important;
+                }
+
+                .multi-select-container:focus-within {
+                    border-color: #3b82f6;
+                    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+                }
+
+                .selected-tags {
+                    padding: 10px;
+                    min-height: 50px;
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                    align-items: center;
+                }
+
+                .tag {
+                    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                    color: white;
+                    padding: 6px 12px;
+                    border-radius: 20px;
+                    font-size: 0.85rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    animation: tagAppear 0.3s ease;
+                }
+
+                .dropdown-options {
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    right: 0;
+                    background: white;
+                    border: 1px solid #e5e7eb;
+                    border-top: none;
+                    border-radius: 0 0 12px 12px;
+                    max-height: 200px;
+                    overflow-y: auto;
+                    z-index: 1000;
+                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+                }
+
+                .dropdown-option {
+                    padding: 12px 16px;
+                    cursor: pointer;
+                    transition: background 0.2s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+
+                .dropdown-option:hover {
+                    background: #f3f4f6;
+                }
+
+                .dropdown-option.selected {
+                    background: #eff6ff;
+                    color: #1d4ed8;
+                }
+
+                .assign-btn {
+                    background: linear-gradient(135deg, #10b981, #059669) !important;
+                    color: white !important;
+                    border: none !important;
+                    padding: 6px 9px !important;
+                    border-radius: 12px !important;
+                    font-weight: 600 !important;
+                    font-size: 1rem !important;
+                    cursor: pointer !important;
+                    transition: all 0.3s ease !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    gap: 10px !important;
+                    margin-left: auto !important;
+                }
+
+                .assign-btn:hover {
+                    transform: translateY(-2px) !important;
+                    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3) !important;
+                }
+
+                .assigned-entrances {
+                    background: white;
+                    border-radius: 20px;
+                    overflow: hidden;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+                }
+                .table-header {
+                    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+                    padding: 20px 30px;
+                    border-bottom: 1px solid #e5e7eb;
+                    display: flex;
+                    justify-content: space-between;
+                }
+
+                .table-title {
+                    font-size: 1.5rem;
+                    font-weight: 700;
+                    color: #1f2937;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                }
+
+                .table-body {
+                    max-height: 500px;
+                    overflow-y: auto;
+                }
+                .empty-state {
+                    text-align: center;
+                    padding: 60px 20px;
+                    color: #6b7280;
+                }
+
+                .empty-state i {
+                    font-size: 4rem;
+                    margin-bottom: 20px;
+                    opacity: 0.5;
+                }
+
+                .save {
+                    background-color: #2196f3;
+                    color: white !important;
+                    padding: 6px 4px !important;
+                }
+                .white-row {
+                    background-color: white !important;
+                }
+
+                .ash-row {
+                    background-color: white !important;
+                }
+                .white-row:hover, .ash-row:hover {
+                    background-color: #dceeff !important;
+                    cursor: pointer;
+                }
+                .day-row {
+                    margin-bottom: 20px; /* Space between days */
+                }
+                .day-title {
+                    font-weight: bold;
+                    font-size: 1.2em;
+                    margin-bottom: 8px;
+                    color: #333;
+                }
+
+                .time-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 20px;
+                    flex-wrap: wrap;
+                    margin-top: 6px;
+                }
+
+                /* Align label, icon, and input within each group */
+                .time-group {
+                    display: flex;
+                    align-items: start;
+                    gap: 6px;
+                }
+
+                /* Make the time input smaller and tighter */
+                .small-time-picker .ui-inputfield {
+                    width: 100% !important;
+                    font-size: 0.75rem !important;
+                    padding: 4px 6px !important;
+                    font-weight: bolder;
+                }
+
+                /* Optional: reduce margin around output labels */
+                .label-style {
+                    font-size: 0.75rem;
+                    margin: 0;
+                }
+
+                .quick-select-buttons {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                    padding: 10px;
+                    background-color: #f8f9fa;
+                    border-radius: 6px;
+                    border: 1px solid #e9ecef;
+                }
+
+                .quick-select-buttons .ui-button {
+                    font-size: 12px;
+                    padding: 6px 12px;
+                    border-radius: 4px;
+                    transition: all 0.2s;
+                }
+
+                .quick-select-buttons .ui-button:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+
+                /* Default Time Section Styling */
+                .default-time-section {
+                    animation: fadeIn 0.3s ease-in;
+                }
+
+                .default-time-inputs {
+                    align-items: flex-end;
+                }
+
+                .default-time-inputs .time-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 5px;
+                }
+
+                .default-time-inputs .fill {
+                    display:flex !important;
+                    align-items: flex-end !important;
+
+                }
+
+                /* Fill button styling */
+                .ui-button-success.ui-button-sm {
+                    background: linear-gradient(135deg, #28a745, #20c997);
+                    border: none;
+                    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+                    transition: all 0.2s;
+                    white-space: nowrap;
+                    margin-left: auto;
+                }
+
+                .ui-button-success.ui-button-sm:hover:not(:disabled) {
+                    background: linear-gradient(135deg, #218838, #1ea085);
+                    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+                    transform: translateY(-1px);
+                }
+
+                .ui-button-success.ui-button-sm:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
+
+                /* Individual day time settings */
+                .day-time-block {
+                    border-left: 3px solid #007bff;
+                    padding-left: 15px;
+                    margin-bottom: 15px;
+                    background-color: #fff;
+                    border-radius: 6px;
+                    padding: 12px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }
+
+                .day-title {
+                    font-weight: 600;
+                    color: #007bff;
+                    font-size: 14px;
+                    text-transform: capitalize;
+                }
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-10px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                @media (max-width: 600px) {
+                    .time-row {
+                        flex-direction: column; /* Stack vertically on small screens */
+                        align-items: flex-start;
+                    }
+                    .time-group .p-datepicker {
+                        width: 100%; /* Full width on mobile */
+                    }
+                    .quick-select-buttons {
+                        flex-direction: column;
+                    }
+
+                    .quick-select-buttons .ui-button {
+                        width: 100%;
+                        justify-content: center;
+                    }
+
+                    .default-time-inputs {
+                        flex-direction: column;
+                        gap: 10px;
+                    }
+                }
+            </style>
+        </div>
+    </ui:define>
+</ui:composition>

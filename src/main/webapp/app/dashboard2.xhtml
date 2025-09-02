@@ -28,7 +28,6 @@
 
                         <div class="dashboard">
                             <div class="cards-container">
-                                <!-- Card 1 -->
                                 <div class="card blue" style="border-left: 6px solid #2BBDD0;">
                                     <h:link outcome="/app/employeeList?faces-redirect=true" styleClass="no-style" >
                                         <div class="card-content">                                       
@@ -41,7 +40,6 @@
                                     </h:link>
                                 </div>
 
-                                <!-- Card 2 -->
                                 <div class="card green" style="border-left: 6px solid greenyellow;">
                                     <h:link outcome="/app/EmployeeRoles/createRole?faces-redirect=true" styleClass="no-style" >
                                         <div class="card-content">
@@ -54,7 +52,6 @@
                                     </h:link>
                                 </div>
 
-                                <!-- Card 3 -->
                                 <div class="card orange" style="border-left: 6px solid #E6B262;">
                                     <h:link outcome="/app/Entrances/manageEntrances?faces-redirect=true" styleClass="no-style" >
                                         <div class="card-content">
@@ -68,9 +65,8 @@
                                 </div>
 
 
-                                <!-- Card 4 -->
-                                <div class="card red" style="border-left: 6px solid #EA5455;">
-                                    <h:link  outcome="/app/Reports/employeeReport?faces-redirect=true"  styleClass="no-style" > <!-- Reports filter for this month -->
+                                <div class="card teal" style="border-left: 6px solid #00a8a8;">
+                                    <h:link  outcome="/app/Reports/employeeReport?faces-redirect=true"  styleClass="no-style" > 
                                         <div class="card-content">
                                             <div class="card-title">Onboarded This Month</div>
                                             <div class="card-value">#{dashboard2.employeesOnboardedMonth}</div>
@@ -81,7 +77,6 @@
                                     </h:link>
                                 </div>
 
-                                <!-- Card 5 -->
                                 <div class="card purple" style="border-left: 6px solid #9A35B6;">
                                     <h:link outcome="/app/Settings/activitylog?faces-redirect=true"  styleClass="no-style" > <!-- Settings Recent logins -->
                                         <div class="card-content">
@@ -93,12 +88,48 @@
                                         </div>
                                     </h:link>
                                 </div>
+
+                                <div class="card red" style="border-left: 6px solid #f44336;">
+                                    <h:link outcome="/app/Anomalies/anomaliesPage?faces-redirect=true"  styleClass="no-style" > 
+                                        <div class="card-content">
+                                            <div class="card-title">Unattended Anomaly</div>
+                                            <div class="card-value">#{dashboard2.unattendedCount}</div>
+                                        </div>
+                                        <div class="card-icon">
+                                            <i class="fa-solid fa-triangle-exclamation"></i>
+                                        </div>
+                                    </h:link>
+                                </div>
+
+                                <div class="card yellow" style="border-left: 6px solid #ede62ec7;">
+                                    <h:link outcome="/app/Anomalies/anomaliesPage?faces-redirect=true"  styleClass="no-style" > 
+                                        <div class="card-content">
+                                            <div class="card-title">Pending Anomaly</div>
+                                            <div class="card-value">#{dashboard2.pendingCount}</div>
+                                        </div>
+                                        <div class="card-icon">
+                                            <i class="fa-solid fa-spinner fa-lg"></i>
+                                        </div>
+                                    </h:link>
+                                </div>
+
+                                <div class="card green" style="border-left: 6px solid #2ed47a;">
+                                    <h:link outcome="/app/Anomalies/anomaliesPage?faces-redirect=true"  styleClass="no-style" > 
+                                        <div class="card-content">
+                                            <div class="card-title">Resolved Anomaly</div>
+                                            <div class="card-value">#{dashboard2.resolvedCount}</div>
+                                        </div>
+                                        <div class="card-icon">
+                                            <i class="fa-solid fa-circle-check fa-lg"></i>               
+                                        </div>
+                                    </h:link>
+                                </div>
                             </div>
                         </div>
-                        
+
                         <p:spacer height="50px"/>
 
-                         <p:panel id="adminActiveEntrances" styleClass="mostAccessed"
+                        <p:panel id="adminActiveEntrances" styleClass="mostAccessed"
                                  style="border-left: 6px solid #95C0F5; border-radius: 10px;">
 
                             <f:facet name="header">
@@ -161,7 +192,7 @@
                         <h:outputText value="Filter by Entrance: "/>
                         <p:selectOneMenu value="#{dashboard2.selectedEntranceId}">
                             <f:selectItem itemLabel="All Entrances" itemValue="#{null}"/>
-                            <f:selectItems value="#{dashboard2.allEntrances}" var="e" itemLabel="#{e.entranceName}" itemValue="#{e.entranceDeviceId}"/>
+                            <f:selectItems value="#{dashboard2.allEntrances}" var="e" itemLabel="#{e.entranceName}" itemValue="#{e.entranceId}"/>
                             <p:ajax update="dashboardContent" listener="#{dashboard2.updateStats()}" process="@this"/>
                         </p:selectOneMenu>
 
@@ -406,6 +437,43 @@
                                     </h:link>
                                 </div>
 
+
+                                <div class="card red" style="border-left: 6px solid #f44336;">
+                                    <h:link outcome="/app/Anomalies/anomaliesPage?faces-redirect=true"  styleClass="no-style" > <!-- Settings Recent logins -->
+                                        <div class="card-content">
+                                            <div class="card-title">Unattended Anomaly</div>
+                                            <div class="card-value">#{dashboard2.unattendedCount}</div>
+                                        </div>
+                                        <div class="card-icon">
+                                            <i class="fa-solid fa-triangle-exclamation"></i>
+                                        </div>
+                                    </h:link>
+                                </div>
+
+                                <div class="card yellow" style="border-left: 6px solid #ede62ec7;">
+                                    <h:link outcome="/app/Anomalies/anomaliesPage?faces-redirect=true"  styleClass="no-style" > <!-- Settings Recent logins -->
+                                        <div class="card-content">
+                                            <div class="card-title">Pending Anomaly</div>
+                                            <div class="card-value">#{dashboard2.pendingCount}</div>
+                                        </div>
+                                        <div class="card-icon">
+                                            <i class="fa-solid fa-spinner fa-lg"></i>
+                                        </div>
+                                    </h:link>
+                                </div>
+
+                                <div class="card green" style="border-left: 6px solid #2ed47a;">
+                                    <h:link outcome="/app/Anomalies/anomaliesPage?faces-redirect=true"  styleClass="no-style" > <!-- Settings Recent logins -->
+                                        <div class="card-content">
+                                            <div class="card-title">Resolved Anomaly</div>
+                                            <div class="card-value">#{dashboard2.resolvedCount}</div>
+                                        </div>
+                                        <div class="card-icon">
+                                            <i class="fa-solid fa-circle-check fa-lg"></i>               
+                                        </div>
+                                    </h:link>
+                                </div>
+                                
                                 <!-- Card 4 -->
                                 <ui:fragment rendered="#{userSession.hasPermission('Onboard Employee')}">
                                     <div class="card purple" style="border-left: 6px solid #9A35B6;">
@@ -420,6 +488,8 @@
                                         </h:link>
                                     </div>
                                 </ui:fragment>
+
+
                             </div>
                         </div>
 
@@ -660,14 +730,6 @@
                 border-top-right-radius: 10px;
                 /*                background: #99E57A !important;*/
             }
-            .dashboard-card {
-                background: #f8f9fa;
-                border-radius: 8px;
-                padding: 20px;
-                margin: 10px;
-                text-align: center;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
             .card-title {
                 font-size: 1.2em;
                 color: #333;
@@ -804,10 +866,7 @@
                 height: 100%;
             }
 
-            .dashboard {
-                max-width: 1200px;
-                margin-right: 10px;
-            }
+         
             .cards-container {
                 display: grid;
                 grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -876,7 +935,7 @@
             }
 
             .card.red .card-icon {
-                color: #f95062;
+                color: #f44336;
                 background-color: rgba(249, 80, 98, 0.1);
             }
 
@@ -896,8 +955,8 @@
             }
 
             .card.yellow .card-icon {
-                color: #ffa800;
-                background-color: rgba(255, 168, 0, 0.1);
+                color: #FFD43B;
+                background-color: rgb(255 240 0 / 14%);
             }
 
             .entrance-grid {
@@ -929,7 +988,7 @@
             .pill-card:hover {
                 background-color: #81c784;
                 transform: translateY(-2px);
-                 text-decoration: none !important;
+                text-decoration: none !important;
             }
 
             .pill-content {

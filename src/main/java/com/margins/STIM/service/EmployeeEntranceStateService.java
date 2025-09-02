@@ -71,15 +71,15 @@ public class EmployeeEntranceStateService {
                 .orElse(null);
     }
 
-    public EmployeeEntranceState findByEmployeeAndEntrance(int employeeId, int entranceDeviceId) {
+    public EmployeeEntranceState findByEmployeeAndEntrance(int employeeId, int entranceId) {
         return em.createQuery(
                 "SELECT es FROM EmployeeEntranceState es "
                 + "WHERE es.employee.id = :employeeId "
-                + "AND es.entrance.id = :entranceDeviceId"
+                + "AND es.entrance.id = :entranceId"
                 + " AND es.deleted = false",
                 EmployeeEntranceState.class)
                 .setParameter("employeeId", employeeId)
-                .setParameter("entranceDeviceId", entranceDeviceId)
+                .setParameter("entranceId", entranceId)
                 .getResultStream()
                 .findFirst()
                 .orElse(null);
@@ -96,26 +96,26 @@ public class EmployeeEntranceStateService {
     }
 
     // Find all employees at one entrance with specific state
-    public List<EmployeeEntranceState> findByEntranceAndState(int entranceDeviceId, LocationState state) {
+    public List<EmployeeEntranceState> findByEntranceAndState(int entranceId, LocationState state) {
         return em.createQuery(
                 "SELECT es FROM EmployeeEntranceState es "
-                + "WHERE es.entrance.id = :entranceDeviceId "
+                + "WHERE es.entrance.id = :entranceId "
                 + "AND es.currentState = :state"
                 + " AND es.deleted = false",
                 EmployeeEntranceState.class)
-                .setParameter("entranceDeviceId", entranceDeviceId)
+                .setParameter("entranceId", entranceId)
                 .setParameter("state", state)
                 .getResultList();
     }
 
     // Get employees currently INSIDE at specific entrance
-    public List<EmployeeEntranceState> findEmployeesInsideAtEntrance(int entranceDeviceId) {
-        return findByEntranceAndState(entranceDeviceId, LocationState.INSIDE);
+    public List<EmployeeEntranceState> findEmployeesInsideAtEntrance(int entranceId) {
+        return findByEntranceAndState(entranceId, LocationState.INSIDE);
     }
 
     // Get employees currently OUTSIDE at specific entrance
-    public List<EmployeeEntranceState> findEmployeesOutsideAtEntrance(int entranceDeviceId) {
-        return findByEntranceAndState(entranceDeviceId, LocationState.OUTSIDE);
+    public List<EmployeeEntranceState> findEmployeesOutsideAtEntrance(int entranceId) {
+        return findByEntranceAndState(entranceId, LocationState.OUTSIDE);
     }
 
     public EmployeeEntranceState recordEntryOrExit(Employee employee, Entrances entrance, DevicePosition position, String updatedBy, Devices device) {
@@ -184,13 +184,13 @@ public class EmployeeEntranceStateService {
     }
 
     // Count employees inside at entrance
-    public Long countEmployeesInside(int entranceDeviceId) {
+    public Long countEmployeesInside(int entranceId) {
         return em.createQuery(
                 "SELECT COUNT(es) FROM EmployeeEntranceState es "
-                + "WHERE es.entrance.id = :entranceDeviceId "
+                + "WHERE es.entrance.id = :entranceId "
                 + "AND es.currentState = :state"
                 + " AND es.deleted = falsel", Long.class)
-                .setParameter("entranceDeviceId", entranceDeviceId)
+                .setParameter("entranceId", entranceId)
                 .setParameter("state", LocationState.INSIDE)
                 .getSingleResult();
     }

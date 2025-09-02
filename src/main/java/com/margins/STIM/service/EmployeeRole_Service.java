@@ -16,6 +16,7 @@ import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
@@ -173,7 +174,7 @@ public class EmployeeRole_Service {
 
             for (RoleTimeAccess rta : timeAccessList) {
                 System.out.println("Deleting Time Rule → Role: " + rta.getEmployeeRole().getRoleName()
-                        + ", Entrance: " + rta.getEntrances().getEntranceDeviceId()
+                        + ", Entrance: " + rta.getEntrances().getEntranceId()
                         + ", Day: " + rta.getDayOfWeek()
                         + ", Start: " + rta.getStartTime()
                         + ", End: " + rta.getEndTime());
@@ -226,5 +227,18 @@ public class EmployeeRole_Service {
                 ((Long) obj[2]).intValue() // entrance count
         ))
                 .collect(Collectors.toList());
+    }
+    
+    
+    public EmployeeRole findVisitorRole() {
+        try {
+            return em.createQuery(
+                    "SELECT r FROM EmployeeRole r WHERE LOWER(r.roleName) = :roleName AND r.deleted = false",
+                    EmployeeRole.class)
+                    .setParameter("roleName", "visitor")
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null; // or throw a custom exception
+        }
     }
 }

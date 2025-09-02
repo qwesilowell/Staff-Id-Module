@@ -199,7 +199,7 @@ public class NotificationService {
         notification.setRecipient(recipient);
         notification.setPriority(priority);
         notification.setStatus(NotificationStatus.UNREAD);
-        notification.setRelatedUser(user); // link anomaly if applicable
+        notification.setRelatedUser(user); // link user if applicable
 
         saveNotification(notification);
 

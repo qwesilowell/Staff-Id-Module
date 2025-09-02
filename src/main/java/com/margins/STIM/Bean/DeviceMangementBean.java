@@ -404,7 +404,7 @@ public class DeviceMangementBean implements Serializable {
         final String q = query.toLowerCase();
         return availableEntrances.stream()
                 .filter(e -> (e.getEntranceName() != null && e.getEntranceName().toLowerCase().contains(q))
-                || (e.getEntranceDeviceId() != null && e.getEntranceDeviceId().toLowerCase().contains(q)))
+                || (e.getEntranceId()!= null && e.getEntranceId().toLowerCase().contains(q)))
                 .collect(Collectors.toList());
     }
 

@@ -35,7 +35,7 @@ public class RoleTimeAccess extends EntityModel implements Serializable {
     private EmployeeRole employeeRole;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ENTRANCE_ID",referencedColumnName = "ENTRANCE_DEVICE_ID", nullable = false)
+    @JoinColumn(name = "ENTRANCE_ID",referencedColumnName = "id", nullable = false)
     private Entrances entrances;
 
     @Column(name = "START_TIME")

@@ -7,6 +7,12 @@
     <h:head>
         <title>Ghana Card Login</title>
         <h:outputStylesheet library="css" name="style.css"/>
+        <link rel="icon" type="image/x-icon" href="#{resource['images/favicon.ico']}" />
+        <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/apple-touch-icon.png']}" />
+        <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicon-32x32.png']}" />
+        <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicon-16x16.png']}" />
+        <link rel="manifest" href="#{resource['site.webmanifest']}" />
+
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
         <style type="text/css">
@@ -197,7 +203,7 @@
                 cursor: pointer !important;
                 border: none !important;
                 margin-left: 10px !important;
-                 order: 2;
+                order: 2;
             }
 
             .btn-primary-modal {
@@ -213,7 +219,7 @@
                 background: #6c757d !important;
                 color: white !important;
                 order: 1
-                    
+
             }
 
             .btn-secondary-modal:hover {
@@ -338,7 +344,7 @@
                                          update="@form loginForm"
                                          process="@form"
                                          />
-                        
+
                         <p:commandButton value="Cancel" 
                                          action="#{sublogin.cancelPasswordChange}"
                                          styleClass="modal-btn btn-secondary-modal"

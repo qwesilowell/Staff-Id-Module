@@ -13,7 +13,6 @@ import com.margins.STIM.Charts.EntranceAccessBarChart;
 import com.margins.STIM.Charts.LineCharts;
 import com.margins.STIM.Charts.RolePieChart;
 import com.margins.STIM.entity.AccessLog;
-import com.margins.STIM.entity.ActivityLog;
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.Entrances;
 import com.margins.STIM.service.AccessLogService;
@@ -25,8 +24,12 @@ import com.margins.STIM.util.DateFormatter;
 import com.margins.STIM.DTO.RoleCount;
 import com.margins.STIM.entity.AuditLog;
 import com.margins.STIM.entity.EmployeeEntranceState;
+import com.margins.STIM.entity.Users;
 import com.margins.STIM.entity.enums.ActionResult;
+import com.margins.STIM.entity.enums.AnomalyStatus;
 import com.margins.STIM.entity.enums.AuditActionType;
+import com.margins.STIM.entity.enums.UserType;
+import com.margins.STIM.service.AccessAnomalyService;
 import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.EmployeeEntranceStateService;
 import java.io.Serializable;
@@ -86,6 +89,8 @@ public class DashboardBean implements Serializable {
     private LineCharts lineCharts;
     @Inject
     private BreadcrumbBean breadcrumbBean;
+    @Inject
+    private AccessAnomalyService anomalyService;
 
     // Admin metrics
     private int totalEmployees;
@@ -106,7 +111,7 @@ public class DashboardBean implements Serializable {
     private List<RoleCount> rolesWithMostEmployeesLimit = new ArrayList<>();
     private List<RoleCount> rolesWithMostEmployees = new ArrayList<>();
     private LocalDate[] dateRange;
-    private LocalDate startFrom ;
+    private LocalDate startFrom;
     private LocalDate endAt;
 
     private Map<String, String> employeeNameMap;
@@ -118,8 +123,12 @@ public class DashboardBean implements Serializable {
     private List<AccessLog> userRecentAccessAttempts;
     private LineChartModel mostAccessedEntrance;
     private List<EmployeeEntranceState> currentStates;
+    private Users currentUser;
 
     private int employeesUserOnboardedToday;
+    private long unattendedCount;
+    private long pendingCount;
+    private long resolvedCount;
 
     // Filters
     private String selectedEntranceId;
@@ -147,6 +156,8 @@ public class DashboardBean implements Serializable {
         endAt = LocalDate.now();
         startFrom = endAt.minusDays(30);
         updateMostAccessed();
+        currentUser = userSession.getCurrentUser();
+       anomalyCount();
 
         currentStates = empEntStateService.findRecentEmployeeEntranceStates(20);
         // Admin metrics {find a way to make it run if the role is admin or consider using the usertype you get ?}
@@ -160,7 +171,6 @@ public class DashboardBean implements Serializable {
             employeesOnboardedYear = employeeService.countEmployeesOnboarded(today.withDayOfYear(1).atStartOfDay(), endOfDay);
             successfulLoginsToday = auditLogService.countByActionAndResultInPeriod(
                     AuditActionType.LOGIN, ActionResult.SUCCESS, startOfDay, endOfDay);
-            verificationSuccessRate = calculateVerificationSuccessRate(startOfDay, endOfDay);
             accessSuccessRate = calculateAccessSuccessRate(endofMonth, endOfDay);
             recentLogins = auditLogService.getRecentActivities(5);
             recentEmployees = employeeService.getRecentEmployees(5);
@@ -180,7 +190,6 @@ public class DashboardBean implements Serializable {
                 AuditActionType.LOGIN, ActionResult.SUCCESS, userSession.getCurrentUser(), startOfDay, endOfDay);
         userAssignedEntrances = entrancesService.getEntrancesForUser(userSession.getGhanaCardNumber());
         userRecentAccessAttempts = accessLogService.getRecentAccessAttemptsByUser(username, 5);
-        employeesUserOnboardedToday = activityLogService.countEmployeesOnboardedByLoggedInUserInDay(today);
 
         totalEmployees = employeeService.getTotalEmployees();
         totalRoles = roleService.getTotalRoles();
@@ -191,7 +200,6 @@ public class DashboardBean implements Serializable {
         employeesOnboardedYear = employeeService.countEmployeesOnboarded(today.withDayOfYear(1).atStartOfDay(), endOfDay);
         successfulLoginsToday = auditLogService.countByActionAndResultInPeriod(
                 AuditActionType.LOGIN, ActionResult.SUCCESS, startOfDay, endOfDay);
-        verificationSuccessRate = calculateVerificationSuccessRate(startOfDay, endOfDay);
         accessSuccessRate = calculateAccessSuccessRate(endofMonth, endOfDay);
         recentActivities = auditLogService.getRecentActivitiesByUser(userSession.getCurrentUser(), 7);
         recentEmployees = employeeService.getRecentEmployees(5);
@@ -200,9 +208,8 @@ public class DashboardBean implements Serializable {
         allEntrances = entrancesService.findAllEntrances();
 
         // Initialize charts
-        initVerificationPieChart();
+//        initVerificationPieChart();
 //        initTop5EntrancesLineChart();
-
         rolePieChartModel = RolePieChart.generatechart(rolesWithMostEmployees);
         LocalDateTime end = LocalDateTime.now();
         topEntrancesChartModel = BaseLineChart.generateChart(accessLogService.getTop5RecentEntrancesByGrantedAccess(endofMonth, end));
@@ -230,7 +237,7 @@ public class DashboardBean implements Serializable {
             mostAccessedEntrance = lineCharts.buildEntryExitLineChart(start, end);
 
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Date range not specified."," Defaulting to the last 6 months."));
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Date range not specified.", " Defaulting to the last 6 months."));
         }
     }
 
@@ -382,36 +389,35 @@ public class DashboardBean implements Serializable {
         return colors;
     }
 
-    private void initVerificationPieChart() {
-        // Define the time range (last 30 days)
-        LocalDateTime start = LocalDateTime.now().minusDays(30).withHour(0).withMinute(0).withSecond(0).withNano(0);
-        LocalDateTime end = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59).withNano(999999999);
-
-        // Get counts for both Success and Failed in one call
-        Map<String, Integer> resultCounts = activityLogService.countBiometricLoginsByResultsInPeriod(start, end);
-
-        // Extract counts (default to 0 if key is missing)
-        int successCount = resultCounts.getOrDefault("Success", 0);
-        int failCount = resultCounts.getOrDefault("Failed", 0);
-
-        // Format as JSON string for Chart.js
-        verificationChartData = String.format("""
-        {
-            "labels": ["Successful", "Failed"],
-            "datasets": [{
-                "label": "Biometric Login Outcomes",
-                "data": [%d, %d],
-                "backgroundColor": ["rgba(54, 162, 235, 0.8)", "rgba(255, 99, 132, 0.8)"],
-                "borderColor": ["rgb(54, 162, 235)", "rgb(255, 99, 132)"],
-                "borderWidth": 1
-            }]
-        }
-        """, successCount, failCount);
-
-        System.out.println("Chart data: " + verificationChartData);
-        System.out.println("Success count: " + successCount + ", Fail count: " + failCount);
-    }
-
+//    private void initVerificationPieChart() {
+//        // Define the time range (last 30 days)
+//        LocalDateTime start = LocalDateTime.now().minusDays(30).withHour(0).withMinute(0).withSecond(0).withNano(0);
+//        LocalDateTime end = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+//
+//        // Get counts for both Success and Failed in one call
+//        Map<String, Integer> resultCounts = activityLogService.countBiometricLoginsByResultsInPeriod(start, end);
+//
+//        // Extract counts (default to 0 if key is missing)
+//        int successCount = resultCounts.getOrDefault("Success", 0);
+//        int failCount = resultCounts.getOrDefault("Failed", 0);
+//
+//        // Format as JSON string for Chart.js
+//        verificationChartData = String.format("""
+//        {
+//            "labels": ["Successful", "Failed"],
+//            "datasets": [{
+//                "label": "Biometric Login Outcomes",
+//                "data": [%d, %d],
+//                "backgroundColor": ["rgba(54, 162, 235, 0.8)", "rgba(255, 99, 132, 0.8)"],
+//                "borderColor": ["rgb(54, 162, 235)", "rgb(255, 99, 132)"],
+//                "borderWidth": 1
+//            }]
+//        }
+//        """, successCount, failCount);
+//
+//        System.out.println("Chart data: " + verificationChartData);
+//        System.out.println("Success count: " + successCount + ", Fail count: " + failCount);
+//    }
     public String getVerificationChartData() {
         return verificationChartData;
     }
@@ -424,21 +430,8 @@ public class DashboardBean implements Serializable {
         return DateFormatter.forDateTimes(dt);
     }
 
-    // Format ActivityLog timestamp (for Recent Successful Logins)
-    public String getFormattedActivityLogTimestamp(ActivityLog log) {
-        return DateFormatter.formatDateTime(log.getTimestamp());
-    }
-
     public String getFormattedTime(AuditLog log) {
         return DateFormatter.formatDateTime(log.getCreatedOn());
-    }
-
-    private double calculateVerificationSuccessRate(LocalDateTime start, LocalDateTime end) {
-        int success = activityLogService.countByActionAndResultInPeriod(
-                List.of("verify_single_finger", "verify_multi_finger", "verify_face"), "success", start, end);
-        int total = success + activityLogService.countByActionAndResultInPeriod(
-                List.of("verify_single_finger", "verify_multi_finger", "verify_face"), "fail", start, end);
-        return total == 0 ? 0 : (success * 100.0) / total;
     }
 
     private double calculateAccessSuccessRate(LocalDateTime endofMonth, LocalDateTime end) {
@@ -510,6 +503,18 @@ public class DashboardBean implements Serializable {
         ec.redirect(ec.getRequestContextPath() + "/login.xhtml"); // Redirects to login page
     }
 
+    public void anomalyCount() {
+        if (currentUser.getUserType() == UserType.ADMIN) {
+            unattendedCount = anomalyService.countByStatus(AnomalyStatus.UNATTENDED);
+            pendingCount = anomalyService.countByStatus(AnomalyStatus.PENDING);
+            resolvedCount = anomalyService.countByStatus(AnomalyStatus.RESOLVED);
+            
+        } else {
+            unattendedCount = anomalyService.countByStatus(AnomalyStatus.UNATTENDED, currentUser);
+            pendingCount = anomalyService.countByStatus(AnomalyStatus.PENDING, currentUser);
+            resolvedCount = anomalyService.countByStatus(AnomalyStatus.RESOLVED, currentUser);        
+        }
+    }
     ///Trial
     private Map<Integer, Boolean> entranceExpansionMap = new HashMap<>();
 

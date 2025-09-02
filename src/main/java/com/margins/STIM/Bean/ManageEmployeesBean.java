@@ -259,7 +259,7 @@ public class ManageEmployeesBean implements Serializable {
             combinedEntrances.addAll(selectedEmployee.getRole().getAccessibleEntrances());
         }
         return combinedEntrances.stream()
-                .filter(e -> e.getEntranceDeviceId() != null)
+                .filter(e -> e.getEntranceId()!= null)
                 .collect(Collectors.toList());
 
     }

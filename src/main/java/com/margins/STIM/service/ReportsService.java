@@ -107,11 +107,11 @@ public class ReportsService {
 
         for (AccessLog log : logs) {
 
-            String entranceSpec = log.getDevice().getEntrance().getEntranceDeviceId();
+            String entranceSpec = log.getDevice().getEntrance().getEntranceId();
             if (entranceSpec != null) {
                 Map<String, Integer> data = entranceSpecificLogs.getOrDefault(entranceSpec, new HashMap<String, Integer>());
 
-                if (log.getDevice().getEntrance().getEntranceDeviceId().equals(entranceSpec)) {
+                if (log.getDevice().getEntrance().getEntranceId().equals(entranceSpec)) {
                     String resultType = log.getResult();
                     if (resultType != null) {
                         int count = data.getOrDefault(resultType, 0);
@@ -123,7 +123,7 @@ public class ReportsService {
 
             }
 
-            String currentEntrance = log.getDevice().getEntrance().getEntranceDeviceId();
+            String currentEntrance = log.getDevice().getEntrance().getEntranceId();
             if (currentEntrance != null) {
                 int count = entranceLogs.getOrDefault(currentEntrance, 0);
                 entranceLogs.put(currentEntrance, count + 1);

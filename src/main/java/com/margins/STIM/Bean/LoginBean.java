@@ -9,14 +9,13 @@ package com.margins.STIM.Bean;
  * @author PhilipManteAsare
  */
 import com.google.gson.Gson;
-import com.margins.STIM.entity.ActivityLog;
 import com.margins.STIM.entity.Users;
 import com.margins.STIM.entity.enums.ActionResult;
 import com.margins.STIM.entity.enums.AuditActionType;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.entity.websocket.FingerCaptured;
-import com.margins.STIM.model.CapturedFinger;
+import com.margins.STIM.DTO.CapturedFinger;
 import com.margins.STIM.service.ActivityLogService;
 import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.User_Service;
@@ -37,7 +36,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import javax.net.ssl.SSLContext;
@@ -47,7 +45,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.primefaces.PrimeFaces;
 
 @Getter
 @Setter

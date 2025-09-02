@@ -107,6 +107,12 @@ public class BreadcrumbBean implements Serializable {
         addBreadcrumb("Assign Access", null);
         addBreadcrumb("Assign Custom Entrance", null, true);
     }
+    
+    public void setAssignEntrancesToRoles(){
+        resetToDashboard();
+        addBreadcrumb("Assign Access", null);
+        addBreadcrumb("Assign Entrances to Roles", null, true);
+    }
 
     // Entrances Section
     public void setManageEntrancesBreadcrumb() {

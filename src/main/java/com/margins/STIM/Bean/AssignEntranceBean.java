@@ -148,13 +148,13 @@ public class AssignEntranceBean implements Serializable {
     public List<Entrances> getFilteredAvailableEntrances() {
         Set<String> roleEntranceIds = new HashSet<>();
         if (assignedRoleEntrances != null) {
-            assignedRoleEntrances.forEach(e -> roleEntranceIds.add(e.getEntranceDeviceId()));
+            assignedRoleEntrances.forEach(e -> roleEntranceIds.add(e.getEntranceId()));
         }
         if (assignedCustomEntrances != null) {
-            assignedCustomEntrances.forEach(e -> roleEntranceIds.add(e.getEntranceDeviceId()));
+            assignedCustomEntrances.forEach(e -> roleEntranceIds.add(e.getEntranceId()));
         }
         return availableEntrances.stream()
-                .filter(e -> !roleEntranceIds.contains(e.getEntranceDeviceId()))
+                .filter(e -> !roleEntranceIds.contains(e.getEntranceId()))
                 .collect(Collectors.toList());
     }
 
@@ -166,19 +166,19 @@ public class AssignEntranceBean implements Serializable {
         try {
             System.out.println("Saving custom entrances for employee: " + selectedEmployee.getGhanaCardNumber());
             System.out.println("Selected entrances: " + selectedEntrances.stream()
-                    .map(e -> e.getEntranceDeviceId() + ":" + e.getEntranceName())
+                    .map(e -> e.getEntranceId()+ ":" + e.getEntranceName())
                     .collect(Collectors.joining(", ")));
 
             // Combine existing assigned custom entrances with newly selected ones
             Set<String> existingIds = assignedCustomEntrances.stream()
-                    .map(Entrances::getEntranceDeviceId)
+                    .map(Entrances::getEntranceId)
                     .collect(Collectors.toSet());
 
             List<Entrances> allCustomEntrances = new ArrayList<>(assignedCustomEntrances);
 
             // Add only new selections that aren't already assigned
             for (Entrances selected : selectedEntrances) {
-                if (!existingIds.contains(selected.getEntranceDeviceId())) {
+                if (!existingIds.contains(selected.getEntranceId())) {
                     allCustomEntrances.add(selected);
                 }
             }
@@ -224,11 +224,11 @@ public class AssignEntranceBean implements Serializable {
             return;
         }
         try {
-            System.out.println("Removing entrance " + entrance.getEntranceDeviceId() + " for employee: " + selectedEmployee.getGhanaCardNumber());
+            System.out.println("Removing entrance " + entrance.getEntranceId()+ " for employee: " + selectedEmployee.getGhanaCardNumber());
 
             // Remove entrance from the lists
-            selectedEntrances.removeIf(e -> e.getEntranceDeviceId().equals(entrance.getEntranceDeviceId()));
-            assignedCustomEntrances.removeIf(e -> e.getEntranceDeviceId().equals(entrance.getEntranceDeviceId()));
+            selectedEntrances.removeIf(e -> e.getEntranceId().equals(entrance.getEntranceId()));
+            assignedCustomEntrances.removeIf(e -> e.getEntranceId().equals(entrance.getEntranceId()));
 
             // Update in database
             Employee updatedEmployee = employeeService.updateEmployeeEntrances(selectedEmployee, assignedCustomEntrances);
@@ -281,7 +281,7 @@ public class AssignEntranceBean implements Serializable {
             combinedEntrances.addAll(selectedEmployee.getRole().getAccessibleEntrances());
         }
         return combinedEntrances.stream()
-                .filter(e -> e.getEntranceDeviceId() != null)
+                .filter(e -> e.getEntranceId()!= null)
                 .collect(Collectors.toList());
 
     }

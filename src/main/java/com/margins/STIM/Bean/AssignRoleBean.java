@@ -180,24 +180,18 @@ public class AssignRoleBean implements Serializable {
 
     public void loadAssignedRoles() {
         if (selectedEntrance != null) {
-            if (selectedEntrance != null) {
-                assignedRoles = new ArrayList<>(selectedEntrance.getAllowedRoles());
+            assignedRoles = new ArrayList<>(selectedEntrance.getAllowedRoles());
 
-                availableRolesForSelection = allRoles.stream()
-                        .filter(role -> assignedRoles.stream().noneMatch(ar -> ar.getId() == (role.getId())))
-                        .collect(Collectors.toList());
-                checkTimeRulesForAssignedRoles();
-            } else {
-                assignedRoles = new ArrayList<>();
-                roleHasTimeRules.clear();
-                roleStatusMessages.clear();
-                FacesContext.getCurrentInstance().addMessage(null,
-                        new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "No roles assigned to this entrance"));
-            }
+            availableRolesForSelection = allRoles.stream()
+                    .filter(role -> assignedRoles.stream().noneMatch(ar -> ar.getId() == (role.getId())))
+                    .collect(Collectors.toList());
+            checkTimeRulesForAssignedRoles();
         } else {
             assignedRoles = new ArrayList<>();
             roleHasTimeRules.clear();
             roleStatusMessages.clear();
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "No roles assigned to this entrance"));
         }
     }
 

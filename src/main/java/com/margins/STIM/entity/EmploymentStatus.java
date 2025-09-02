@@ -28,7 +28,7 @@ import lombok.Setter;
 public class EmploymentStatus extends EntityModel implements Serializable {
     
     
-    @Column(name ="STATUS", nullable= false)
+    @Column(name ="STATUS", nullable= false , unique = true)
     private String empstatus;
 
     @Override

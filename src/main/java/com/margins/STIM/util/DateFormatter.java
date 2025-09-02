@@ -4,6 +4,7 @@
  */
 package com.margins.STIM.util;
 
+import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -161,4 +162,19 @@ public class DateFormatter {
             return dateTime.format(fullFormatter);
         }
     }
+    
+    // Convert LocalDateTime -> java.util.Date (TIME only)
+    public static Date toDate(LocalDateTime localDateTime) {
+        if (localDateTime == null) {
+            return null;
+        }
+        LocalTime localTime = localDateTime.toLocalTime();
+        return Time.valueOf(localTime); // java.sql.Time extends java.util.Date
+    }
+
+    // Convert LocalDateTime -> java.sql.Time
+    public static Time toSqlTime(LocalDateTime localDateTime) {
+        return localDateTime == null ? null : Time.valueOf(localDateTime.toLocalTime());
+    }
+
 }

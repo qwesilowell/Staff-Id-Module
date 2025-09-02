@@ -9,7 +9,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.entity.websocket.FingerCaptured;
-import com.margins.STIM.model.CapturedFinger;
+import com.margins.STIM.DTO.CapturedFinger;
 import com.margins.STIM.util.FingerprintProcessor;
 import com.margins.STIM.util.JSF;
 import jakarta.enterprise.context.SessionScoped;

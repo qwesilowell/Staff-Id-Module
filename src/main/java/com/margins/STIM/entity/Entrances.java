@@ -27,8 +27,8 @@ import lombok.Setter;
 @Setter
 public class Entrances extends EntityModel implements Serializable {
 
-    @Column(name = "ENTRANCE_DEVICE_ID", nullable = false, unique = true)
-    private String entranceDeviceId;
+    @Column(name = "ENTRANCE_ID", nullable = false, unique = true)
+    private String entranceId;
 
     @Column(name = "ENTRANCE_NAME", nullable = false, unique = true)
     private String entranceName;
@@ -56,8 +56,8 @@ public class Entrances extends EntityModel implements Serializable {
             entranceMode = EntranceMode.STRICT;
         }
     }
-    public Entrances(String entranceDeviceId, String entranceName, String entranceLocation) {
-        this.entranceDeviceId = entranceDeviceId;
+    public Entrances(String entranceId, String entranceName, String entranceLocation) {
+        this.entranceId= entranceId;
         this.entranceName = entranceName;
         this.entranceLocation = entranceLocation;
     }
@@ -68,7 +68,7 @@ public class Entrances extends EntityModel implements Serializable {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 97 * hash + Objects.hashCode(this.entranceDeviceId);
+        hash = 97 * hash + Objects.hashCode(this.getEntranceId());
         hash = 97 * hash + Objects.hashCode(this.entranceName);
         return hash;
     }
@@ -85,7 +85,7 @@ public class Entrances extends EntityModel implements Serializable {
             return false;
         }
         final Entrances other = (Entrances) obj;
-        if (!Objects.equals(this.entranceDeviceId, other.entranceDeviceId)) {
+        if (!Objects.equals(this.getEntranceId(), other.getEntranceId())) {
             return false;
         }
         return Objects.equals(this.entranceName, other.entranceName);
@@ -94,7 +94,7 @@ public class Entrances extends EntityModel implements Serializable {
     @Override
     public String toString() {
         return "Entrances{"
-                + "entranceDeviceId='" + entranceDeviceId + '\''
+                + "entranceId='" + entranceId + '\''
                 + ", entranceName='" + entranceName + '\''
                 + '}';
     }

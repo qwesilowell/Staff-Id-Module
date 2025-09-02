@@ -12,7 +12,7 @@ import com.margins.STIM.entity.enums.AuditActionType;
 import com.margins.STIM.entity.model.VerificationRequest;
 import com.margins.STIM.entity.nia_verify.VerificationResultData;
 import com.margins.STIM.entity.websocket.FingerCaptured;
-import com.margins.STIM.model.CapturedFinger;
+import com.margins.STIM.DTO.CapturedFinger;
 import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.Employee_Service;
 import com.margins.STIM.util.FingerprintProcessor;

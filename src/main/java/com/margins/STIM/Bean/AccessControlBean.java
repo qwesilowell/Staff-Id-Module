@@ -141,7 +141,7 @@ public class AccessControlBean implements Serializable {
             results = entrancesService.searchEntrances(query); // Filter from service
         }
         return results.stream()
-                .map(e -> e.getEntranceName() + " (" + e.getEntranceDeviceId() + ")")
+                .map(e -> e.getEntranceName() + " (" + e.getEntranceId()+ ")")
                 .collect(Collectors.toList());
     }
 

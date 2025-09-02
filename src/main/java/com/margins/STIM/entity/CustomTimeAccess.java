@@ -30,11 +30,11 @@ import lombok.Setter;
 @Setter
 public class CustomTimeAccess extends EntityModel implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "EMPLOYEE_ID", referencedColumnName = "GHANA_CARD_NUMBER", nullable = false)
+    @JoinColumn(name = "EMPLOYEE_ID", referencedColumnName = "id", nullable = false)
     private Employee employee;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ENTRANCE_ID", referencedColumnName = "ENTRANCE_DEVICE_ID", nullable = false )
+    @JoinColumn(name = "ENTRANCE_ID", referencedColumnName = "id", nullable = false )
     private Entrances entrances;
     
     @Column(name = "START_TIME")
@@ -49,4 +49,6 @@ public class CustomTimeAccess extends EntityModel implements Serializable {
     @Enumerated(EnumType.STRING)
     private DayOfWeek dayOfWeek;
     
+    @Column(name = "ISREVOKED")
+    private boolean isRevoked = false;
 }

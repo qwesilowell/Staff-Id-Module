@@ -7,20 +7,20 @@
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="jakarta.faces.facelets">
-    
+
     <ui:define name="metadata">
         <f:metadata>
             <f:viewAction action="#{assignRoleBean.setupBreadcrumb}" />
         </f:metadata>
     </ui:define>
-    
+
     <ui:define name="title">Assign Roles to Entrance</ui:define>
 
-<!--    <ui:define name="metadata">             
-        <f:metadata>
-            <f:viewAction action="#{loginBean.checkAccess('ADMIN')}" />
-        </f:metadata>
-    </ui:define>-->
+    <!--    <ui:define name="metadata">             
+            <f:metadata>
+                <f:viewAction action="#{loginBean.checkAccess('ADMIN')}" />
+            </f:metadata>
+        </ui:define>-->
 
 
     <ui:define name ="content">
@@ -43,12 +43,10 @@
                                             forceSelection="true" dropdown="true"
                                             placeholder="Search or Select Entrance" 
                                             style="width: 100%; overflow: hidden">
-                                <!-- Automatically load assigned roles when an entrance is selected -->
                                 <p:ajax event="itemSelect" listener="#{assignRoleBean.loadAssignedRoles}" update="assignedRolesTable roles" />
                             </p:autoComplete>
                         </h:panelGroup>
 
-                        <!-- Select Roles -->
                         <h:panelGroup style="display: flex; flex-direction: column; align-items: flex-start;">
                             <p:outputLabel for="roles" value="Select Roles: " />
                             <p:selectCheckboxMenu id="roles" value="#{assignRoleBean.selectedRolesIds}" multiple="true"
@@ -63,16 +61,19 @@
                     <!-- Submit Button -->
                     <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
                         <p:commandButton value="Assign Roles" action="#{assignRoleBean.assignRolesToEntrance}" 
-                                         update="messages assignedRolesTable" styleClass="assign-btn" />
+                                         update="messages assignedRolesTable roles" styleClass="assign-btn" />
                     </div>
                 </p:panel>
-
+               
 
                 <div style="margin-top: 50px;"></div>
 
-                <p:dataTable id="assignedRolesTable" value="#{assignRoleBean.assignedRoles}" var="role" style="margin-top: 10px;" 
+                <p:dataTable id="assignedRolesTable" value="#{assignRoleBean.assignedRoles}" var="role" style="margin-top: 10px;"
+                             rows="10" paginator="true" paginatorPosition="bottom"
                              rowIndexVar="rowIndex"  rowStyleClass="#{rowIndex mod 2 eq 0 ? 'white-row' : 'ash-row'}">  
-                    <p:column headerText="Assigned Job Roles">
+                    <p:column headerText="Assigned Job Roles"
+                              filterBy="#{role.roleName}"
+                              filterMatchMode="contains">
                         <h:outputText value="#{role.roleName}" />
                     </p:column>
                     <p:column headerText="Time Rules">
@@ -159,7 +160,7 @@
 
                         <p:separator/>
                         <p:outputLabel value="Days"/>
-                        
+
                         <!-- Quick Selection Buttons -->
                         <div class="quick-select-buttons" style="margin-bottom: 15px;">
                             <p:commandButton value="Select All" 
@@ -193,7 +194,7 @@
                                              process="@this"
                                              styleClass="ui-button-outlined ui-button-danger ui-button-sm" />
                         </div>
-                        
+
                         <p:selectManyCheckbox value="#{assignRoleBean.selectedDays}" layout="grid" columns="3" id="daysCheckbox">
                             <f:selectItem itemLabel="Monday" itemValue="MONDAY" />
                             <f:selectItem itemLabel="Tuesday" itemValue="TUESDAY" />
@@ -213,7 +214,7 @@
                         <h:panelGroup id="dayTimeInputs" layout="block" >
                             <!-- Default Time Section -->
                             <p:outputPanel class="default-time-section" rendered="#{assignRoleBean.selectedDays.size()>0}"
-                                 style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                                           style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
                                 <h4 style="margin-top: 0; color: #495057; display: flex; align-items: center;">
                                     <i class="pi pi-clock" style="margin-right: 8px; color: #007bff;"></i>
                                     Set Default Time for All Selected Days
@@ -257,7 +258,7 @@
                                                      disabled="#{empty assignRoleBean.selectedDays}" />
                                 </div>
                             </p:outputPanel>
-                            
+
                             <h3 class="section-title">
                                 <i class="pi pi-calendar" style="margin-right:8px;color:#22C55E;" />
                                 Assign Time Range For Days
@@ -274,7 +275,7 @@
                                                          actionListener="#{assignRoleBean.deleteDayTimeRule(day)}" 
                                                          update=":mainForm:dayTimeInputs :mainForm:daysCheckbox  :mainForm:assignedRolesTable" />
                                     </div>
-                                    
+
                                     <div class="time-row">
                                         <div class="time-group">
                                             <i class="pi pi-clock" style="color:#6366F1;" />
@@ -322,6 +323,13 @@
             </h:form>
         </div>
         <style>
+            body .ui-selectcheckboxmenu {
+                width: 70% !important;
+            }
+            body .ui-autocomplete .ui-autocomplete-input.ui-autocomplete-dd-input {
+                width: 80% !important;
+            }
+
             .confirm-message {
                 line-height: 1.5;
             }
@@ -332,7 +340,7 @@
             .left-column {
                 width: 50%;
                 padding-right: 20px;
-            }            
+            }
 
             .right-column {
                 width: 50%;
@@ -341,7 +349,7 @@
 
             .ui-button {
                 border-radius: 8px;
-/*                padding: 10px;*/
+                /*                padding: 10px;*/
                 font-weight: bold;
             }
             .ui-autocomplete .ui-autocomplete-dropdown {
@@ -644,8 +652,8 @@
 
             .default-time-inputs .fill {
                 display:flex !important;
-               align-items: flex-end !important;
-               
+                align-items: flex-end !important;
+
             }
 
             /* Fill button styling */

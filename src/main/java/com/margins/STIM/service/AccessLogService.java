@@ -23,6 +23,7 @@ import com.margins.STIM.util.DateFormatter;
 import com.margins.STIM.util.JSF;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -87,10 +88,22 @@ public class AccessLogService {
         try {
             AccessAnomaly aa = anomalyRefGen.findByAnomalyRef(log.getAnomalyRef());
             notification.notifyAllAdminsofAnomaly(aa);
-            JSF.addWarningMessageWithSummary("Notify!","New Anomaly Found");
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            if (facesContext != null) {
+                // We're in a web request, show JSF messages
+                JSF.addWarningMessageWithSummary("Notify!", "New Anomaly Found");
+            } else {
+                // We're in a background task (scheduler), just log it
+                System.out.println("SCHEDULER: New Anomaly Found - " + log.getAnomalyRef());
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            JSF.addErrorMessage("Failed To Notify ");
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            if (facesContext != null) {
+                JSF.addErrorMessage("Failed To Notify");
+            } else {
+                System.err.println("SCHEDULER ERROR: Failed to notify admins - " + e.getMessage());
+            }
         }
     }
 
@@ -109,7 +122,7 @@ public class AccessLogService {
     public int countByResultAndEntrance(String result, LocalDateTime start, LocalDateTime end, String entranceId) {
         Long count = em.createQuery(
                 "SELECT COUNT(a) FROM AccessLog a WHERE a.result = :result "
-                + "AND a.device.entrance.entranceDeviceId = :entranceId AND a.timestamp BETWEEN :start AND :end", Long.class)
+                + "AND a.device.entrance.entranceId = :entranceId AND a.timestamp BETWEEN :start AND :end", Long.class)
                 .setParameter("result", result)
                 .setParameter("entranceId", entranceId)
                 .setParameter("start", start)
@@ -147,7 +160,7 @@ public class AccessLogService {
     }
 
     public List<AccessLog> getRecentAccessAttemptsByEntrance(String entranceId, int limit) {
-        return em.createQuery("SELECT a FROM AccessLog a WHERE a.device IS NOT NULL AND a.device.entrance IS NOT NULL AND a.device.entrance.entranceDeviceId  = :entranceId ORDER BY a.timestamp DESC", AccessLog.class)
+        return em.createQuery("SELECT a FROM AccessLog a WHERE a.device IS NOT NULL AND a.device.entrance IS NOT NULL AND a.device.entrance.entranceId  = :entranceId ORDER BY a.timestamp DESC", AccessLog.class)
                 .setParameter("entranceId", entranceId)
                 .setMaxResults(limit)
                 .getResultList();
@@ -156,7 +169,7 @@ public class AccessLogService {
     public List<AccessLog> getAllRecentAccessAttemptsByEntrance(String entranceId) {
         return em.createQuery("SELECT a FROM AccessLog a "
                 + "WHERE a.device IS NOT NULL AND a.device.entrance IS NOT NULL "
-                + "AND a.device.entrance.entranceDeviceId = :entranceId "
+                + "AND a.device.entrance.entranceId = :entranceId "
                 + "ORDER BY a.timestamp DESC", AccessLog.class)
                 .setParameter("entranceId", entranceId)
                 .getResultList();
@@ -679,7 +692,7 @@ public class AccessLogService {
         }
 
         if (entranceId != null && !entranceId.isEmpty()) {
-            queryStr.append(" AND a.device IS NOT NULL AND a.device.entrance IS NOT NULL AND a.device.entrance.entranceDeviceId = :entranceId");
+            queryStr.append(" AND a.device IS NOT NULL AND a.device.entrance IS NOT NULL AND a.device.entrance.entranceId = :entranceId");
             params.put("entranceId", entranceId);
         }
 

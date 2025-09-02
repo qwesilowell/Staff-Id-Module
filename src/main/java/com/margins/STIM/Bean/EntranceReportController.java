@@ -385,7 +385,7 @@ public class EntranceReportController implements Serializable {
 
         rm.addParam("entranceName", selectedEntranceDetail.getEntrances().getEntranceName());
         rm.addParam("printedBy", userSession.getUsername());
-        rm.addParam("entranceId", selectedEntranceDetail.getEntrances().getEntranceDeviceId());
+        rm.addParam("entranceId", selectedEntranceDetail.getEntrances().getEntranceId());
         rm.addParam("entranceLocation", selectedEntranceDetail.getEntrances().getEntranceLocation());
 
         rm.addParam("entranceMode", selectedEntranceDetail.getEntrances().getEntranceMode().toString());

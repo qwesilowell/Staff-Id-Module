@@ -353,7 +353,7 @@ public class DummyDataSeeder implements Serializable {
             String location = LOCATIONS[i % LOCATIONS.length];
             
             Entrances entrance = new Entrances();
-            entrance.setEntranceDeviceId(id);
+            entrance.setEntranceId(id);
             entrance.setEntranceName(name);
             entrance.setEntranceLocation(location);
             // Randomize mode: 60% STRICT, 40% LENIENT, 10% FULL_ACCESS
@@ -395,6 +395,9 @@ public class DummyDataSeeder implements Serializable {
     }
 
     private void createEmployees() {
+        List<EmployeeRole> allRoles = roleService.findAllEmployeeRoles(); // Get roles once
+        Random rand = new Random();
+        
         for (int i = 0; i < 100; i++) {
             String first = random(FIRST_NAMES);
             String last = random(LAST_NAMES);
@@ -410,6 +413,10 @@ public class DummyDataSeeder implements Serializable {
             emp.setEmail((first + "." + last + i + "@test.com").toLowerCase());
             emp.setAddress("Test Address " + i);
             emp.setDateOfBirth(LocalDate.of(1990 + (i % 10), 1 + (i % 12), 1 + (i % 28)));
+
+            EmployeeRole randomRole = allRoles.get(rand.nextInt(allRoles.size()));
+            emp.setRole(randomRole);
+
 
             employeeService.saveEmployee(emp);
             generatedEmployees.add(emp);
@@ -469,7 +476,7 @@ public class DummyDataSeeder implements Serializable {
 
                     // Add entrance if not already present
                     boolean entranceExists = currentCustomEntrances.stream()
-                            .anyMatch(e -> e.getEntranceDeviceId().equals(entrance.getEntranceDeviceId()));
+                            .anyMatch(e -> e.getEntranceId().equals(entrance.getEntranceId()));
 
                     if (!entranceExists) {
                         currentCustomEntrances.add(entrance);

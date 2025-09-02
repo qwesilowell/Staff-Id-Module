@@ -13,11 +13,21 @@
             <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
             <h:outputStylesheet library="css" name="template.css"/>
+            <link rel="icon" type="image/x-icon" href="#{resource['images/favicon.ico']}" />
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/apple-touch-icon.png']}" />
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicon-32x32.png']}" />
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicon-16x16.png']}" />
+            <link rel="manifest" href="#{resource['site.webmanifest']}" />
+
         </f:facet>
 
         <ui:insert name="head"/>
-        <title><ui:insert name="title"/></title>
+        
+        <title>
+            <ui:insert name="title"/>
+        </title>
         <h:outputScript library="js" name="template.js" target="body" />
+        
         <script type="text/javascript">
             let notificationSound = new Audio('#{request.contextPath}/resources/sounds/notificationSound.mp3');
         </script>
@@ -27,13 +37,7 @@
         <!-- Sidebar Toggle Button -->
         <button class="toggle-btnS" onclick="toggleSidebar()"><i class="pi pi-bars"></i></button>
 
-        <!--        <div class="topbar" id="topbar">
-                                <div class="staff-id-section">
-                                    <h:outputText value="Staff ID Module" style="font-weight: bold;" />
-                                    <p:graphicImage name="id-card-svgrepo-com.svg" library="images" style="height:30px; vertical-align: middle;"/>
-                                </div>
-                </div>
-        -->
+
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <p:spacer height="20px"/>
@@ -104,16 +108,24 @@
                 </ui:fragment>
             </ui:fragment>
 
-            <ui:fragment rendered="#{userSession.hasAnyPermission('Assign Roles to Entrances','Assign Custom Entrance')}">
+            <ui:fragment rendered="#{userSession.hasAnyPermission('Assign Roles to Entrances','Assign Entrances to Roles','Assign Custom Entrance')}">
 
                 <h2>Assign Access</h2>
 
+                <ui:fragment rendered="#{userSession.hasPermission('Assign Entrances to Roles')}">
+                    <h:link outcome="/app/Access/assignEntranceToRoles?faces-redirect=true" title="Configure which entrances a role can access"
+                            styleClass="#{userSession.isActive('/app/Access/assignEntranceToRoles.xhtml')?'active':''}">
+                        <i class="fa-solid fa-user-tie" style="color: #203f67;"></i> <span style="padding-left: 5px;" >Assign Entrance to Roles</span>
+                    </h:link>
+                </ui:fragment>
+
                 <ui:fragment rendered="#{userSession.hasPermission('Assign Roles to Entrances')}">
-                    <h:link outcome="/app/Access/assign-roles?facess-redirect=true" title="Configure which roles have permission to use this entranc"
+                    <h:link outcome="/app/Access/assign-roles?faces-redirect=true" title="Configure which roles have permission to use an entrance"
                             styleClass="#{userSession.isActive('/app/Access/assign-roles.xhtml')?'active':''}">
                         <i class="fa-solid fa-door-open" style="color: #203f67;"></i> <span style="padding-left: 5px;" >Assign Roles to Entrances</span>
                     </h:link>
                 </ui:fragment>
+
 
                 <ui:fragment rendered="#{userSession.hasPermission('Assign Custom Entrance')}">
                     <h:link outcome="/app/Access/assignEntrance?faces-redirect=true" title="Manage Who Can Access This Entrance"
@@ -136,7 +148,7 @@
                 <ui:fragment rendered="#{userSession.hasPermission('Manage Entrance Devices')}">
                     <h:link outcome="/app/Entrances/manageDevices?faces-redirect=true" title="Manage Entry/Exit Devices"
                             styleClass="#{userSession.isActive('/app/Entrances/manageDevices.xhtml')?'active':''}">
-                        <i class="fa-solid fa-mobile-screen-button" style="color: #1b74b5"></i><span style="padding-left: 5px;">Manage Entrance Devices</span>
+                        <i class="fa-solid fa-mobile-screen-button" style="color: #1b74b5"></i><span style="padding-left: 5px;">Manage Access Devices</span>
                     </h:link>
                 </ui:fragment>
 
@@ -198,6 +210,9 @@
                 </ui:fragment>
             </ui:fragment>
         </div>
+        
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
         <!-- Topbar -->
         <div class="topbar" id="topbar">
             <div class="userRole">
@@ -205,22 +220,27 @@
             </div>
             <h:form id="navBar" prependId="false">
                 <div class="header-right">
-                    <p:commandLink action="#{anomalyBean.navigateToAnomalyPage}" styleClass="notification-bell" ajax="false"
-                                   immediate="true">
-                        <ui:fragment rendered="#{anomalyBean.unattended > 0}">
-                            <i class="fa-solid fa-bell fa-bounce fa-xl" style="color: whitesmoke !important;"></i>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{anomalyBean.unattended == 0}">
-                            <i class="fa-solid fa-bell fa-xl" style="color: whitesmoke !important;"></i>
-                        </ui:fragment>
-                        <p:badge value="#{anomalyBean.unattendedDisplayCount}" severity="danger"
-                                 styleClass="notification-badge" rendered="#{anomalyBean.unattended > 0}" />
-                    </p:commandLink>
+                    <!--                    <p:commandLink action="#-{anomalyBean.navigateToAnomalyPage}" styleClass="notification-bell" ajax="false"
+                                                       immediate="true">
+                                            <ui:fragment rendered="#-{anomalyBean.unattended > 0}">
+                                                <i class="fa-solid fa-bell fa-bounce fa-xl" style="color: whitesmoke !important;"></i>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#-{anomalyBean.unattended == 0}">
+                                                <i class="fa-solid fa-bell fa-xl" style="color: whitesmoke !important;"></i>
+                                            </ui:fragment>
+                                            <p:badge value="#-{anomalyBean.unattendedDisplayCount}" severity="danger"
+                                                     styleClass="notification-badge" rendered="#-{anomalyBean.unattended > 0}" />
+                                        </p:commandLink>-->
 
 
                     <div class="navbar-actions">
                         <div class="notification-bell" onclick=" fetchNotifications();">
-                            <i class="fas fa-bell"></i>
+                            <ui:fragment rendered="#{notificationBean.unreadCount == 0}">
+                                <i class="fas fa-bell" style="color: whitesmoke !important;"></i>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{notificationBean.unreadCount > 0}">
+                                <i class="fas fa-bell fa-shake" style="--fa-animation-duration: 3.0s;"></i>
+                            </ui:fragment>
                             <p:badge  id="notificationBadge" severity="danger" styleClass="notification-badge #{notificationBean.unreadCount == 0 ? 'hidden' : ''}"
                                       value="#{notificationBean.unreadCount > 99 ? '99+' : notificationBean.unreadCount}" />
                         </div>
@@ -264,64 +284,73 @@
                             oncomplete="toggleNotifications();"/>
 
                         <h:panelGroup id="notificationsList" layout="block" styleClass="notifications-list" >
-                            <ui:repeat value="#{notificationBean.notifications}" var="notification" varStatus="status" > 
-                                <div class="notification-item #{notification.status.name() == 'UNREAD' ? 'unread' : ''}" 
-                                     onclick="" >
-                                    <div class="priority-indicator #{notification.priority}"></div>
-                                    <div class="notification-content">
-                                        <div class="notification-icon #{notification.priority}">
-                                            <i class="#{notificationBean.getIconClass(notification)}"></i>
-                                        </div>
-                                        <div class="notification-details">
-                                            <div class="notification-title">#{notification.title}</div>
-                                            <div class="notification-message">#{notification.message}</div>
-                                            <div class="notification-time">
-                                                <i class="fas fa-clock"></i>
-                                                #{notificationBean.showTime(notification)}
+                            <ui:fragment rendered="#{notificationBean.unreadCount == 0}">
+                                <div class="no-notifications" style="text-align: center; padding: 20px; color: #6c757d; font-size: 1.2em;">
+                                    <i class="fas fa-bell-slash" style="font-size: 3em; margin-bottom: 10px;"></i>
+                                    <p>You have no notifications to read.</p>
+                                </div>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{notificationBean.unreadCount > 0}">
+                                <ui:repeat value="#{notificationBean.notifications}" var="notification" varStatus="status" > 
+                                    <div class="notification-item #{notification.status.name() == 'UNREAD' ? 'unread' : ''}" 
+                                         onclick="" >
+                                        <div class="priority-indicator #{notification.priority}"></div>
+                                        <div class="notification-content">
+                                            <div class="notification-icon #{notification.priority}">
+                                                <i class="#{notificationBean.getIconClass(notification)}"></i>
+                                            </div>
+                                            <div class="notification-details">
+                                                <div class="notification-title">#{notification.title}</div>
+                                                <div class="notification-message">#{notification.message}</div>
+                                                <div class="notification-time">
+                                                    <i class="fas fa-clock"></i>
+                                                    #{notificationBean.showTime(notification)}
+                                                </div>
                                             </div>
                                         </div>
+                                        <!-- Hover-activated action buttons -->
+                                        <div class="notification">
+                                            <p:commandButton 
+                                                styleClass="action-button mark-read-btn"
+                                                title="Mark as read"
+                                                action="#{notificationBean.markAsRead(notification.id)}"
+                                                update="notificationsList"
+                                                process="@this"
+                                                onstart="addMarkingClass(this); return true;" 
+                                                oncomplete="removeMarkingClass();"
+                                                rendered="#{notification.status.name() == 'UNREAD'}"
+                                                icon="fas fa-check"
+                                                style="width: 28px !important; height: 28px !important; padding: 0 !important;"
+                                                ajax="true"/>
+
+                                            <p:commandButton 
+                                                styleClass="action-button dismiss-btn" 
+                                                title="Dismiss"
+                                                action="#{notificationBean.dismiss(notification)}"
+                                                update="notificationsList"
+                                                process="@this"
+                                                onstart="addDismissingClass(this); return true;" 
+                                                oncomplete="removeDismissingClass();" icon="fas fa-times"
+                                                style="width: 28px !important; height: 28px !important; padding: 0 !important;"
+                                                ajax="true"/>
+
+                                            <p:commandButton 
+                                                styleClass="action-button view-btn"
+                                                title="View"
+                                                rendered="#{notification.actionUrl != null}"
+                                                action="#{notificationBean.openNotification(notification)}"
+                                                update="notificationsList"
+                                                process="@this"
+                                                icon="pi pi-eye"
+                                                style="width: 28px !important; height: 28px !important; padding: 0 !important;"/>
+
+
+                                        </div>
                                     </div>
-                                    <!-- Hover-activated action buttons -->
-                                    <div class="notification">
-                                        <p:commandButton 
-                                            styleClass="action-button mark-read-btn"
-                                            title="Mark as read"
-                                            action="#{notificationBean.markAsRead(notification.id)}"
-                                            update="notificationsList"
-                                            process="@this"
-                                            onstart="addMarkingClass(this); return true;" 
-                                            oncomplete="removeMarkingClass();"
-                                            rendered="#{notification.status.name() == 'UNREAD'}"
-                                            icon="fas fa-check"
-                                            style="width: 28px !important; height: 28px !important; padding: 0 !important;"
-                                            ajax="true"/>
-
-                                        <p:commandButton 
-                                            styleClass="action-button dismiss-btn" 
-                                            title="Dismiss"
-                                            action="#{notificationBean.dismiss(notification)}"
-                                            update="notificationsList"
-                                            process="@this"
-                                            onstart="addDismissingClass(this); return true;" 
-                                            oncomplete="removeDismissingClass();" icon="fas fa-times"
-                                            style="width: 28px !important; height: 28px !important; padding: 0 !important;"
-                                            ajax="true"/>
-
-                                        <p:commandButton 
-                                            styleClass="action-button view-btn"
-                                            title="View"
-                                            rendered="#{notification.actionUrl != null}"
-                                            action="#{notificationBean.openNotification(notification)}"
-                                            update="notificationsList"
-                                            process="@this"
-                                            icon="pi pi-eye"
-                                            style="width: 28px !important; height: 28px !important; padding: 0 !important;"/>
-
-
-                                    </div>
-                                </div>
-                            </ui:repeat>
+                                </ui:repeat>
+                            </ui:fragment>
                         </h:panelGroup>
+
                     </div>
 
                     <!-- Overlay -->

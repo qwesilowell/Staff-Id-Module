@@ -44,7 +44,7 @@
                     <!-- Entrances Table -->
                     <p:dataTable id="entranceTable" value="#{entranceBean.entrances}" var="entrance" paginator="true" paginatorPosition="bottom" rows="10">
                         <p:column headerText="Device ID" >
-                            <h:outputText value="#{entrance.entranceDeviceId}"/>
+                            <h:outputText value="#{entrance.entranceId}"/>
                         </p:column>
                         <p:column headerText="Entrance Name" >
                             <h:outputText value="#{entrance.entranceName}"/>
@@ -97,7 +97,7 @@
                 <p:dialog id="entranceDialog" widgetVar="entranceDialogWidget" header="Entrance Details" modal="true" closable="false"  width="500px">
                     <h:panelGrid columns="2">
                         <h:outputLabel value="ENTRANCE ID:" styleClass="spacer"/>
-                        <p:inputText value="#{entranceBean.selectedEntrance.entranceDeviceId}" style="margin-left: 20px; width: 120%;" styleClass="spacer"/>
+                        <p:inputText value="#{entranceBean.selectedEntrance.entranceId}" style="margin-left: 20px; width: 120%;" styleClass="spacer"/>
 
                         <h:outputLabel value="Name:"  styleClass="spacer"/>
                         <p:inputText value="#{entranceBean.selectedEntrance.entranceName}" style="margin-left: 20px; width: 120%;" styleClass="spacer"/>
@@ -117,14 +117,14 @@
                                          update="messages entranceTable"
                                          oncomplete="PF('entranceDialogWidget').hide()"
                                          style="background: #28a745; color: white; border-radius: 4px;"
-                                         rendered="#{empty entranceBean.selectedEntrance.entranceDeviceId}" />
+                                         rendered="#{empty entranceBean.selectedEntrance.entranceId}" />
 
                         <p:commandButton value="Update" icon="pi pi-check"
                                          actionListener="#{entranceBean.updateEntrance}"
                                          update="messages entranceTable"
                                          oncomplete="PF('entranceDialogWidget').hide()"
                                          style="background: linear-gradient(to bottom, #28a745, #218838); color: white; border-radius: 4px;"
-                                         rendered="#{not empty entranceBean.selectedEntrance.entranceDeviceId}" /> <!-- Only show when editing -->
+                                         rendered="#{not empty entranceBean.selectedEntrance.entranceId}" /> <!-- Only show when editing -->
 
                         <p:commandButton value="Cancel" icon="pi pi-times" onclick="PF('entranceDialogWidget').hide()" style="margin-left: 5px;"/>
                     </div>

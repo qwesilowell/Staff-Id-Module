@@ -226,7 +226,7 @@
                                                ajax="false"
                                                update="messages"
                                                styleClass="totalAccess" >
-                                    <!--                                <f:param name="entranceId" value="#-{report.entrances.entranceDeviceId}" />-->
+                                    <!--                                <f:param name="entranceId" value="#-{report.entrances.entranceId}" />-->
                                 </p:commandLink>
                             </p:column>
 
@@ -305,7 +305,7 @@
                                                                          title="View Chart"
                                                                          styleClass="ui-button-rounded ui-button-info"
                                                                          style="margin-right: 5px;"
-                                                                         action="#-{entranceReportBean.viewChart(report.entrances.entranceDeviceId)}"
+                                                                         action="#-{entranceReportBean.viewChart(report.entrances.entranceId)}"
                                                                          update="chartDialog"
                                                                          oncomplete="PF('chartDialog').show()"/>-->
 
@@ -359,7 +359,7 @@
                             <div class="p-col-12 p-md-5 entrance-card">
                                 <div class="card">
                                     <h4><i class="pi pi-id-card"></i> Entrance Info</h4>
-                                    <p><strong>ID:</strong> #{entranceReportBean.selectedEntranceDetail.entrances.entranceDeviceId}</p>
+                                    <p><strong>ID:</strong> #{entranceReportBean.selectedEntranceDetail.entrances.entranceId}</p>
                                     <p><strong>Name:</strong> #{entranceReportBean.selectedEntranceDetail.entrances.entranceName}</p>
                                     <p><strong>Location:</strong> #{entranceReportBean.selectedEntranceDetail.entrances.entranceLocation}</p>
                                 </div>

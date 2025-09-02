@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -246,6 +247,17 @@ public class Employee_Service {
                 .getResultList();
     }
 
+    public EmploymentStatus findStatusVisitor(){
+        try {
+            return entityManager.createQuery(
+                    "SELECT es FROM EmploymentStatus es WHERE LOWER(es.empstatus) = :empstatus AND es.deleted = false",
+                    EmploymentStatus.class)
+                    .setParameter("empstatus", "Visitor")
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null; // or throw a custom exception
+        }
+    }
     // Find by ID
     public EmploymentStatus
             findEmploymentStatusById(int statusId) {

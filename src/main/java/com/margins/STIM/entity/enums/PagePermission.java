@@ -37,6 +37,7 @@ public enum PagePermission {
     
     // Access Assignment
     ASSIGN_ROLES_TO_ENTRANCES("/app/Access/assign-roles.xhtml", "Assign Roles to Entrances"),
+    ASSIGN_ENTRANES_TO_ROLES("/app/Access/assignEntranceToRoles.xhtml", "Assign Entrances to Roles"),
     ASSIGN_CUSTOM_ENTRANCE("/app/Access/assignEntrance.xhtml", "Assign Custom Entrance"),
     
     // Entrances & Devices
