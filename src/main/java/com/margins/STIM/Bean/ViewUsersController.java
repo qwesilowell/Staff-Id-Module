@@ -10,6 +10,7 @@ import com.margins.STIM.entity.ViewPermission;
 import com.margins.STIM.entity.enums.ActionResult;
 import com.margins.STIM.entity.enums.AuditActionType;
 import com.margins.STIM.entity.enums.UserStatus;
+import com.margins.STIM.entity.enums.UserType;
 import com.margins.STIM.report.ReportGenerator;
 import com.margins.STIM.report.ReportManager;
 import com.margins.STIM.report.model.UserReport;
@@ -70,7 +71,7 @@ public class ViewUsersController implements Serializable {
     private String filterType = "ALL";
     private List<Users> filteredUsers;
     private List<SystemUserRoles> allSystemRoles;
-    private Users selectedUser;
+    private Users selectedUser ;
     private Set<ViewPermission> selectedUserPermissions;
     private String globalFilter;
    private  Users currentUser ;
@@ -89,6 +90,9 @@ public class ViewUsersController implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error loading users", e.getMessage()));
         }
 
+        if (selectedUser == null) {
+            selectedUser = new Users();
+        }
         allSystemRoles = userRolesService.getAllUserRoles();
         applyFilter(filterType);
     }
@@ -352,6 +356,10 @@ public class ViewUsersController implements Serializable {
         }
     }
 
+    public UserType[] getUserTypes() {
+        return UserType.values();
+    }
+    
     public void export() {
 
         List<UserReport> ur = new ArrayList<>();

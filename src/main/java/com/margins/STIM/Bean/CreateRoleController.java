@@ -77,6 +77,13 @@ public class CreateRoleController implements Serializable {
 
             newRole.setRoleName(newRole.getRoleName().trim());
 
+            if (roleService.roleExists(newRole.getRoleName())) {
+                String details = "Failed to Create New Role - Role already exists: " + newRole.getRoleName();
+                auditLogService.logActivity(AuditActionType.CREATE, "Create Role Page", ActionResult.FAILED, details, userSession.getCurrentUser());
+                showMessage(FacesMessage.SEVERITY_WARN, "Warning", "Role '" + newRole.getRoleName() + "' already exists!");
+                return;
+            }
+            
             roleService.createEmployeeRole(newRole);
             refreshRoles();
 

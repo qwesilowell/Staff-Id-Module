@@ -54,7 +54,7 @@
                     <p:panel header="Top 5 Employees Role Distribution" style="margin-bottom:2em;" toggleable="true" >
                         <p:pieChart class="top5Roles" model="#{roleReportController.top5roles}" style="height: 400px;">
                             <p:ajax event="itemSelect"
-                                    listener="#{roleReportController.onChartItemSelect}"
+                                    listener="#{roleReportController.onPieChartItemSelect}"
                                     update="roleForm:roleTable roleForm:selectedRowIndex"
                                     oncomplete="scrollToSelectedRow()" /> 
                         </p:pieChart>
@@ -63,7 +63,7 @@
                     <p:panel header="Top 5 Roles With Most Entrance Access" style="margin-bottom:2em;" toggleable="true" >
                         <p:donutChart class="top5entranceAccessToRoles" model="#{roleReportController.top5entranceAccessToRoles}" style="height: 400px;">
                             <p:ajax event="itemSelect"
-                                    listener="#{roleReportController.onChartItemSelect}"
+                                    listener="#{roleReportController.onDonutChartItemSelect}"
                                     update="roleForm:roleTable roleForm:selectedRowIndex"
                                     oncomplete="scrollToSelectedRow()" /> 
                         </p:donutChart>

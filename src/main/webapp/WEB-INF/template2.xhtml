@@ -199,7 +199,7 @@
 
             </ui:fragment>
 
-            <ui:fragment>
+            <ui:fragment rendered="#{userSession.hasAnyPermission('Settings')}">
                 <h2>Settings</h2>
                 <ui:fragment rendered="#{userSession.hasPermission('Settings')}">
                     <h:link outcome="/app/Settings/settingsPage?faces-redirect=true" title="Settings"

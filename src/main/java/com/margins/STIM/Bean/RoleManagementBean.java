@@ -40,7 +40,7 @@ public class RoleManagementBean implements Serializable {
 
     @Inject
     private BreadcrumbBean breadcrumbBean;
-    
+
     private SystemUserRoles selectedRole = new SystemUserRoles();
 
     private List<SystemUserRoles> allRoles;
@@ -72,7 +72,10 @@ public class RoleManagementBean implements Serializable {
         System.out.println("Role name: " + (selectedRole != null ? selectedRole.getUserRolename() : "null"));
         System.out.println("Selected permissions: " + selectedPermissions);
         System.out.println("Selected permissions size: " + (selectedPermissions != null ? selectedPermissions.size() : "null"));
-
+        if (userRoleService.findUserRoleByName(selectedRole.getUserRolename()) != null) {
+            JSF.addWarningMessageWithSummary("NOTIFICATION", "System Role " + selectedRole.getUserRolename() + " already exists!");
+            return;
+        }
         if (selectedRole != null && selectedRole.getUserRolename() != null && !selectedRole.getUserRolename().trim().isEmpty()) {
             selectedRole.setPermissions(new HashSet<>(selectedPermissions));
             userRoleService.createUserRole(selectedRole);

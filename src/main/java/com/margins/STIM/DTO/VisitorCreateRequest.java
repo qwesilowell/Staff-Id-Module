@@ -33,6 +33,6 @@ public class VisitorCreateRequest {
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private DayOfWeek dayofWeek;
+    private DayOfWeek dayOfWeek;
     private List<Integer> entranceIds;
 }

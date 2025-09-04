@@ -12,6 +12,10 @@ import com.margins.STIM.entity.AccessLog;
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.EmployeeRole;
 import com.margins.STIM.entity.Entrances;
+import com.margins.STIM.report.ReportGenerator;
+import com.margins.STIM.report.ReportManager;
+import com.margins.STIM.report.model.AccessHistory;
+import com.margins.STIM.report.util.ReportOutputFileType;
 import com.margins.STIM.service.AccessLogService;
 import com.margins.STIM.service.EmployeeRole_Service;
 import com.margins.STIM.service.Employee_Service;
@@ -33,6 +37,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.primefaces.model.LazyDataModel;
 
 @Named("historyBean")
@@ -49,9 +54,14 @@ public class HistoryBean implements Serializable {
     private Employee_Service employeeService;
     @EJB
     private EmployeeRole_Service roleService;
+    @Inject
+    private UserSession userSession;
 
     @Inject
     private BreadcrumbBean breadcrumbBean;
+
+    @Inject
+    private ReportManager rm;
 
     private List<AccessLog> recentAccessAttempts;
     private LazyDataModel<AccessLog> lazyAccessLogs;
@@ -88,8 +98,8 @@ public class HistoryBean implements Serializable {
 
         String employeeNameR = (String) FacesContext.getCurrentInstance()
                 .getExternalContext().getFlash().get("employeeName");
-        
-       EmployeeRole roleR = (EmployeeRole)FacesContext.getCurrentInstance()
+
+        EmployeeRole roleR = (EmployeeRole) FacesContext.getCurrentInstance()
                 .getExternalContext().getFlash().get("role");
 
         Map<String, String> params = FacesContext.getCurrentInstance()
@@ -119,12 +129,11 @@ public class HistoryBean implements Serializable {
         } else if (employeeNameR != null && !employeeNameR.isEmpty()) {
             this.employeeName = employeeNameR;
             fetchCriteria();
-        }else if (roleR != null) {
+        } else if (roleR != null) {
             this.selectedRole = roleR;
             this.selectedRoleId = roleR.getId();
             fetchCriteria();
-        } 
-        else {
+        } else {
             // Load default recent access attempts (only if no filter applied)
             recentAccessAttempts = accessLogService.getRecentAccessAttempts(30);
         }
@@ -154,7 +163,7 @@ public class HistoryBean implements Serializable {
         ghanaCardNumber = "";
         employeeName = "";
         selectedRole = null;
-        selectedRoleId = null; 
+        selectedRoleId = null;
         fetchCriteria();
     }
 
@@ -167,10 +176,55 @@ public class HistoryBean implements Serializable {
 
     public String getEntranceName(int entranceId) {
         Entrances entrance = entrancesService.findEntranceById(entranceId);
-        return entrance != null ? entrance.getEntranceName(): "Entrance not found";
+        return entrance != null ? entrance.getEntranceName() : "N/A";
+    }
+
+    public String getRoleName(Integer selectedRoleId) {
+        if (selectedRoleId == null) {
+            return "All Roles";
+        }
+        EmployeeRole role = roleService.findEmployeeRoleById(selectedRoleId);
+        return role != null ? role.getRoleName() : "N/A";
     }
 
     public String getFormattedTimestamp(AccessLog log) {
         return DateFormatter.forDateTimes(log.getTimestamp());
+    }
+
+    public void export() {
+        List<AccessHistory> ah = new ArrayList<>();
+
+        for (AccessLog as : recentAccessAttempts) {
+            AccessHistory access = new AccessHistory();
+
+            access.setFullName(as.getEmployee() != null ? as.getEmployee().getFullName() : "Unknown");
+            access.setGhanaCard(as.getEmployee() != null ? as.getEmployee().getGhanaCardNumber() : "N/A");
+            access.setResult(as.getResult() != null ? as.getResult() : "Unknown");
+
+            access.setRole(as.getEmployee() != null && as.getEmployee().getRole() != null
+                    ? as.getEmployee().getRole().getRoleName() : "N/A");
+
+            access.setDeviceUsed(as.getDevice() != null ? as.getDevice().getDeviceName() : "Unknown Device");
+            access.setEntrance(as.getDevice() != null && as.getDevice().getEntrance() != null
+                    ? as.getDevice().getEntrance().getEntranceName() : "Unknown Entrance");
+
+            access.setTimestamp(getFormattedTimestamp(as));
+            ah.add(access);
+        }
+
+        rm.addParam("startDate", timeRange != null && !timeRange.isEmpty()
+                ? DateFormatter.formatDateTime(timeRange.get(0)) : "Not specified");
+        rm.addParam("endDate", timeRange != null && timeRange.size() > 1
+                ? DateFormatter.formatDateTime(timeRange.get(1)) : "Not specified");
+        rm.addParam("entranceSelected", getEntranceName(selectedEntranceId));
+        rm.addParam("result", result != null ? result : "All");
+        rm.addParam("rolename", getRoleName(selectedRoleId));
+        rm.addParam("nationalID", ghanaCardNumber != null ? ghanaCardNumber : "All");
+        rm.addParam("empName", employeeName != null ? employeeName : "All");
+        rm.addParam("printedBy", userSession.getUsername());
+        rm.addParam("accessHistory", new JRBeanCollectionDataSource(ah));
+        rm.setReportFile(ReportGenerator.ACCESS_HISTORY);
+        rm.setReportData(Arrays.asList(new Object()));
+        rm.generateReport(ReportOutputFileType.PDF);
     }
 }

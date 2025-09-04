@@ -47,11 +47,11 @@ public class ReportsService {
     public List<Employee> filterEmployees(String employeeName, String ghanaCardNumber, EmployeeRole role, List<LocalDateTime> timeRange) {
         StringBuilder queryBuilder = new StringBuilder("SELECT e FROM Employee e WHERE 1=1 ");
         Map<String, Object> params = new HashMap<>();
-
+        
         if (employeeName != null && !employeeName.isBlank()) {
-            queryBuilder.append("AND (CONCAT(LOWER(e.firstname), ' ', LOWER(e.lastname)) LIKE :employeeName ");
-            queryBuilder.append("OR LOWER(e.firstname) LIKE :employeeName ");
-            queryBuilder.append("OR LOWER(e.lastname) LIKE :employeeName) ");
+            queryBuilder.append("AND (UPPER(CONCAT(CONCAT(e.firstname, ' '), e.lastname)) LIKE :employeeName ");
+            queryBuilder.append("OR UPPER(e.firstname) LIKE :employeeName ");
+            queryBuilder.append("OR UPPER(e.lastname) LIKE :employeeName) ");
             params.put("employeeName", "%" + employeeName.toUpperCase() + "%");
         }
 
@@ -197,7 +197,7 @@ public class ReportsService {
 
             dto.setEntrydevice(entranceService.findDevicesByEntranceAndPosition(entrance, DevicePosition.ENTRY));
             dto.setExitdevice(entranceService.findDevicesByEntranceAndPosition(entrance, DevicePosition.EXIT));
-            
+
             dto.setGrantedAccesses(entranceLogs.stream()
                     .filter(log -> "granted".equalsIgnoreCase(log.getResult()))
                     .count());

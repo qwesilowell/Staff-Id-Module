@@ -230,15 +230,23 @@ public class EmployeeRole_Service {
     }
     
     
-    public EmployeeRole findVisitorRole() {
+    public EmployeeRole findByRoleName(String roleName) {
         try {
             return em.createQuery(
                     "SELECT r FROM EmployeeRole r WHERE LOWER(r.roleName) = :roleName AND r.deleted = false",
                     EmployeeRole.class)
-                    .setParameter("roleName", "visitor")
+                    .setParameter("roleName", roleName.toLowerCase())
                     .getSingleResult();
         } catch (NoResultException e) {
-            return null; // or throw a custom exception
+            return null;
         }
+    }
+
+    public EmployeeRole findVisitorRole() {
+        return findByRoleName("visitor");
+    }
+
+    public boolean roleExists(String roleName) {
+        return findByRoleName(roleName) != null;
     }
 }

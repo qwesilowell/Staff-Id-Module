@@ -92,6 +92,8 @@ public class RoleReportController implements Serializable {
     private int selectedRowIndex;
     private String employeeRoles;
     private String entrancePerRole;
+    private List<RoleCountDTO> top5RolesList;  // For pie chart data
+    private List<RoleCountDTO> top5EntrancesList;
 
     @PostConstruct
     public void init() {
@@ -147,14 +149,26 @@ public class RoleReportController implements Serializable {
         return DateFormatter.formatDate(role.getCreatedAt());
     }
 
-    public void onChartItemSelect(ItemSelectEvent event) {
+    public void onPieChartItemSelect(ItemSelectEvent event) {
         int index = event.getItemIndex();
+        if (index >= 0 && index < top5RolesList.size()) {
+            RoleCountDTO selected = top5RolesList.get(index);
+            handleRoleSelection(selected);
+        }
+    }
 
-        // Use chartRoles instead of allRoles
-        RoleCountDTO selected = chartRoles.get(index);
+    public void onDonutChartItemSelect(ItemSelectEvent event) {
+        int index = event.getItemIndex();
+        if (index >= 0 && index < top5EntrancesList.size()) {
+            RoleCountDTO selected = top5EntrancesList.get(index);
+            handleRoleSelection(selected);
+        }
+    }
+
+    private void handleRoleSelection(RoleCountDTO selected) {
         selectedRoleName = selected.getRole().getRoleName();
 
-        // Find the same role in allRoles to get its full index if needed
+        // Find the same role in allRoles to get its full index
         for (int i = 0; i < allRoles.size(); i++) {
             if (allRoles.get(i).getRole().getRoleName().equalsIgnoreCase(selectedRoleName)) {
                 selectedRowIndex = i;
@@ -224,12 +238,12 @@ public class RoleReportController implements Serializable {
         List<String> labels = new ArrayList<>();
 
         // Sort roles by count descending and limit to top 5
-        chartRoles = allRoles.stream()
+        top5RolesList = allRoles.stream()
                 .sorted((r1, r2) -> Integer.compare(r2.getCount(), r1.getCount()))
                 .limit(5)
                 .toList();
 
-        for (RoleCountDTO rc : chartRoles) {
+        for (RoleCountDTO rc : top5RolesList) {
             labels.add(rc.getRole().getRoleName());
             values.add(rc.getCount());
         }
@@ -316,19 +330,19 @@ public class RoleReportController implements Serializable {
         List<String> labels = new ArrayList<>();
 
         // Sort by entCount descending and take top 5
-        chartRoles = allRoles.stream()
+        top5EntrancesList = allRoles.stream()
                 .sorted((r1, r2) -> Integer.compare(r2.getEntCount(), r1.getEntCount()))
                 .limit(5)
                 .toList();
 
-        for (RoleCountDTO rc : chartRoles) {
+        for (RoleCountDTO rc : top5EntrancesList) {
             labels.add(rc.getRole().getRoleName());
             values.add(rc.getEntCount());
         }
 
         dataSet.setData(values);
-        dataSet.setBackgroundColor(List.of( "#26C6DA",
-            "#EC407A", "#8BC34A", "#FF7043", "#DFC57B", "#00BCD4")); // Reuse your color method
+        dataSet.setBackgroundColor(List.of("#26C6DA",
+                "#EC407A", "#8BC34A", "#FF7043", "#DFC57B", "#00BCD4")); // Reuse the color method
 
         data.addChartDataSet(dataSet);
         data.setLabels(labels);
@@ -446,27 +460,26 @@ public class RoleReportController implements Serializable {
         rm.setReportDataList(empRole);
         rm.generateReport(ReportOutputFileType.PDF);
     }
-    
-    public void exportAccessibleEntrancePerRole(){
+
+    public void exportAccessibleEntrancePerRole() {
         if (selectedRole == null || selectedEntranceEmployee == null) {
             // Show error message
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "No data to export"));
             return;
         }
-        
-        
+
         List<AccessibleEntrancePerRole> entPerRole = new ArrayList<>();
-        
-        for(Entrances e: selectedEntranceEmployee){
-         AccessibleEntrancePerRole aep = new AccessibleEntrancePerRole();
-         aep.setEntranceName(e.getEntranceName());
-         aep.setEntranceLocation(e.getEntranceLocation());
-         aep.setEntranceMode(e.getEntranceMode().toString());
-           
-         entPerRole.add(aep);
+
+        for (Entrances e : selectedEntranceEmployee) {
+            AccessibleEntrancePerRole aep = new AccessibleEntrancePerRole();
+            aep.setEntranceName(e.getEntranceName());
+            aep.setEntranceLocation(e.getEntranceLocation());
+            aep.setEntranceMode(e.getEntranceMode().toString());
+
+            entPerRole.add(aep);
         }
-        
+
         rm.setReportFile(ReportGenerator.ACCESSIBLE_ENTRANCES_PER_ROLE);
         rm.addParam("roleName", selectedRole.getRoleName());
         rm.addParam("printedBy", userSession.getCurrentUser().getUsername());
@@ -475,6 +488,5 @@ public class RoleReportController implements Serializable {
         rm.setReportDataList(entPerRole);
         rm.generateReport(ReportOutputFileType.PDF);
     }
-    
-    
+
 }

@@ -48,7 +48,5 @@ public class CustomTimeAccess extends EntityModel implements Serializable {
     @Column(name = "DAY_OF_WEEK")
     @Enumerated(EnumType.STRING)
     private DayOfWeek dayOfWeek;
-    
-    @Column(name = "ISREVOKED")
-    private boolean isRevoked = false;
+
 }

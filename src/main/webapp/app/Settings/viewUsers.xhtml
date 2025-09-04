@@ -267,7 +267,21 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                                                itemValue="#{role}" />
                             </p:selectOneMenu>
                         </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="pi pi-user"></i> User Type:
+                            </label>
+                            <p:selectOneMenu value="#{viewUsers.selectedUser.userType}" 
+                                             styleClass="modern-select">
+                                <f:selectItems value="#{viewUsers.userTypes}" 
+                                               var="type" 
+                                               itemLabel="#{type.name()}" 
+                                               itemValue="#{type}"/>
+                            </p:selectOneMenu>
+                        </div>
 
+                        
                         <!-- STATUS SELECTION -->
                         <div class="form-group">
                             <label class="form-label">
@@ -453,7 +467,6 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                 /* Main Container */
                 .user-management-container {
                     background: var(--gray-50);
-                    max-width: 1400px;
                     margin: 0 auto;
                 }
 
@@ -957,6 +970,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                     font-size: 0.875rem !important;
                     transition: var(--transition) !important;
                     background: white !important;
+                    height: 55px;
                 }
 
                 .modern-select:focus {
@@ -1206,7 +1220,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                 }
 
                 .id-column {
-                    width: 200px !important;
+                    width: 150px !important;
                 }
 
                 .role-column {
@@ -1214,7 +1228,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/XHtml.xhtml to edit t
                 }
 
                 .status-column {
-                    width: 120px !important;
+                    width: 200px !important;
                 }
 
                 .actions-column {

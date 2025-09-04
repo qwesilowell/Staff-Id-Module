@@ -207,16 +207,12 @@ public class DashboardBean implements Serializable {
         rolesWithMostEmployeesLimit = roleService.getTopRolesByEmployeeCount(5);
         allEntrances = entrancesService.findAllEntrances();
 
-        // Initialize charts
-//        initVerificationPieChart();
-//        initTop5EntrancesLineChart();
         rolePieChartModel = RolePieChart.generatechart(rolesWithMostEmployees);
         LocalDateTime end = LocalDateTime.now();
         topEntrancesChartModel = BaseLineChart.generateChart(accessLogService.getTop5RecentEntrancesByGrantedAccess(endofMonth, end));
 
         barChartModelEntrance = EntranceAccessBarChart.generateChart(accessLogService.countAccessResultsForAllEntrances(endofMonth, endOfDay));
 
-//        initLoginTrendChart();
     }
 
     public void updateMostAccessed() {

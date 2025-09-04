@@ -85,7 +85,6 @@ public class VisitorService {
 //        em.persist(access);
 //        return access;
 //    }
-
     public boolean hasValidAccess(int visitorId, int entranceId) {
         LocalDateTime now = LocalDateTime.now();
 
@@ -174,35 +173,37 @@ public class VisitorService {
     }
 
     public Employee createVisitorPerson(VisitorCreateRequest request) {
-        
-        Employee employee = new Employee();
-        employee.setFirstname(request.getForenames());
-        employee.setLastname(request.getSurname());
-        employee.setGhanaCardNumber(request.getNationalId());
-        employee.setDateOfBirth(request.getDateOfBirth());
-        employee.setGender(request.getGender());
-        employee.setAddress("N/A");
-        employee.setEmail(request.getEmail());
-        employee.setPrimaryPhone(request.getPhoneNumber());
-        EmployeeRole role = roleService.findVisitorRole();
-        //Add method to create role and empStatus visitor on fresh login
-        employee.setRole(role);
-        EmploymentStatus status = employeeService.findStatusVisitor();
-        employee.setEmploymentStatus(status);
+        Employee employee = employeeService.findEmployeeByGhanaCard(request.getNationalId());
+
+        if (employee == null) {
+            employee = new Employee();
+            employee.setFirstname(request.getForenames());
+            employee.setLastname(request.getSurname());
+            employee.setGhanaCardNumber(request.getNationalId());
+            employee.setDateOfBirth(request.getDateOfBirth());
+            employee.setGender(request.getGender());
+            employee.setAddress("N/A");
+            employee.setEmail(request.getEmail());
+            employee.setPrimaryPhone(request.getPhoneNumber());
+            EmployeeRole role = roleService.findVisitorRole();
+            //Add method to create role and empStatus visitor on fresh login
+            employee.setRole(role);
+            EmploymentStatus status = employeeService.findStatusVisitor();
+            employee.setEmploymentStatus(status);
+        }
+
         List<Entrances> entrance = entrancesService.findEntranceByIds(request.getEntranceIds());
         employee.setCustomEntrances(entrance);
-        
-        
-        
+
         for (Entrances ent : entrance) {
             CustomTimeAccess customAccess = new CustomTimeAccess();
-            customAccess.setDayOfWeek(request.getDayofWeek());
+            customAccess.setDayOfWeek(request.getDayOfWeek());
             customAccess.setEmployee(employee);
             customAccess.setEntrances(ent);
             customAccess.setEndTime(DateFormatter.toDate(request.getEndTime()));
-            customAccess.setStartTime(DateFormatter.toDate(request.getStartTime()));       
-            
-            employee.getCustomAccessList().add(customAccess); 
+            customAccess.setStartTime(DateFormatter.toDate(request.getStartTime()));
+
+            employee.getCustomAccessList().add(customAccess);
         }
         employeeService.saveEmployee(employee);
 
@@ -232,8 +233,7 @@ public class VisitorService {
 
         return visit;
     }
-    
-    
+
     public VisitorResponse empVisitorDetails(Employee v) {
         VisitorResponse visit = new VisitorResponse();
         visit.setForenames(v.getFirstname());
@@ -247,8 +247,8 @@ public class VisitorService {
                 .map(access -> {
                     VisitorAccessDTO vad = new VisitorAccessDTO();
                     vad.setEntranceName(access.getEntrances().getEntranceName());
-                    vad.setStartTime(DateFormatter.formatDateAsTimeString(access.getStartTime()));
-                    vad.setEndTime(DateFormatter.formatDateAsTimeString(access.getEndTime()));
+                    vad.setStartTime(DateFormatter.formatTimeOnly(access.getStartTime()));
+                    vad.setEndTime(DateFormatter.formatTimeOnly(access.getEndTime()));
                     return vad;
                 })
                 .collect(Collectors.toList());

@@ -227,7 +227,8 @@ public class Sublogincontroller implements Serializable {
             auditLogService.logActivity(AuditActionType.LOGIN, "SubLogin Page", ActionResult.SUCCESS,
                     user.getUsername() + " Login Succesful After Password Change", user);
 
-            JSF.addSuccessMessage("Password changed successfully! You are now logged in.");
+//            JSF.addSuccessMessageWithSummary("Welcome To STIM","Password changed successfully! You are now logged in.");
+            JSF.addSuccessMessageWithSummary("Welcome..",user.getUsername()+" to The Staff ID Module.");
 
             // Redirect to dashboard
             FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);

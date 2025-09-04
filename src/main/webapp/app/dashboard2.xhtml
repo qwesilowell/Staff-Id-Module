@@ -154,6 +154,10 @@
                                                      update="activeEntrances :growl"
                                                      styleClass="p-button-sm p-button-outlined p-button-primary"
                                                      style="margin-left: auto;" />
+                                    <p:button icon="pi pi-arrow-circle-right" styleClass="rounded-button " style="color: white!important;" 
+                                              outcome="/app/Access/historyMonitoring?faces-redirect=true"
+                                              title="See More Details"
+                                              />
                                 </p:outputPanel>
                             </f:facet>
 
@@ -163,7 +167,17 @@
 
                         <p:spacer height="50px"/>
                         <p:panel id="mostAccessOverAll" styleClass="mostAccessed"
-                                 header="Most Accessed Entrances This Month" style="border-left: 6px solid #95C0F5;  border-radius: 10px;">
+                                 style="border-left: 6px solid #95C0F5;  border-radius: 10px;">
+                            <f:facet name="header">
+                                <h:panelGroup layout="block" 
+                                              style="display: flex; align-items: center; justify-content: space-between;">
+                                    <h:outputText value="Most Accessed Entrances This Month"/>
+                                    <p:button icon="pi pi-arrow-circle-right" styleClass="rounded-button " style="color: white!important;" 
+                                              outcome="/app/Reports/entrancesReport?faces-redirect=true"
+                                              title="See More Details"
+                                              />
+                                </h:panelGroup>
+                            </f:facet>
                             <p:lineChart model="#{dashboard2.lineChartModel}" style="height: 300px;" widgetVar="lineChartjs">
 
                                 <!--  AJAX behavior for chart interaction -->
@@ -181,13 +195,7 @@
                             </h:outputScript>
 
                         </p:panel>
-
-                        <!--              
-                                                <p:panel id="mostAccess" styleClass="mostAccessed"
-                                                         header="Top 5 Most Accessed Entrances (Granted Only)" style="border-left: 6px solid #95C0F5;  border-radius: 10px;">
-                                                    <p:lineChart id="topEntranceChart" model="#{dashboard2.topEntrancesChartModel}"  style="height: 300px;" />
-                                                </p:panel>
-                        -->
+                        
                         <br/><br/>
                         <h:outputText value="Filter by Entrance: "/>
                         <p:selectOneMenu value="#{dashboard2.selectedEntranceId}">
@@ -363,11 +371,16 @@
                                 </h:panelGroup>
                             </f:facet>
                             <p:dataTable value="#{dashboard2.recentEmployees}" var="emp">
-                                <p:column headerText="Name"><h:outputText value="#{emp.firstname} #{emp.lastname}"/></p:column>
+                                <p:column headerText="Name">
+                                    <h:outputText value="#{emp.firstname} #{emp.lastname}" style="font-weight: bold"/>
+                                </p:column>
                                 <p:column headerText="Date And Time Onboarded">
                                     <h:outputText value="#{emp.createdAt}">
                                         <f:convertDateTime pattern="dd-MM-yyyy HH:mm:ss" />
                                     </h:outputText>
+                                </p:column>
+                                <p:column headerText="Role Assigned">
+                                    <h:outputText value="#{emp.role.roleName}"/>
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
@@ -395,7 +408,7 @@
                     </p:tab>
 
                     <!-- User Dashboard -->
-                    <p:tab id="userTab" title="User Dashboard">
+                    <p:tab id="userTab" title="User Dashboard" rendered="#{!userSession.checkAdmin()}">
                         <div class="dashboard">
                             <div class="cards-container">
                                 <div class="card blue" style="border-left: 6px solid #2BBDD0;">
@@ -976,7 +989,7 @@
             }
 
             .pill-card {
-                background-color: #b3e5c3;
+                background-color: #4f609a;
                 color: #fff;
                 border-radius: 999px;
                 padding: 1px 0.2rem;

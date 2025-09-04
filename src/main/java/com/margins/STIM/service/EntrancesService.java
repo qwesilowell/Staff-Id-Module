@@ -14,6 +14,7 @@ import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
@@ -110,6 +111,17 @@ public class EntrancesService {
                 + "LIKE :query", Entrances.class)
                 .setParameter("query", "%" + query.toLowerCase() + "%")
                 .getResultList();
+    }
+    
+    public Entrances findEntranceByExactName(String entranceName) {
+        try {
+            return entityManager.createQuery("SELECT e FROM Entrances e WHERE LOWER(e.entranceName) = :name",
+                    Entrances.class)
+                    .setParameter("name", entranceName.toLowerCase())
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
     }
 
     public Entrances save(Entrances entrance) {

@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -76,7 +77,7 @@ public class EntryExitBean implements Serializable {
     public void loadReports() {
         LocalDate defaultDate = LocalDate.now();
 
-        LocalDate start = (startDate != null) ? startDate : defaultDate.minusMonths(5);
+        LocalDate start = (startDate != null) ? startDate : defaultDate.minusMonths(1);
         LocalDate end = (endDate != null) ? endDate : LocalDate.now();
 
         if (startDate == null) {
@@ -89,6 +90,12 @@ public class EntryExitBean implements Serializable {
         }
 
         accessHistoryList = historyDTOService.generateAccessHistory(start, end, selectedEntranceId, selectedAccessStatus);
+        
+        accessHistoryList.sort(
+                Comparator.comparing((AccessHistoryDTO dto) -> dto.getDate(), Comparator.reverseOrder())
+                        .thenComparing(dto -> dto.getTimeEntered() != null ? dto.getTimeEntered() : dto.getTimeExited(),
+                                Comparator.reverseOrder())
+        );
 
     }
 

@@ -10,6 +10,7 @@ import com.margins.STIM.entity.enums.AuditActionType;
 import com.margins.STIM.entity.enums.EntranceMode;
 import com.margins.STIM.service.AuditLogService;
 import com.margins.STIM.service.EntrancesService;
+import com.margins.STIM.util.JSF;
 import java.util.List;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
@@ -88,6 +89,14 @@ public class EntranceBean implements Serializable {
             if (selectedEntrance.getEntranceId()== null || selectedEntrance.getEntranceId().isEmpty()) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Entrance ID is required."));
                 return; // Prevent saving if ID is missing
+            }
+            if (entranceService.findEntranceByExactName(selectedEntrance.getEntranceId()) != null) {
+                JSF.addWarningMessageWithSummary("WARNING", "Entrance Id Already Exists");
+                return;
+            }
+            if(entranceService.findEntranceByExactName(selectedEntrance.getEntranceName()) != null){
+            JSF.addWarningMessageWithSummary("WARNING", "Entrance Name Already Exists");
+                return;
             }
 
             System.out.println("Adding new entrance with ID: " + selectedEntrance.getEntranceId());

@@ -242,7 +242,7 @@ public class LoginBean implements Serializable {
                         currentUser
                 );
                 FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
-                JSF.addSuccessMessageWithSummary("Welcome! ", currentUser.getUsername());
+                JSF.addSuccessMessageWithSummary("Welcome Back!  ", currentUser.getUsername());
 
                 // Redirect to dashboard
                 redirectToDashboard();
@@ -376,7 +376,7 @@ public class LoginBean implements Serializable {
                         currentUser
                 );
                 FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
-                JSF.addSuccessMessageWithSummary("Welcome! ", currentUser.getUsername());
+                JSF.addSuccessMessageWithSummary("Welcome Back! ", currentUser.getUsername());
 
                 // Redirect to dashboard
                 redirectToDashboard();
@@ -665,7 +665,7 @@ public class LoginBean implements Serializable {
             auditLogService.logActivity(AuditActionType.LOGIN, "SubLogin Page", ActionResult.SUCCESS,
                     user.getUsername() + " Login Succesful After Password Change", user);
 
-            JSF.addSuccessMessage("Password changed successfully! You are now logged in.");
+            JSF.addSuccessMessageWithSummary("Welcome " +user.getUsername(),"Password changed successfully!.");
 
             // Redirect to dashboard
             FacesContext.getCurrentInstance().getExternalContext().redirect("app/dashboard2.xhtml");

@@ -111,6 +111,7 @@ public class VisitorResource {
                         .entity("Request cannot be null")
                         .build();            }
         } catch (Exception e) {
+            e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("An error occurred while creating visitor access")
                     .build();

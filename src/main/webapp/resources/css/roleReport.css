@@ -280,8 +280,6 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
 }
 
 .scroll-hint {
-    position: absolute;
-    top: 50%;
     right: 20px;
     transform: translateY(-50%);
     z-index: 10;

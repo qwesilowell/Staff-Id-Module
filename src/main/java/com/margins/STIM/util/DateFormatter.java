@@ -63,9 +63,18 @@ public class DateFormatter {
     }
 
     public static LocalTime toLocalTime(Date date) {
-        return date.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalTime();  //ignores Jan-1970
+        if (date == null) {
+            return null;
+        }
+
+        if (date instanceof java.sql.Time) {
+            // java.sql.Time has a toLocalTime() method
+            return ((java.sql.Time) date).toLocalTime();
+        } else {
+            return date.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalTime();
+        }
     }
 
     public static String forLocalDate(LocalDate ld) {
@@ -136,6 +145,25 @@ public class DateFormatter {
             return dateTime.format(fullFormatter);
         }
     }
+    
+        public static String formatTimeOnly(Date date) {
+        if (date == null) return "";
+
+        LocalTime time;
+
+        if (date instanceof java.sql.Time) {
+            time = ((java.sql.Time) date).toLocalTime();
+        } else {
+            // For regular java.util.Date that may include a date
+            time = date.toInstant()
+                       .atZone(ZoneId.systemDefault())
+                       .toLocalTime();
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH);
+        return time.format(formatter);
+    }
+
 
     public static String formatLocalDateAsTimeString(LocalDateTime dateTime) {
         if (dateTime == null) {

@@ -102,11 +102,6 @@ function readCard() {
         return;
     }
 
-    const can = document.getElementById('canInput').value;
-    if (!can) {
-        showError('Please enter CAN before reading card');
-        return;
-    }
 
     log(' Sending readCard command with CAN ' + can + '...');
     const request = {action: 'readCard', can: can};

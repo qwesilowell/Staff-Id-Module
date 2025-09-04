@@ -46,7 +46,14 @@
                                          actionListener="#{entranceReportBean.exportPage('PDF')}" />
                     </div>
                 </div>
-
+                
+                <p:panel id="mostAccess" styleClass="mostAccessed"
+                         header="Top 5 Most Accessed Entrances (Granted Only)" style="border-left: 6px solid #95C0F5;  border-radius: 10px;">
+                    <p:lineChart id="topEntranceChart" model="#{dashboard2.topEntrancesChartModel}"  style="height: 300px;" />
+                </p:panel>
+                
+                <p:spacer height="10px"/>
+               
                 <!-- Filter Panel -->
                 <p:panel header="Filters" id="filterPanel" 
                          styleClass="filter-panel" style="margin-bottom: 20px;" toggleable="true" collapsed="true">
@@ -100,6 +107,8 @@
                     </div>
                 </p:panel>
 
+               
+                
                 <!-- Summary Panel -->
                 <p:outputPanel rendered="#{not empty entranceReportBean.reportData}" styleClass="p-grid p-justify-between summary-row" style="margin-top: 2rem;">
 
@@ -158,11 +167,10 @@
 
                 <br/>
 
+                
                 <!-- Data Table -->
                 <div style="width: 100%; overflow-x: auto; padding: 0; margin: 0;">
-                    <div class="scroll-hint" rendered = "#{ not empty entranceReportBean.reportData}">
-                        <i class="pi pi-arrow-right floating-icon" title="See More Details" onclick="scrollTableToRightSmooth()"></i>
-                    </div>
+                       
                     <div class="table-container" >
                         <p:dataTable id="entTable"  value="#{entranceReportBean.reportData}" var="report" styleClass="ui-datatable"  paginator="true" 
                                      rows="10"
@@ -317,6 +325,9 @@
                                                  oncomplete="PF('detailDialog').show()"/>
                             </p:column>
                         </p:dataTable>
+                         <div class="scroll-hint" rendered = "#{ not empty entranceReportBean.reportData}">
+                            <i class="pi pi-arrow-right floating-icon" title="See More Details" onclick="scrollTableToRightSmooth()"></i>
+                        </div>
                     </div>
                 </div>
 

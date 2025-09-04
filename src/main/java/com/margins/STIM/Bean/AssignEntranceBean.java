@@ -3,6 +3,7 @@ package com.margins.STIM.Bean;
 import com.margins.STIM.entity.CustomTimeAccess;
 import com.margins.STIM.entity.Employee;
 import com.margins.STIM.entity.Entrances;
+import com.margins.STIM.entity.RoleTimeAccess;
 import com.margins.STIM.entity.enums.ActionResult;
 import com.margins.STIM.entity.enums.AuditActionType;
 import com.margins.STIM.service.AuditLogService;
@@ -163,6 +164,10 @@ public class AssignEntranceBean implements Serializable {
             showMessage(FacesMessage.SEVERITY_WARN, "Warning", "No employee selected!");
             return;
         }
+            if (selectedEntrances == null || selectedEntrances.isEmpty()) {
+        showMessage(FacesMessage.SEVERITY_WARN, "Warning", "No entrance selected to Assign!");
+        return;
+    }
         try {
             System.out.println("Saving custom entrances for employee: " + selectedEmployee.getGhanaCardNumber());
             System.out.println("Selected entrances: " + selectedEntrances.stream()
@@ -319,28 +324,79 @@ public class AssignEntranceBean implements Serializable {
     public void loadDayTimeInputs() {
         startTimes.clear();
         endTimes.clear();
-        if (selectedDays != null) {
+
+        System.out.println("=== loadDayTimeInputs START ===");
+        System.out.println("Selected Employee: " + (selectedEmployee != null ? selectedEmployee.getFullName() : "null"));
+        System.out.println("Selected Entrance: " + (selectedEntrance != null ? selectedEntrance.getEntranceName() : "null"));
+        System.out.println("Selected Days (before): " + selectedDays);
+
+        if (selectedEmployee == null || selectedEntrance == null) {
+            System.out.println("Exiting loadDayTimeInputs: Missing employee or entrance.");
+            return;
+        }
+
+        // 1️⃣ Load custom rules
+        List<CustomTimeAccess> customRules = timeAccessRuleService.findByEmployeeAndEntrance(selectedEmployee, selectedEntrance);
+        System.out.println("Custom Rules found: " + customRules.size());
+
+        if (customRules != null && !customRules.isEmpty()) {
+            selectedDays = customRules.stream()
+                    .map(r -> r.getDayOfWeek().name())
+                    .distinct()
+                    .collect(Collectors.toList());
+        }
+
+        // 2️⃣ If no custom rules, populate from role rules
+        if ((selectedDays == null || selectedDays.isEmpty()) && selectedEmployee.getRole() != null) {
+            List<RoleTimeAccess> roleRules = timeAccessRuleService.findByRoleAndEntrance(selectedEmployee.getRole(), selectedEntrance);
+            System.out.println("Role Rules found: " + roleRules.size());
+
+            selectedDays = roleRules.stream()
+                    .map(r -> r.getDayOfWeek().name())
+                    .distinct()
+                    .collect(Collectors.toList());
+        } else if (selectedEmployee.getRole() == null) {
+            System.out.println("No role assigned to employee.");
+        }
+
+        System.out.println("Selected Days (after): " + selectedDays);
+
+        // Initialize start/end maps after selectedDays is populated
+        if (selectedDays != null && !selectedDays.isEmpty()) {
             for (String day : selectedDays) {
                 startTimes.put(day, null);
                 endTimes.put(day, null);
             }
-            if (selectedEmployee != null && selectedEntrance != null) {
-                List<CustomTimeAccess> existingRules = timeAccessRuleService
-                        .findByEmployeeAndEntrance(selectedEmployee, selectedEntrance);
 
-                for (CustomTimeAccess rule : existingRules) {
+            // Populate startTimes/endTimes from custom rules first
+            if (customRules != null) {
+                for (CustomTimeAccess rule : customRules) {
                     String day = rule.getDayOfWeek().name();
                     if (selectedDays.contains(day)) {
-                        LocalTime start = DateFormatter.toLocalTime(rule.getStartTime());
-                        LocalTime end = DateFormatter.toLocalTime(rule.getEndTime());
+                        startTimes.put(day, DateFormatter.toLocalTime(rule.getStartTime()));
+                        endTimes.put(day, DateFormatter.toLocalTime(rule.getEndTime()));
+                    }
+                }
+            }
 
-                        startTimes.put(day, start);
-                        endTimes.put(day, end);
+            // Populate startTimes/endTimes from role rules if no custom rule for that day
+            if (selectedEmployee.getRole() != null) {
+                List<RoleTimeAccess> roleRules = timeAccessRuleService.findByRoleAndEntrance(selectedEmployee.getRole(), selectedEntrance);
+                for (RoleTimeAccess rule : roleRules) {
+                    String day = rule.getDayOfWeek().name();
+                    if (selectedDays.contains(day) && startTimes.get(day) == null) {
+                        startTimes.put(day, DateFormatter.toLocalTime(rule.getStartTime()));
+                        endTimes.put(day, DateFormatter.toLocalTime(rule.getEndTime()));
                     }
                 }
             }
         }
+
+        System.out.println("StartTimes map: " + startTimes);
+        System.out.println("EndTimes map: " + endTimes);
+        System.out.println("=== loadDayTimeInputs END ===");
     }
+
 
     public boolean validateRule() {
         boolean isValid = true;

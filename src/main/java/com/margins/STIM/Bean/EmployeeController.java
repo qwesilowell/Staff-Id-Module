@@ -193,6 +193,7 @@ public class EmployeeController implements Serializable {
         fetchCriteria();
     }
 
+    
     //How to properly navigate 
     public String navigateToHistory(String ghanacardNumber) {
         FacesContext.getCurrentInstance().getExternalContext().getFlash().put("ghanaCardNumber", ghanacardNumber);

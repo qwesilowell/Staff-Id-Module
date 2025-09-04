@@ -166,6 +166,9 @@ public class DummyDataSeeder implements Serializable {
             if (userRoleService.findUserRoleByName("SUPER ADMIN") == null) {
                 createSystemRole();
             }
+            if (roleService.findVisitorRole() == null){
+            createVisitorRole();
+            }
 
             createUser();
 
@@ -263,6 +266,10 @@ public class DummyDataSeeder implements Serializable {
         System.out.println("[Seeder] Access logs created: " + logCount);
 
         System.out.println("Seeder>>>>>>>>>>>  finished successfully.");
+    }
+    
+    public void createVisitorRole(){
+    
     }
 
     private void deleteAllExistingData() {

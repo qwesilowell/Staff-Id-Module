@@ -21,59 +21,67 @@
         <div class="main-content">
             <p:growl id="messages" showSummary= "true" showDetail="true" life="3000" />
 
-           
+
             <h:form id="employeeForm">
                 <div style="display: flex; justify-content: space-between">
                     <div>
-                    <h3>EMPLOYEE REPORT</h3>
+                        <h3>EMPLOYEE REPORT</h3>
                     </div>
                     <div style="margin-top: 10px">
-                    <p:commandButton value="Export" 
-                                     icon="pi pi-file-pdf" 
-                                     styleClass="ui-button-secondary"
-                                     action="#{empReportController.export()}"
-                                     ajax="false"/>
+                        <p:commandButton value="Export" 
+                                         icon="pi pi-file-pdf" 
+                                         styleClass="ui-button-secondary"
+                                         action="#{empReportController.export()}"
+                                         ajax="false"/>
                     </div>
                 </div>
                 <br/>
                 <p:panel toggleable="true" header="Filters">
 
-                    <p:panelGrid columns="4">
-                        <p:outputPanel>
-                            <p:outputLabel for="@next">Filter by Full Name</p:outputLabel>
+                    <p:panelGrid columns="4" styleClass="filter-grid" style="width: 100%;">
+                        <p:outputPanel styleClass="filter-panel">
+                            <p:outputLabel for="@next" value="Filter by Full Name" styleClass="filter-label"/>
                             <p:inputText value="#{empReportController.employeeName}"
                                          placeholder="Search by Name"
                                          styleClass="search-box"
-                                         style="width: 100%;">
+                                         style="width: 100%; min-width: 200px;">
                             </p:inputText>
                         </p:outputPanel>
 
-                        <p:outputPanel>
-                            <p:outputLabel for="@next">Filter by National ID</p:outputLabel>
-                            <p:inputText  value="#{empReportController.ghanaCardNumber}"
-                                          placeholder="Search by GhanaCard"
-                                          styleClass="search-box"
-                                          style="width: 100%;">
+                        <p:outputPanel styleClass="filter-panel">
+                            <p:outputLabel for="@next" value="Filter by National ID" styleClass="filter-label"/>
+                            <p:inputText value="#{empReportController.ghanaCardNumber}"
+                                         placeholder="Search by GhanaCard"
+                                         styleClass="search-box"
+                                         style="width: 100%; min-width: 200px;">
                             </p:inputText>
                         </p:outputPanel>
 
-                        <p:outputPanel>
-                            <p:outputLabel for="@next">Filter by Role</p:outputLabel>
+                        <p:outputPanel styleClass="filter-panel">
+                            <p:outputLabel for="@next" value="Filter by Role" styleClass="filter-label"/>
                             <p:autoComplete value="#{empReportController.selectedRole}"
                                             completeMethod="#{empReportController.searchRoles}"
                                             var="role" itemLabel="#{role.roleName}" itemValue="#{role}"
-                                            converter="employeeRoleConverter"
+                                            converter="employeeRoleConverter" 
+                                            style="width: 90%; min-width: 200px;"
+                                            inputStyle="width: 100%;"
                                             forceSelection="true" dropdown="true"
-                                            placeholder="Search or Select Entrance" panelStyle="max-height: 200px; overflow-y:auto;"/>
+                                            placeholder="Search or Select Role" 
+                                            panelStyle="max-height: 200px; overflow-y:auto;"/>
                         </p:outputPanel>
 
-                        <p:outputPanel>
-                            <p:outputLabel for="@next">Filter by date Onboarded</p:outputLabel>
-                            <p:datePicker selectionMode="range" monthNavigator="true" yearNavigator="true" pattern="dd-MM-yyyy"
-                                          showButtonBar="true" value="#{empReportController.timeRange}"/>
+                        <p:outputPanel styleClass="filter-panel">
+                            <p:outputLabel for="@next" value="Filter by Date Onboarded" styleClass="filter-label"/>
+                            <p:datePicker selectionMode="range" 
+                                          monthNavigator="true" 
+                                          yearNavigator="true" 
+                                          pattern="dd-MM-yyyy"
+                                          showButtonBar="true" 
+                                          value="#{empReportController.timeRange}"
+                                          style="width: 100%; min-width: 200px;"
+                                         />
                         </p:outputPanel>
                     </p:panelGrid>
-
                     <div style="display: flex; justify-content: space-between;">
                         <p:commandButton value="Reset" action="#{empReportController.reset()}" update="@form" 
                                          icon="fa-solid fa-spinner" iconPos="left" 
@@ -97,21 +105,21 @@
                                        style="color: black; font-weight: bold;" ajax="false" />    
                     </p:column>
 
-                    <p:column headerText="National ID">
+                    <p:column headerText="National ID" style="width: 200px;">
                         <p:commandLink value="#{employee.ghanaCardNumber}"
                                        action="#{empReportController.navigateToHistory(employee.ghanaCardNumber)}"
                                        style="color: black" ajax="false" />   
                     </p:column>
 
-                    <p:column headerText="Role">
+                    <p:column headerText="Role" style="width: 200px;">
                         <h:outputText value="#{employee.role}"/>
                     </p:column>
 
-                    <p:column headerText="Email" style="width: 400px;">
+                    <p:column headerText="Email" style="width: 300px;">
                         <h:outputText value="#{employee.email}" /> 
                     </p:column>
 
-                    <p:column headerText="Date Onboarded">
+                    <p:column headerText="Date Onboarded" style="width: 200px;">
                         <h:outputText value="#{empReportController.formatEmpDate(employee)}" />
                     </p:column>
 
@@ -250,6 +258,70 @@
                 cursor: pointer;
             }
 
+            .ui-panelgrid .ui-panelgrid-cell {
+                vertical-align: top;
+                padding: 8px;
+                white-space: nowrap;
+            }
+
+            .ui-datepicker-trigger {
+                vertical-align: top;
+            }
+
+            /* Ensure consistent input heights */
+            .ui-inputfield, .ui-autocomplete .ui-autocomplete-input {
+                height: 2.5em;
+                box-sizing: border-box;
+            }
+            .filter-grid {
+                width: 100%;
+                table-layout: fixed; /* This ensures equal column widths */
+            }
+
+            .filter-grid .ui-panelgrid-cell {
+                vertical-align: top;
+                padding: 10px 5px;
+                width: 25%; /* Equal width for all 4 columns */
+            }
+
+            .filter-panel {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                width: 100%;
+            }
+
+        
+
+            /* Ensure consistent input styling */
+            .ui-inputfield,
+            .ui-autocomplete-input,
+            .ui-datepicker-input {
+                height: 2.5em !important;
+                padding: 0.5em !important;
+                border: 1px solid #ccc !important;
+                border-radius: 4px !important;
+                box-sizing: border-box !important;
+            }
+
+
+            /* Fix datepicker alignment */
+            .ui-datepicker-trigger {
+                vertical-align: top !important;
+                margin-left: 5px !important;
+            }
+
+            /* Responsive behavior */
+            @media (max-width: 1200px) {
+                .filter-grid {
+                    table-layout: auto;
+                }
+
+                .filter-grid .ui-panelgrid-cell {
+                    width: auto;
+                    min-width: 250px;
+                }
+            }
         </style>
     </ui:define>
 </ui:composition>
