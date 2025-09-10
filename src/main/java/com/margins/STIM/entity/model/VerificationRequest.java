@@ -38,8 +38,8 @@ public class VerificationRequest {
     
     
    public VerificationRequest(){
-           merchantKey = ("69af98f5-39fb-44e6-81c7-5e496328cc59");
-           merchantCode =("69af98f5-39fb-44e6-81c7-5e496328cc59");
+           merchantKey = ("69af98f5-39fb-44e6-81c7-5e496328cc58");
+           merchantCode =("69af98f5-39fb-44e6-81c7-5e496328cc58");
            dataType = "PNG";}
     
     @Override

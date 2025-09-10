@@ -53,6 +53,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.primefaces.event.ItemSelectEvent;
 import org.primefaces.model.charts.ChartData;
+import org.primefaces.model.charts.ChartDataSet;
 import org.primefaces.model.charts.bar.BarChartModel;
 import org.primefaces.model.charts.line.LineChartDataSet;
 import org.primefaces.model.charts.line.LineChartModel;
@@ -332,32 +333,6 @@ public class DashboardBean implements Serializable {
         return model;
     }
 
-    public void onChartItemSelect(ItemSelectEvent event) {
-        try {
-            System.out.println("ItemSelected>>>>>>>>>>>>>>>>>> " + event.getDataSetIndex());
-            System.out.println("ItemSelected>>>>>>>>>>>>>>>>>> " + event.getItemIndex());
-            System.out.println("ItemSelected>>>>>>>>>>>>>>>>>> " + event.getSource());
-
-            org.primefaces.component.linechart.LineChart chart = (org.primefaces.component.linechart.LineChart) event.getSource();
-
-            // > org.primefaces.component.linechart.LineChart@6f99863e|
-//            LineChartModel model = (LineChartModel) lineChartModel;
-//            ChartData data = model.getData();
-//
-//            String clickedEntrance = ((List<String>) data.getLabels()).get(event.getItemIndex()); // x-axis label
-//            String resultClicked = ((List<ChartDataSet>) data.getDataSet()).get(event.getDataSetIndex()).getLabel().toLowerCase();
-//
-//            // Store in Flash
-//            Flash flash = FacesContext.getCurrentInstance().getExternalContext().getFlash();
-//            flash.put("selectedEntranceName", clickedEntrance);
-//            flash.put("result", resultClicked);
-//            flash.put("timeRange", Arrays.asList(endofMonth, endOfDay)); // assuming you used those when building the chart
-//
-//            flash.setKeepMessages(true); // Optional: if you want to show a FacesMessage
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     private List<String> generateColors(int count) {
         List<String> colors = new ArrayList<>();
@@ -385,35 +360,7 @@ public class DashboardBean implements Serializable {
         return colors;
     }
 
-//    private void initVerificationPieChart() {
-//        // Define the time range (last 30 days)
-//        LocalDateTime start = LocalDateTime.now().minusDays(30).withHour(0).withMinute(0).withSecond(0).withNano(0);
-//        LocalDateTime end = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59).withNano(999999999);
-//
-//        // Get counts for both Success and Failed in one call
-//        Map<String, Integer> resultCounts = activityLogService.countBiometricLoginsByResultsInPeriod(start, end);
-//
-//        // Extract counts (default to 0 if key is missing)
-//        int successCount = resultCounts.getOrDefault("Success", 0);
-//        int failCount = resultCounts.getOrDefault("Failed", 0);
-//
-//        // Format as JSON string for Chart.js
-//        verificationChartData = String.format("""
-//        {
-//            "labels": ["Successful", "Failed"],
-//            "datasets": [{
-//                "label": "Biometric Login Outcomes",
-//                "data": [%d, %d],
-//                "backgroundColor": ["rgba(54, 162, 235, 0.8)", "rgba(255, 99, 132, 0.8)"],
-//                "borderColor": ["rgb(54, 162, 235)", "rgb(255, 99, 132)"],
-//                "borderWidth": 1
-//            }]
-//        }
-//        """, successCount, failCount);
-//
-//        System.out.println("Chart data: " + verificationChartData);
-//        System.out.println("Success count: " + successCount + ", Fail count: " + failCount);
-//    }
+
     public String getVerificationChartData() {
         return verificationChartData;
     }
@@ -511,7 +458,127 @@ public class DashboardBean implements Serializable {
             resolvedCount = anomalyService.countByStatus(AnomalyStatus.RESOLVED, currentUser);        
         }
     }
-    ///Trial
+    
+    public void onActiveEntranceChartClick(ItemSelectEvent event) {
+        try {
+            // ItemSelectEvent provides itemIndex for chart data points
+            int itemIndex = event.getItemIndex();
+            int seriesIndex = event.getSeriesIndex(); // Get which line/series was clicked
+
+            // Determine if it's entries or exits based on series index
+            String accessType;
+            String drillDownResult;
+
+            if (seriesIndex == 0) {
+                // First series = ENTRIES
+                accessType = "ENTRY";
+                drillDownResult = "GRANTED"; // or whatever represents entries in your system
+            } else if (seriesIndex == 1) {
+                // Second series = EXITS
+                accessType = "EXIT";
+                drillDownResult = "GRANTED"; // or whatever represents exits in your system
+            } else {
+                System.out.println("Unknown series index: " + seriesIndex);
+                return;
+            }
+
+            // Get the labels from our chart data to find the selected entrance
+            ChartData chartData = mostAccessedEntrance.getData();
+            Object labelsObj = chartData != null ? chartData.getLabels() : null;
+
+            if (labelsObj != null && labelsObj instanceof List) {
+                @SuppressWarnings("unchecked")
+                List<Object> labels = (List<Object>) labelsObj;
+
+                if (itemIndex >= 0 && itemIndex < labels.size()) {
+                    String selectedEntranceName = String.valueOf(labels.get(itemIndex));
+
+                    if (selectedEntranceName != null && !selectedEntranceName.isEmpty()) {
+                        System.out.println("Active Entrance chart clicked - Entrance: " + selectedEntranceName
+                                + " (index: " + itemIndex + ") - Type: " + accessType);
+
+                        // Find the entrance ID by name
+                        Integer entranceIdValue = findEntranceIdByName(selectedEntranceName);
+
+                        if (entranceIdValue != null) {
+                            // Store the drill-down parameters in flash scope
+                            
+                            LocalDateTime startDateTime = DateFormatter.toStartOfDay(startFrom);
+                                
+                            LocalDateTime endDateTime = DateFormatter.toEndOfDay(endAt);
+                                    
+                            FacesContext.getCurrentInstance()
+                                    .getExternalContext()
+                                    .getFlash()
+                                    .put("drillDownStartDate", startDateTime);
+
+                            FacesContext.getCurrentInstance()
+                                    .getExternalContext()
+                                    .getFlash()
+                                    .put("drillDownEndDate", endDateTime);
+
+                            FacesContext.getCurrentInstance()
+                                    .getExternalContext()
+                                    .getFlash()
+                                    .put("drillDownResult", drillDownResult);
+
+                            // Store the device position for filtering
+                            FacesContext.getCurrentInstance()
+                                    .getExternalContext()
+                                    .getFlash()
+                                    .put("drillDownDevicePosition", accessType);
+                            
+                            FacesContext.getCurrentInstance()
+                                    .getExternalContext()
+                                    .getFlash()
+                                    .put("drillDownEntranceId", entranceIdValue);
+
+                            // Navigate to Access History page with all required parameters
+                            FacesContext.getCurrentInstance()
+                                    .getApplication()
+                                    .getNavigationHandler()
+                                    .handleNavigation(FacesContext.getCurrentInstance(), null,
+                                            "/app/Access/historyMonitoring.xhtml?faces-redirect=true");
+
+                        } else {
+                            System.out.println("No entrance ID found for: " + selectedEntranceName);
+                        }
+                    } else {
+                        System.out.println("No entrance name found for index: " + itemIndex);
+                    }
+                } else {
+                    System.out.println("Invalid item index: " + itemIndex);
+                }
+            } else {
+                System.out.println("Invalid chart data or labels not a List");
+            }
+        } catch (Exception e) {
+            System.err.println("Error handling active entrance chart click: " + e.getMessage());
+            e.printStackTrace();
+            // Show error message to user
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error",
+                            "Unable to filter access history by entrance. Please try again."));
+        }
+    }
+
+// Helper method to find entrance ID by name (unchanged)
+    private Integer findEntranceIdByName(String entranceName) {
+        try {
+            // Using your injected entrancesService
+            List<Entrances> allEntrances = entrancesService.findAllEntrances();
+
+            return allEntrances.stream()
+                    .filter(entrance -> entrance.getEntranceName().equals(entranceName))
+                    .map(Entrances::getId) // Adjust this based on your Entrances entity getter method
+                    .findFirst()
+                    .orElse(null);
+        } catch (Exception e) {
+            System.err.println("Error finding entrance ID: " + e.getMessage());
+            return null;
+        }
+    }
+    
     private Map<Integer, Boolean> entranceExpansionMap = new HashMap<>();
 
     public Map<Integer, Boolean> getEntranceExpansionMap() {

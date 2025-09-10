@@ -18,19 +18,21 @@
             <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicon-32x32.png']}" />
             <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicon-16x16.png']}" />
             <link rel="manifest" href="#{resource['site.webmanifest']}" />
-
         </f:facet>
 
         <ui:insert name="head"/>
-        
+
         <title>
             <ui:insert name="title"/>
         </title>
         <h:outputScript library="js" name="template.js" target="body" />
-        
+        <h:outputScript library="js" name="chartjs.js" target="body"/>
+
         <script type="text/javascript">
             let notificationSound = new Audio('#{request.contextPath}/resources/sounds/notificationSound.mp3');
         </script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
 
     </h:head>
     <h:body>
@@ -210,7 +212,7 @@
                 </ui:fragment>
             </ui:fragment>
         </div>
-        
+
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
         <!-- Topbar -->

@@ -715,7 +715,7 @@ public class AccessLogService {
         return query.getSingleResult().intValue();
     }
 
-    public List<AccessLog> filterAccessLog(List<LocalDateTime> dateRange, int entranceId, String ghanacardnumber, String employeeName, Integer roleId, String result) {
+    public List<AccessLog> filterAccessLog(List<LocalDateTime> dateRange, int entranceId, String ghanacardnumber, String employeeName, Integer roleId, String result,String devicePosition) {
 
         StringBuilder queryBuilder = new StringBuilder("SELECT a FROM AccessLog a WHERE 1=1 ");
 
@@ -748,7 +748,7 @@ public class AccessLogService {
         }
 
         if (employeeName != null && !employeeName.isBlank()) {
-            queryBuilder.append("AND a.employee IS NOT NULL AND (CONCAT(LOWER(a.employee.firstname), ' ', LOWER(a.employee.lastname)) LIKE :employeeName ");
+            queryBuilder.append("AND a.employee IS NOT NULL AND (CONCAT(LOWER(a.employee.firstname), ' ', LOWLER(a.employee.lastname)) LIKE :employeeName ");
             queryBuilder.append("OR LOWER(a.employee.firstname) LIKE :employeeName ");
             queryBuilder.append("OR LOWER(a.employee.lastname) LIKE :employeeName) ");
 
@@ -762,10 +762,14 @@ public class AccessLogService {
 
         if (result != null && !result.isBlank()) {
 
-            queryBuilder.append("AND a.result = :result ");
+            queryBuilder.append("AND LOWER(a.result) LIKE :result ");
+            
+            params.put("result", "%" + result.toLowerCase() + "%");
 
-            params.put("result", result);
-
+        }
+        if (devicePosition != null && !devicePosition.isBlank()) {
+            queryBuilder.append("AND a.device IS NOT NULL AND a.device.devicePosition = :devicePosition ");
+            params.put("devicePosition", DevicePosition.valueOf(devicePosition)); 
         }
 
         queryBuilder.append("ORDER BY a.timestamp DESC");

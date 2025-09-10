@@ -80,7 +80,8 @@ public class HistoryBean implements Serializable {
     private String result;
     private List<EmployeeRole> allRoles = new ArrayList<>();
     private Integer selectedRoleId;
-
+    private String selectedDevicePosition;
+    
     private List<LocalDateTime> timeRange;
 
     private LocalDateTime endTime;
@@ -90,9 +91,19 @@ public class HistoryBean implements Serializable {
 
         allEntrances = entrancesService.findAllEntrances();
         allRoles = roleService.findAllEmployeeRoles();
-        allResults = Arrays.asList("granted", "denied");
-//        recentAccessAttempts = accessLogService.getRecentAccessAttempts(30);
-
+        allResults = Arrays.asList("GRANTED", "DENIED");
+        
+        LocalDateTime drillDownStartDate = (LocalDateTime) FacesContext.getCurrentInstance()
+                .getExternalContext().getFlash().get("drillDownStartDate");
+        LocalDateTime drillDownEndDate = (LocalDateTime) FacesContext.getCurrentInstance()
+                .getExternalContext().getFlash().get("drillDownEndDate");
+        String drillDownResult = (String) FacesContext.getCurrentInstance()
+                .getExternalContext().getFlash().get("drillDownResult");
+        Integer drillDownEntranceId = (Integer) FacesContext.getCurrentInstance()
+                .getExternalContext().getFlash().get("drillDownEntranceId");
+        String drillDownDevicePosition = (String) FacesContext.getCurrentInstance()
+                .getExternalContext().getFlash().get("drillDownDevicePosition");
+        
         String ghanaCardNumberR = (String) FacesContext.getCurrentInstance()
                 .getExternalContext().getFlash().get("ghanaCardNumber");
 
@@ -108,36 +119,52 @@ public class HistoryBean implements Serializable {
         String entranceIdParam = params.get("entranceId");
         String resultParam = params.get("result");
 
-        if ((entranceIdParam != null && !entranceIdParam.isEmpty())
-                || (ghanaCardNumberR != null && !ghanaCardNumberR.isEmpty())) {
-
-            if (entranceIdParam != null && !entranceIdParam.isEmpty()) {
-                // Set the selected entrance from URL parameter
-                this.selectedEntranceId = Integer.parseInt(entranceIdParam);
-
-                if (resultParam != null && !resultParam.isEmpty()) {
-                    this.result = resultParam;
-                }
-            }
-
-            if (ghanaCardNumberR != null && !ghanaCardNumberR.isEmpty()) {
-                this.ghanaCardNumber = ghanaCardNumberR;
-            }
-
-            // Automatically fetch filtered data if any condition is met
-            fetchCriteria();
-        } else if (employeeNameR != null && !employeeNameR.isEmpty()) {
-            this.employeeName = employeeNameR;
-            fetchCriteria();
-        } else if (roleR != null) {
-            this.selectedRole = roleR;
-            this.selectedRoleId = roleR.getId();
-            fetchCriteria();
-        } else {
-            // Load default recent access attempts (only if no filter applied)
-            recentAccessAttempts = accessLogService.getRecentAccessAttempts(30);
-        }
+        // Handle chart drill-down parameters (prioritize flash scope)
+    if (drillDownStartDate != null && drillDownEndDate != null) {
+        // Set the time range from flash scope
+        this.timeRange = Arrays.asList(drillDownStartDate, drillDownEndDate);
     }
+
+    if (drillDownEntranceId != null) {
+        // Chart drill-down scenario - use flash scope parameters
+        this.selectedEntranceId = drillDownEntranceId;
+        this.result = drillDownResult;
+        this.selectedDevicePosition = drillDownDevicePosition;
+        fetchCriteria();
+        
+    } else if ((entranceIdParam != null && !entranceIdParam.isEmpty())
+            || (ghanaCardNumberR != null && !ghanaCardNumberR.isEmpty())) {
+        
+        if (entranceIdParam != null && !entranceIdParam.isEmpty()) {
+            // Set the selected entrance from URL parameter
+            this.selectedEntranceId = Integer.parseInt(entranceIdParam);
+            
+            if (resultParam != null && !resultParam.isEmpty()) {
+                this.result = resultParam;
+            }
+        }
+        
+        if (ghanaCardNumberR != null && !ghanaCardNumberR.isEmpty()) {
+            this.ghanaCardNumber = ghanaCardNumberR;
+        }
+        
+        // Automatically fetch filtered data if any condition is met
+        fetchCriteria();
+        
+    } else if (employeeNameR != null && !employeeNameR.isEmpty()) {
+        this.employeeName = employeeNameR;
+        fetchCriteria();
+        
+    } else if (roleR != null) {
+        this.selectedRole = roleR;
+        this.selectedRoleId = roleR.getId();
+        fetchCriteria();
+        
+    } else {
+        // Load default recent access attempts (only if no filter applied)
+        recentAccessAttempts = accessLogService.getRecentAccessAttempts(30);
+    }
+}
 
     public void setupBreadcrumb() {
         breadcrumbBean.setHistoryMonitoringBreadcrumb();
@@ -153,7 +180,7 @@ public class HistoryBean implements Serializable {
         if (selectedRole != null) {
             selectedRoleId = selectedRole.getId();
         }
-        recentAccessAttempts = accessLogService.filterAccessLog(timeRange, selectedEntranceId, ghanaCardNumber, employeeName, selectedRoleId, result);
+        recentAccessAttempts = accessLogService.filterAccessLog(timeRange, selectedEntranceId, ghanaCardNumber, employeeName, selectedRoleId, result,selectedDevicePosition);
     }
 
     public void reset() {

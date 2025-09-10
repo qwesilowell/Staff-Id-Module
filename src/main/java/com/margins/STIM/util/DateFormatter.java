@@ -118,7 +118,7 @@ public class DateFormatter {
     private String getFirstChar(String word) {
         return (word != null && word.length() >= 1) ? word.substring(0, 1).toUpperCase() : "?";
     }
-    
+
     public static String formatDateAsTimeString(Date date) {
         if (date == null) {
             return "";
@@ -145,9 +145,11 @@ public class DateFormatter {
             return dateTime.format(fullFormatter);
         }
     }
-    
-        public static String formatTimeOnly(Date date) {
-        if (date == null) return "";
+
+    public static String formatTimeOnly(Date date) {
+        if (date == null) {
+            return "";
+        }
 
         LocalTime time;
 
@@ -156,14 +158,13 @@ public class DateFormatter {
         } else {
             // For regular java.util.Date that may include a date
             time = date.toInstant()
-                       .atZone(ZoneId.systemDefault())
-                       .toLocalTime();
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalTime();
         }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH);
         return time.format(formatter);
     }
-
 
     public static String formatLocalDateAsTimeString(LocalDateTime dateTime) {
         if (dateTime == null) {
@@ -190,7 +191,7 @@ public class DateFormatter {
             return dateTime.format(fullFormatter);
         }
     }
-    
+
     // Convert LocalDateTime -> java.util.Date (TIME only)
     public static Date toDate(LocalDateTime localDateTime) {
         if (localDateTime == null) {
@@ -203,6 +204,17 @@ public class DateFormatter {
     // Convert LocalDateTime -> java.sql.Time
     public static Time toSqlTime(LocalDateTime localDateTime) {
         return localDateTime == null ? null : Time.valueOf(localDateTime.toLocalTime());
+    }
+
+    // For start date - beginning of the day
+    public static LocalDateTime toStartOfDay(LocalDate localDate) {
+        return localDate == null ? null : localDate.atStartOfDay();
+    }
+
+// For end date - end of the day  
+    public static LocalDateTime toEndOfDay(LocalDate localDate) {
+        return localDate == null ? null : localDate.atTime(23, 59, 59, 999999999);
+        // Or simply: localDate.atTime(LocalTime.MAX);
     }
 
 }

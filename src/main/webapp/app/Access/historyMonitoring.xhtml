@@ -16,9 +16,7 @@
     <ui:define name ="title">History Monitoring</ui:define>
 
     <ui:define name="metadata">
-        <!--                <f:metadata>
-                            <f:viewAction action="#-{loginBean.checkAccess('Admin')}" />
-                        </f:metadata>-->
+
     </ui:define>
 
     <ui:define name ="content">
@@ -79,14 +77,23 @@
                             <p:outputLabel for="@next">Filter  by Result</p:outputLabel>
                             <p:selectOneMenu value="#{historyBean.result}" style="width: 100%">
                                 <f:selectItem itemLabel="All Results" itemValue="#{null}"/>
-                                <f:selectItem  itemLabel="GRANTED" itemValue="granted"/>
-                                <f:selectItem  itemLabel="DENIED" itemValue="denied"/>
+                                <f:selectItem  itemLabel="GRANTED" itemValue="GRANTED"/>
+                                <f:selectItem  itemLabel="DENIED" itemValue="DENIED"/>
                             </p:selectOneMenu>
                         </p:outputPanel>
 
                         <p:outputPanel>
                             <p:outputLabel for="@next">Filter  by date</p:outputLabel>
                             <p:datePicker selectionMode="range" monthNavigator="true" yearNavigator="true" showButtonBar="true" value="#{historyBean.timeRange}" style="width: 100%"/>
+                        </p:outputPanel>
+            
+                        <p:outputPanel>
+                            <p:outputLabel for="@next" value="Filter by Device Position" />
+                            <p:selectOneMenu value="#{historyBean.selectedDevicePosition}" style="width: 100%">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                <f:selectItem itemLabel="ENTRY" itemValue="ENTRY" />
+                                <f:selectItem itemLabel="EXIT" itemValue="EXIT" />
+                            </p:selectOneMenu>
                         </p:outputPanel>
                     </p:panelGrid>
                     

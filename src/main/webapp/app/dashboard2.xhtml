@@ -129,39 +129,31 @@
 
                         <p:spacer height="50px"/>
 
-                        <p:panel id="adminActiveEntrances" styleClass="mostAccessed"
-                                 style="border-left: 6px solid #95C0F5; border-radius: 10px;">
-
+                        <p:panel id="adminActiveEntrances" styleClass="mostAccessed" style="border-left: 6px solid #95C0F5; border-radius: 10px;">
                             <f:facet name="header">
                                 <p:outputPanel style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-
                                     <h:outputText value="Active Entrances between" style="font-weight: bold;" />
-
-                                    <p:datePicker value="#{dashboard2.startFrom}" pattern="dd-MM-yyyy"
-                                                  placeholder="Start Date"
-                                                  maxdate="#{dashboard2.endAt}" showIcon="true"
-                                                  style="min-width: 140px;" />
-
+                                    <p:datePicker value="#{dashboard2.startFrom}" pattern="dd-MM-yyyy" placeholder="Start Date" 
+                                                  maxdate="#{dashboard2.endAt}" showIcon="true" style="min-width: 140px;" />
                                     <h:outputText value="and" style="font-weight: bold;" />
-
-                                    <p:datePicker value="#{dashboard2.endAt}" pattern="dd-MM-yyyy"
-                                                  placeholder="End Date"
-                                                  mindate="#{dashboard2.startFrom}" showIcon="true"
-                                                  style="min-width: 140px;" />
-
-                                    <p:commandButton value="Filter" icon="pi pi-search"
-                                                     actionListener="#{dashboard2.updateMostAccessed}"
-                                                     update="activeEntrances :growl"
-                                                     styleClass="p-button-sm p-button-outlined p-button-primary"
+                                    <p:datePicker value="#{dashboard2.endAt}" pattern="dd-MM-yyyy" placeholder="End Date" 
+                                                  mindate="#{dashboard2.startFrom}" showIcon="true" style="min-width: 140px;" />
+                                    <p:commandButton value="Filter" icon="pi pi-search" 
+                                                     actionListener="#{dashboard2.updateMostAccessed}" 
+                                                     update="activeEntrances :growl" 
+                                                     styleClass="p-button-sm p-button-outlined p-button-primary" 
                                                      style="margin-left: auto;" />
-                                    <p:button icon="pi pi-arrow-circle-right" styleClass="rounded-button " style="color: white!important;" 
-                                              outcome="/app/Access/historyMonitoring?faces-redirect=true"
-                                              title="See More Details"
-                                              />
+                                    <p:button icon="pi pi-arrow-circle-right" styleClass="rounded-button " 
+                                              style="color: white!important;" 
+                                              outcome="/app/Access/historyMonitoring?faces-redirect=true" 
+                                              title="See More Details" />
                                 </p:outputPanel>
                             </f:facet>
 
-                            <p:lineChart model="#{dashboard2.mostAccessedEntrance}" style="height: 300px;" />
+                            <!-- Use p:ajax with itemSelect event -->
+                            <p:lineChart model="#{dashboard2.mostAccessedEntrance}" style="height: 300px;">
+                                <p:ajax event="itemSelect" listener="#{dashboard2.onActiveEntranceChartClick}" />
+                            </p:lineChart>
                         </p:panel>
 
 
@@ -185,17 +177,8 @@
                                         listener="#{dashboard2.onChartItemSelect}"
                                         oncomplete="redirectToHistoryMonitoring()"/>
                             </p:lineChart>
-
-                            <h:outputScript>
-
-                                function redirectToHistoryMonitoring() {
-                                console.log(PF('lineChartjs'))
-                                //window.location.href = '/STIM/app/Access/historyMonitoring.xhtml';
-                                }
-                            </h:outputScript>
-
                         </p:panel>
-                        
+
                         <br/><br/>
                         <h:outputText value="Filter by Entrance: "/>
                         <p:selectOneMenu value="#{dashboard2.selectedEntranceId}">
@@ -303,7 +286,7 @@
 
                         <p:spacer height="30px"/>
 
-                        <p:panelGrid columns="2" style="margin-right: 10px!important"> 
+                        <div style="display: grid; grid-template-columns: 47% 47%; gap: 19px;">
                             <p:panel>
                                 <f:facet name="header">
                                     <h:panelGroup layout="block" 
@@ -315,7 +298,7 @@
                                                   />
                                     </h:panelGroup>
                                 </f:facet>
-                                <p:pieChart model="#{dashboard2.rolePieChartModelS}" style="height: 400px;" />
+                                <p:pieChart model="#{roleReportController.top5roles}" style="height: 400px;"/>
                             </p:panel>
 
 
@@ -355,8 +338,7 @@
                                 </p:outputPanel>
 
                             </p:panel>
-                        </p:panelGrid>
-
+                        </div>
                         <p:spacer height="10px"/>
 
                         <p:panel>
@@ -486,7 +468,7 @@
                                         </div>
                                     </h:link>
                                 </div>
-                                
+
                                 <!-- Card 4 -->
                                 <ui:fragment rendered="#{userSession.hasPermission('Onboard Employee')}">
                                     <div class="card purple" style="border-left: 6px solid #9A35B6;">
@@ -681,55 +663,6 @@
             </h:form>
 
         </div>
-        <script target="head" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-        <!--        <script type="text/javascript">
-                // Chart extender function to enable click interactions
-                function chartExtender() {
-                    this.cfg.axes.xaxis.renderer = $.jqplot.DateAxisRenderer;
-                    this.cfg.axes.xaxis.tickOptions = {formatString: '%b %#d'};
-                    this.cfg.highlighter = {
-                        show: true,
-                        sizeAdjust: 7.5,
-                        tooltipAxes: 'y',
-                        tooltipFormatString: '<b>%s</b> accesses on %s'
-                    };
-                    this.cfg.cursor = {
-                        show: true,
-                        zoom: false,
-                        showTooltip: false
-                    };
-                }
-                
-                // Function to redirect to history monitoring with filters
-                function redirectToHistoryMonitoring() {
-                    // Get the selected values from hidden inputs
-                    var selectedEntrance = document.getElementById('dashboardForm:selectedEntrance').value;
-                    var selectedAccessType = document.getElementById('dashboardForm:selectedAccessType').value;
-                    var selectedValue = document.getElementById('dashboardForm:selectedValue').value;
-                    var dateRangeStart = document.getElementById('dashboardForm:dateRangeStart').value;
-                    var dateRangeEnd = document.getElementById('dashboardForm:dateRangeEnd').value;
-                    
-                    if (selectedEntrance && selectedAccessType) {
-                        // Build the redirect URL with parameters
-                        var baseUrl = 'historyMonitoring.xhtml';
-                        var params = '?faces-redirect=true';
-                        params += '&entrance=' + encodeURIComponent(selectedEntrance);
-                        params += '&accessType=' + encodeURIComponent(selectedAccessType);
-                        params += '&count=' + encodeURIComponent(selectedValue);
-                        if (dateRangeStart) params += '&startDate=' + encodeURIComponent(dateRangeStart);
-                        if (dateRangeEnd) params += '&endDate=' + encodeURIComponent(dateRangeEnd);
-                        params += '&source=dashboard';
-                        
-                        // Redirect to history monitoring page
-                        window.location.href = baseUrl + params;
-                    }
-                }
-                
-                // Alternative: Use PrimeFaces remote command for server-side redirect
-                function serverRedirect() {
-                    PF('redirectCommand')([{name: 'redirect', value: 'true'}]);
-                }
-                </script>-->
         <style>
             body .ui-panel .ui-panel-titlebar{
                 background: #2196f3;
@@ -879,7 +812,7 @@
                 height: 100%;
             }
 
-         
+
             .cards-container {
                 display: grid;
                 grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

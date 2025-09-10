@@ -143,40 +143,39 @@
 
                             </p:dataTable>
                         </div>
-                    </h:panelGroup>
-
-                    <p:dialog id="confirmDialog"
-                              widgetVar="confirmDialog" 
-                              showEffect="fade" 
-                              width="300"
-                              hideEffect="fade" 
-                              header="Confirm"
-                              modal="true">
-
-                        <div class="confirm-message">
-                            <span>Delete Role's Access to This Entrance </span>
-                            <span class="role-name">#{assignRoleEntranceBean.selectedEntrance.entranceName}</span>
-                            <span> and all time configuration ?</span>
-                        </div>                    <br/><br/>
-                        <div style="display:flex; flex-direction: row; justify-content: flex-end; gap: 10px;">
-                            <p:commandButton value="Yes" 
-                                             icon="pi pi-check" 
-                                             actionListener="#{assignRoleEntranceBean.removeEntrance()}"
-                                             process="@this" 
-                                             oncomplete="PF('confirmDialog').hide()"
-                                             update="assignedEntrancesTable messages"
-                                             styleClass="rounded-button"
-                                             style="padding: 1px 3px !important;"
-                                             />
-                            <p:commandButton value="No" 
-                                             type="button" 
-                                             styleClass="ui-button-secondary rounded-button" 
-                                             icon="pi pi-times"
-                                             onclick="PF('confirmDialog').hide()" />
-                        </div>
-                    </p:dialog>
+                    </h:panelGroup>                
                 </p:panel>
+                
+                <p:dialog id="confirmDialog"
+                          widgetVar="confirmDialog" 
+                          showEffect="fade" 
+                          width="300"
+                          hideEffect="fade" 
+                          header="Confirm"
+                          modal="true">
 
+                    <div class="confirm-message">
+                        <span>Delete Role's Access to This Entrance </span>
+                        <span class="role-name">#{assignRoleEntranceBean.selectedEntrance.entranceName}</span>
+                        <span> and all time configuration ?</span>
+                    </div>                    <br/><br/>
+                    <div style="display:flex; flex-direction: row; justify-content: flex-end; gap: 10px;">
+                        <p:commandButton value="Yes" 
+                                         icon="pi pi-check" 
+                                         actionListener="#{assignRoleEntranceBean.removeEntrance()}"
+                                         process="@this" 
+                                         oncomplete="PF('confirmDialog').hide()"
+                                         update="assignedEntrancesTable messages"
+                                         styleClass="rounded-button"
+                                         style="padding: 1px 3px !important;"
+                                         />
+                        <p:commandButton value="No" 
+                                         type="button" 
+                                         styleClass="ui-button-secondary rounded-button" 
+                                         icon="pi pi-times"
+                                         onclick="PF('confirmDialog').hide()" />
+                    </div>
+                </p:dialog>
                 <div class="card"> 
                     <p:sidebar id ="sidebar2" widgetVar="sidebar2" position="right" style="width: 30%; background-color: #f8f9fa;overflow:scroll "  blockScroll= "true" >
                         <div class="p-col-12">

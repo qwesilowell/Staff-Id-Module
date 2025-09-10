@@ -384,7 +384,7 @@ public class OnboardEmployeeController implements Serializable {
     public String requestData(List<FingerCaptured> fingersesList) throws IOException {
         JSONObject data = new JSONObject();
         data.put("fingers", new JSONArray(capturedFingers));
-        data.put("merchantCode", "69af98f5-39fb-44e6-81c7-5e496328cc59");
+        data.put("merchantCode", "69af98f5-39fb-44e6-81c7-5e496328cc58");
         return data.toString();
     }
 
