@@ -1,0 +1,1 @@
+STIM is a web-based system that automates employee onboarding and manages a building’s access using Ghana Card and biometric data. The system will pull employee information from the NIA database, assign appropriate roles, and control access to building entrances using Ghana Card or biometric authentication (face or fingerprints)
